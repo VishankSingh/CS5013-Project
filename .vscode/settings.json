@@ -1,0 +1,14 @@
+{
+    "files.associations": {},
+    "clangd.path": "/usr/lib/llvm-21/bin/clangd",
+    "clangd.arguments": [
+        "--compile-commands-dir=build",
+        "--header-insertion=never",
+        "--header-insertion-decorators=0",
+        "--cross-file-rename",
+        // "--clang-tidy",
+        // "--clang-tidy-checks=*",
+    ],
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "editor.formatOnSave": true,
+}

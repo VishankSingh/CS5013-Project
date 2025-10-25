@@ -1,0 +1,3 @@
+123	10000
+BF Memory = 399888 BF_ENTRIES = 399887
+[ Error ] Could not open the file ./sift10k_randomgraph.bin
