@@ -1,28 +1,29 @@
-#include <assert.h>
 #include <cuda_runtime.h>
-#include <fcntl.h>
-#include <omp.h>
+#include <boost/dynamic_bitset.hpp>
+#include <cub/cub.cuh>
+
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include <assert.h>
+#include <fcntl.h>
+#include <omp.h>
 #include <unistd.h>
-#include <algorithm>
-#include <boost/dynamic_bitset.hpp>
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
-#include <cub/cub.cuh>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <unordered_set>
-#include "parANN.h"
+#include <string>
+
+#include "parANN.cuh"
 #include "utils/timer.h"
-#include "utils/utils.h"
+#include "utils/utils.cuh"
 
 #define R 64  // Max. node degree
 
-#define PRINT_VAR(x) std::cout << "\033[1;31m[ ++++ ]\033[0m " << #x << "=" << (x) << std::endl;
+#define PRINT_VAR(x) std::cout << "\033[1;31m[ Var ]\033[0m " << #x << "=" << (x) << '\n';
 
 #define PRINT_BAR std::cout << "\033[1;31m[ ++++ ]\033[0m\n";
 
@@ -56,8 +57,8 @@ int nQueryID = 0;
 #define ENABLE_GPU_STATS 0x00000001
 #define ENABLE_CACHE_WARMUP 0x00000002
 
-using namespace std;
-using Clock = std::chrono::high_resolution_clock;
+// using namespace std;
+// using Clock = std::chrono::high_resolution_clock;
 
 // texture<uint8_t, 1, cudaReadModeElementType> tex_compressedVectors; // for 1D texture memory
 const unsigned long long ullIndex_Entry_LEN = INDEX_ENTRY_LEN;
@@ -66,7 +67,8 @@ off_t caclulate_filesize(const char* chFileName) {
     int fd = -1;
 
     if ((fd = open(chFileName, O_RDONLY, (mode_t)0)) == -1) {
-        perror("Error opening file for writing");
+        CALL_WITH_LOG(perror("Error opening file for writing"));
+        // perror("Error opening file for writing");
         exit(EXIT_FAILURE);
     }
 
@@ -81,34 +83,33 @@ off_t caclulate_filesize(const char* chFileName) {
 }
 
 unsigned long long log_message(const char* message) {
-    const std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-    const std::time_t ctimenow_obj = std::chrono::system_clock::to_time_t(now);
-    auto              duration     = now.time_since_epoch();
+    const auto now          = std::chrono::system_clock::now();
+    const auto ctimenow_obj = std::chrono::system_clock::to_time_t(now);
+    auto       duration     = now.time_since_epoch();
     auto       nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-    struct tm* local = localtime(&ctimenow_obj);
-    // printf("Today is %s %s\n", ctime(&ctimenow_obj),message);
-    cout << local->tm_hour << ":" << local->tm_min << ":" << local->tm_sec << " [ " << nanos
-         << " ] : " << message << endl;
+    auto       local = localtime(&ctimenow_obj);
+    std::cout << local->tm_hour << ":" << local->tm_min << ":" << local->tm_sec << " [ " << nanos
+              << " ] : " << message << '\n';
     return nanos;
 }
 
 void parANN(int argc, char** argv) {
     // the eight i/p files (7 bin + 1 txt)
-    string   pqTable_file           = string(argv[1]);  // Pivot files
-    string   compressedVector_file  = string(argv[2]);
-    string   graphAdjListAndFP_file = string(argv[3]);
-    string   queryPointsFP_file     = string(argv[4]);
-    string   chunkOffsets_file      = string(argv[5]);
-    string   centroid_file          = string(argv[6]);
-    string   truthset_bin           = string(argv[7]);
-    unsigned numQueries             = atol(argv[8]);
-    unsigned numThreads_K4          = atol(argv[9]);        // 1	compute_parent
-    unsigned numThreads_K1          = atol(argv[10]);       // 256	populate_pqDist_par
-    unsigned numThreads_K2          = atol(argv[11]);       // 512 compute_neighborDist_par
-    unsigned numThreads_K5          = atol(argv[12]);       // 256	neighbor_filtering_new
-    unsigned recall_at              = std::atoi(argv[13]);  // 10
-    unsigned numCPUthreads          = atoi(argv[14]);       // 64
-    unsigned bitCapabilities        = atoi(argv[15]);       // 1,2,4,8,..
+    std::string pqTable_file           = std::string(argv[1]);  // Pivot files
+    std::string compressedVector_file  = std::string(argv[2]);
+    std::string graphAdjListAndFP_file = std::string(argv[3]);
+    std::string queryPointsFP_file     = std::string(argv[4]);
+    std::string chunkOffsets_file      = std::string(argv[5]);
+    std::string centroid_file          = std::string(argv[6]);
+    std::string truthset_bin           = std::string(argv[7]);
+    unsigned    numQueries             = atol(argv[8]);
+    unsigned    numThreads_K4          = atol(argv[9]);        // 1	compute_parent
+    unsigned    numThreads_K1          = atol(argv[10]);       // 256	populate_pqDist_par
+    unsigned    numThreads_K2          = atol(argv[11]);       // 512 compute_neighborDist_par
+    unsigned    numThreads_K5          = atol(argv[12]);       // 256	neighbor_filtering_new
+    unsigned    recall_at              = std::atoi(argv[13]);  // 10
+    unsigned    numCPUthreads          = atoi(argv[14]);       // 64
+    unsigned    bitCapabilities        = atoi(argv[15]);       // 1,2,4,8,..
 
     // Assign Capabilites
     bool bEnableGPUStats = false;
@@ -123,7 +124,7 @@ void parANN(int argc, char** argv) {
     unsigned medoidID = MEDOID;
     // unsigned K4_blockSize = 256;
 
-    std::cout << medoidID << "\t" << numQueries << '\n';
+    std::cout << "[medoidID=" << medoidID << ", numQueries=" << numQueries << "]\n";
 
     printf("BF Memory = %u BF_ENTRIES = %u\n", BF_MEMORY, BF_ENTRIES);
 
@@ -141,8 +142,10 @@ void parANN(int argc, char** argv) {
     }
 #endif
 
-    ifstream in3(graphAdjListAndFP_file, std::ios::binary);
+    std::ifstream in3(graphAdjListAndFP_file, std::ios::binary);
     if (!in3.is_open()) {
+        CALL_WITH_LOG(
+            printf("[ Error ] Could not open the file %s\n", graphAdjListAndFP_file.c_str()));
         printf("[ Error ] Could not open the file %s\n", graphAdjListAndFP_file.c_str());
         return;
     }
@@ -190,7 +193,7 @@ void parANN(int argc, char** argv) {
     }
 
     int nRetIndex = mlock(pIndex, sizeof(size_indexfile));
-    cout << "mlock ret for Index: " << nRetIndex << endl;
+    std::cout << "mlock ret for Index: " << nRetIndex << '\n';
     if (nRetIndex)
         perror("Index File");
     in3.read((char*)pIndex, size_indexfile);
@@ -207,11 +210,8 @@ void parANN(int argc, char** argv) {
     // Last neighbour calculation
     puNumNeighbours1 =
         (unsigned*)(pIndex + ((ullIndex_Entry_LEN * (N - 1)) + (sizeof(datatype_t) * D)));
-    PRINT_BAR;
 
     puNeighbour1 = puNumNeighbours1 + (*puNumNeighbours1);
-    PRINT_BAR;
-    PRINT_VAR(2);
     // Print the first and last neighbour in AdjList
     printf("%u \t %u\n", *puNeighbour, *puNeighbour1);
 
@@ -235,13 +235,15 @@ void parANN(int argc, char** argv) {
     unsigned* chunksOffset = (unsigned*)malloc(sizeof(unsigned) * (n_chunks + 1));
     uint64_t  numr         = n_chunks + 1;
     uint64_t  numc         = 1;
-    std::cout << "\033[1;31m[ ++++ ]\033[0m\n";
 
-    load_bin<uint32_t>(chunkOffsets_file, chunksOffset, numr, numc);  // Import the chunkoffset file
+    // Import the chunkoffset file
+    // CALL_WITH_LOG(load_bin<uint32_t>(chunkOffsets_file, chunksOffset, numr, numc));
+    // load_bin<uint32_t>(chunkOffsets_file, chunksOffset, numr, numc);
 
     // Loading centroid coordinates
     float* centroid = nullptr;
-    load_bin<float>(centroid_file, centroid, numr, numc);  // Import centroid from centroid file
+    // Import centroid from centroid file
+    // CALL_WITH_LOG(load_bin<float>(centroid_file, centroid, numr, numc));
 
     // GroundTruth loading done later
 
@@ -326,19 +328,19 @@ void parANN(int argc, char** argv) {
     double time_neighbor_filtering = 0.0f;
 
     // CPU execution times
-    double         fp_set_time_gpu      = 0.0f;  // GPU side
-    double         seek_neighbours_time = 0.0f;
-    vector<double> time_B1_vec;
-    vector<double> time_B2_vec;
-    unsigned       numThreads_K3_merge = 2 * L;
+    double              fp_set_time_gpu      = 0.0f;  // GPU side
+    double              seek_neighbours_time = 0.0f;
+    std::vector<double> time_B1_vec;
+    std::vector<double> time_B2_vec;
+    unsigned            numThreads_K3_merge = 2 * L;
     assert(numThreads_K3_merge <= 1024);  // Max thread block size
     unsigned numThreads_K3 = R + 1;
     time_B2_vec.push_back(0.0);
     bool     nextIter = false;
     unsigned iter     = 1;  // Note 1-based not 0
 
-    vector<vector<unsigned>> final_bestL1;  // Per query vector to store the visited parent and its
-                                            // distance to query point
+    std::vector<std::vector<unsigned>> final_bestL1;  // Per query vector to store the visited
+                                                      // parent and its distance to query point
     final_bestL1.resize(numQueries);
 
     // Allocations on GPU
@@ -396,7 +398,7 @@ void parANN(int argc, char** argv) {
     gpuErrchk(cudaMalloc(&d_recall, sizeof(unsigned)));
     gpuErrchk(cudaMemcpy(d_recall, &recall_at, sizeof(unsigned), cudaMemcpyHostToDevice));
     gpuErrchk(cudaMemcpy(d_numQueries, &numQueries, sizeof(unsigned), cudaMemcpyHostToDevice));
-    gpuErrchk(cudaMemcpy(d_centroid, centroid, sizeof(float) * (D), cudaMemcpyHostToDevice));
+    // gpuErrchk(cudaMemcpy(d_centroid, centroid, sizeof(float) * (D), cudaMemcpyHostToDevice));
     gpuErrchk(cudaMalloc(&d_pIndex, size_indexfile));
 
     // Default stream computations or transfers cannot be overalapped with operations on other
@@ -422,7 +424,9 @@ void parANN(int argc, char** argv) {
 
     // host to device transfer
     // gpuErrchk(cudaMemcpy(d_pqTable, pqTable_T, sizeof(float) * (256 * D),
-    // cudaMemcpyHostToDevice)); gpuErrchk(cudaMemcpy(d_compressedVectors, compressedVectors,
+    // cudaMemcpyHostToDevice));
+
+    // gpuErrchk(cudaMemcpy(d_compressedVectors, compressedVectors,
     // (unsigned long long)(sizeof(uint8_t) * (unsigned long
     // long)(CHUNKS)*N),cudaMemcpyHostToDevice));
     gpuErrchk(cudaMemcpy(d_chunksOffset, chunksOffset, sizeof(unsigned) * (n_chunks + 1),
@@ -799,8 +803,8 @@ void parANN(int argc, char** argv) {
         omp_set_num_threads(numCPUthreads);
 #pragma omp parallel
         {
-            int              CPUthreadno = omp_get_thread_num();
-            vector<unsigned> query_best;
+            int                   CPUthreadno = omp_get_thread_num();
+            std::vector<unsigned> query_best;
 
             for (unsigned ii = CPUthreadno; ii < numQueries; ii = ii + numCPUthreads) {
                 query_best.clear();
@@ -840,7 +844,7 @@ void parANN(int argc, char** argv) {
 
 #endif  // #if FREE_AFTERUSE
 
-        cout << "iterations = " << iter << endl;
+        std::cout << "iterations = " << iter << '\n';
 
         assert(time_B1_vec.size() >= 1);
         float time_B1_avg = time_B1_vec[0];
@@ -860,19 +864,21 @@ void parANN(int argc, char** argv) {
             time_B2 += time_B2_vec[idx];
         }
 
-        cout << "STATS" << "LINE = " << endl;
-        cout << "(1) total time_K1 = " << time_K1 << " ms" << endl;
-        cout << "(2) avg. time_B1 = " << time_B1_avg << " ms" << endl;
-        cout << "(3) total time_B1 = " << time_B1 << " ms" << endl;
-        ;
-        cout << "(4) avg. time_B2 = " << time_B2_avg << " ms" << endl;
-        cout << "(5) total time_B2 = " << time_B2 << " ms" << endl;
-        cout << "(6) total neighbor_filtering_time = " << time_neighbor_filtering << " ms" << endl;
-        cout << "(7) total transfer_time (CPU <--> GPU) = " << time_transfer / 1000 << " ms"
-             << endl;
-        cout << "(8) total neigbbour seek time = " << seek_neighbours_time / 1000 << " ms" << endl;
-        cout << "(9) Time elapsed in L2 Dist computation (GPU)= " << fp_set_time_gpu << " ms"
-             << endl;
+        std::cout << "STATS" << "LINE = " << '\n';
+        std::cout << "(1) total time_K1 = " << time_K1 << " ms" << '\n';
+        std::cout << "(2) avg. time_B1 = " << time_B1_avg << " ms" << '\n';
+        std::cout << "(3) total time_B1 = " << time_B1 << " ms" << '\n';
+
+        std::cout << "(4) avg. time_B2 = " << time_B2_avg << " ms" << '\n';
+        std::cout << "(5) total time_B2 = " << time_B2 << " ms" << '\n';
+        std::cout << "(6) total neighbor_filtering_time = " << time_neighbor_filtering << " ms"
+                  << '\n';
+        std::cout << "(7) total transfer_time (CPU <--> GPU) = " << time_transfer / 1000 << " ms"
+                  << '\n';
+        std::cout << "(8) total neigbbour seek time = " << seek_neighbours_time / 1000 << " ms"
+                  << '\n';
+        std::cout << "(9) Time elapsed in L2 Dist computation (GPU)= " << fp_set_time_gpu << " ms"
+                  << '\n';
 
         double totalTime = time_K1 + time_B1 + time_B2 + time_neighbor_filtering +
                            (time_transfer / 1000) + (seek_neighbours_time / 1000);  // in ms
@@ -880,13 +886,14 @@ void parANN(int argc, char** argv) {
         double totalTime_wallclock = (nanoEnd - nanoStart) / 1000.0;
         double throughput          = (numQueries * 1000.0 * 1000.0) / totalTime_wallclock;
         // Note : (5) not included, becasue it is shadowed by (8)
-        cout << "Total time = (1) + (3) + (5) + (6) + (7) + (8) + (9) = " << totalTime << " ms"
-             << endl;
-        cout << "Wall Clock Time = " << totalTime_wallclock << " microsec" << endl;
-        cout << "Throughput = " << throughput << " QPS" << endl;
-        cout << "Throughput (Exclude Mem Transfers) = "
-             << (numQueries * 1000.0) / ((totalTime_wallclock / 1000.0) - time_transfer / 1000.0)
-             << " QPS" << endl;
+        std::cout << "Total time = (1) + (3) + (5) + (6) + (7) + (8) + (9) = " << totalTime << " ms"
+                  << '\n';
+        std::cout << "Wall Clock Time = " << totalTime_wallclock << " microsec" << '\n';
+        std::cout << "Throughput = " << throughput << " QPS" << '\n';
+        std::cout << "Throughput (Exclude Mem Transfers) = "
+                  << (numQueries * 1000.0) /
+                         ((totalTime_wallclock / 1000.0) - time_transfer / 1000.0)
+                  << " QPS" << '\n';
 
         // Computing the recall
 
@@ -904,7 +911,7 @@ void parANN(int argc, char** argv) {
         // program So, test_id to each run with a specific L value. But, currently, we have only one
         // L value i.e. Lvec.size() == 1
         if (Lvec.size() == 0) {
-            std::cout << "No valid Lsearch found. Lsearch must be at least recall_at." << std::endl;
+            std::cout << "No valid Lsearch found. Lsearch must be at least recall_at." << '\n';
             exit(1);
         }
         if (file_exists(truthset_bin)) {
@@ -914,7 +921,7 @@ void parANN(int argc, char** argv) {
         std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
         std::cout.precision(2);
         std::string recall_string = "Recall@" + std::to_string(recall_at);
-        cout << "Ls\t" << recall_string << endl;
+        std::cout << "Ls\t" << recall_string << '\n';
         std::vector<std::vector<unsigned>> query_result_ids(Lvec.size());
 
         unsigned total_size = 0;
@@ -943,8 +950,8 @@ void parANN(int argc, char** argv) {
             if (calc_recall_flag)
                 recall = calculate_recall(numQueries, gt_ids, gt_dists, gt_dim,
                                           query_result_ids[test_id].data(), recall_at, recall_at);
-            cout << L1 << "\t" << recall << "\t total parents " << total_size
-                 << "\t total computations: " << bang_counter << endl;
+            std::cout << L1 << "\t" << recall << "\t total parents " << total_size
+                      << "\t total computations: " << bang_counter << '\n';
         }
 
         // reset counters for next run
@@ -962,8 +969,8 @@ void parANN(int argc, char** argv) {
         iter                    = 1;
 
         char c = 'n';
-        cout << "Try Next run ? [y|n]" << endl;
-        cin >> c;
+        std::cout << "Try Next run ? [y|n]" << '\n';
+        std::cin >> c;
         if (c != 'y')
             break;
 
@@ -1773,7 +1780,7 @@ void bfs(unsigned uMedoid, const unsigned nNodesToDiscover, unsigned& visit_coun
     // pNode->nLevel = 0;
     mapNodeIDToNode[pNode->uNodeID] = pNode;
     visit_counter++;
-    list<unsigned> queue;
+    std::list<unsigned> queue;
     queue.push_back(uMedoid);
 
     while (!queue.empty()) {
@@ -1791,7 +1798,7 @@ void bfs(unsigned uMedoid, const unsigned nNodesToDiscover, unsigned& visit_coun
             queue.push_back(listChildres[nIter]);
 
             if (visit_counter == nNodesToDiscover) {
-                cout << "warm up done : Visited counter:" << visit_counter << endl;
+                std::cout << "warm up done : Visited counter:" << visit_counter << '\n';
                 bRet = true;
                 break;
             }

@@ -8,10 +8,8 @@
 #include <set>
 #include <sstream>
 #include <string>
-#include "parANN.h"
+#include "parANN.cuh"
 #include "utils/timer.h"
-
-using namespace std;
 
 int main(int argc, char** argv) {
     // if (argc < 16) {
@@ -38,8 +36,8 @@ void cached_ifstream ::open(const std::string& filename, uint64_t cacheSize) {
     this->cache_size = cacheSize;
     cache_buf        = new char[cacheSize];
     reader.read(cache_buf, cacheSize);
-    cout << "Opened: " << filename.c_str() << ", size: " << fsize << ", cache_size: " << cacheSize
-         << std::endl;
+    std::cout << "Opened: " << filename.c_str() << ", size: " << fsize
+              << ", cache_size: " << cacheSize << '\n';
 }
 
 size_t cached_ifstream ::get_file_size() {
@@ -57,10 +55,10 @@ void cached_ifstream ::read(char* read_buf, uint64_t n_bytes) {
         uint64_t cached_bytes = cache_size - cur_off;
         if (n_bytes - cached_bytes > fsize - reader.tellg()) {
             std::stringstream stream;
-            stream << "Reading beyond end of file" << std::endl;
+            stream << "Reading beyond end of file" << '\n';
             stream << "n_bytes: " << n_bytes << " cached_bytes: " << cached_bytes
-                   << " fsize: " << fsize << " current pos:" << reader.tellg() << std::endl;
-            cout << stream.str() << std::endl;
+                   << " fsize: " << fsize << " current pos:" << reader.tellg() << '\n';
+            std::cout << stream.str() << '\n';
             exit(1);
         }
         memcpy(read_buf, cache_buf + cur_off, cached_bytes);
@@ -134,6 +132,6 @@ double calculate_recall(unsigned num_queries, unsigned* gold_std, float* gs_dist
         total_recall += cur_recall;
     }
     std::cout << "total_recall = " << total_recall << " " << "num_queries = " << num_queries
-              << " recall_at " << recall_at << endl;
+              << " recall_at " << recall_at << '\n';
     return total_recall / (num_queries) * (100.0 / recall_at);
 }

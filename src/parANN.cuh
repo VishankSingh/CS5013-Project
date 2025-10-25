@@ -3,9 +3,14 @@
 
 #include <cuda_runtime.h>
 #include <sys/stat.h>
+#include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #define ROUND_UP(X, Y) ((((uint64_t)(X) / (Y)) + ((uint64_t)(X) % (Y) != 0)) * (Y))
@@ -346,7 +351,7 @@ double calculate_recall(unsigned num_queries, unsigned* gold_std, float* gs_dist
 inline bool file_exists(const std::string& name) {
     struct stat buffer;
     auto        val = stat(name.c_str(), &buffer);
-    std::cout << " Stat(" << name.c_str() << ") returned: " << val << std::endl;
+    std::cout << " Stat(" << name.c_str() << ") returned: " << val << '\n';
     return (val == 0);
 }
 
@@ -367,7 +372,7 @@ inline void load_truthset(const std::string& bin_file, uint32_t*& ids, float*& d
                           size_t& dim) {
     uint64_t        read_blk_size = 64 * 1024 * 1024;
     cached_ifstream reader(bin_file, read_blk_size);
-    std::cout << "Reading truthset file " << bin_file.c_str() << " ..." << std::endl;
+    std::cout << "Reading truthset file " << bin_file.c_str() << " ..." << '\n';
     size_t actual_file_size = reader.get_file_size();
 
     int npts_i32, dim_i32;
@@ -376,14 +381,14 @@ inline void load_truthset(const std::string& bin_file, uint32_t*& ids, float*& d
     npts = (unsigned)npts_i32;
     dim  = (unsigned)dim_i32;
 
-    std::cout << "Metadata: #pts = " << npts << ", #dims = " << dim << "..." << std::endl;
+    std::cout << "Metadata: #pts = " << npts << ", #dims = " << dim << "..." << '\n';
 
     size_t expected_actual_file_size = 2 * npts * dim * sizeof(uint32_t) + 2 * sizeof(uint32_t);
     if (actual_file_size != expected_actual_file_size) {
         std::stringstream stream;
         stream << "Error. File size mismatch. Actual size is " << actual_file_size
                << " while expected size is  " << expected_actual_file_size << " npts = " << npts
-               << " dim = " << dim << std::endl;
+               << " dim = " << dim << '\n';
         std::cout << stream.str();
         //      throw ANNException(stream.str(), -1, __FUNCSIG__, __FILE__,
         //                                  __LINE__);
@@ -410,8 +415,8 @@ inline void load_aligned_bin_impl(std::basic_istream<char>& reader, size_t actua
         std::stringstream stream;
         stream << "Error. File size mismatch. Actual size is " << actual_file_size
                << " while expected size is  " << expected_actual_file_size << " npts = " << npts
-               << " dim = " << dim << " size of <T>= " << sizeof(T) << std::endl;
-        std::cout << stream.str() << std::endl;
+               << " dim = " << dim << " size of <T>= " << sizeof(T) << '\n';
+        std::cout << stream.str() << '\n';
         //  throw diskann::ANNException(stream.str(), -1, __FUNCSIG__, __FILE__,
         //                             __LINE__);
         exit(1);
@@ -428,7 +433,7 @@ inline void load_aligned_bin_impl(std::basic_istream<char>& reader, size_t actua
         reader.read((char*)(data + i * rounded_dim), dim * sizeof(T));
         memset(data + i * rounded_dim + dim, 0, (rounded_dim - dim) * sizeof(T));
     }
-    std::cout << " done." << std::endl;
+    std::cout << " done." << '\n';
 }
 
 template <typename T>
@@ -454,7 +459,7 @@ inline std::string getValues(T* data, size_t num) {
     for (size_t i = 0; i < num; i++) {
         stream << std::to_string(data[i]) << ",";
     }
-    stream << "]" << std::endl;
+    stream << "]" << '\n';
 
     return stream.str();
 }
@@ -468,14 +473,14 @@ inline void load_bin_impl(std::basic_istream<char>& reader, size_t actual_file_s
     npts = (unsigned)npts_i32;
     dim  = (unsigned)dim_i32;
 
-    std::cout << "Metadata: #pts = " << npts << ", #dims = " << dim << "..." << std::endl;
+    std::cout << "Metadata: #pts = " << npts << ", #dims = " << dim << "..." << '\n';
 
     size_t expected_actual_file_size = npts * dim * sizeof(T) + 2 * sizeof(uint32_t);
     if (actual_file_size != expected_actual_file_size) {
         std::stringstream stream;
         stream << "Error. File size mismatch. Actual size is " << actual_file_size
                << " while expected size is  " << expected_actual_file_size << " npts = " << npts
-               << " dim = " << dim << " size of <T>= " << sizeof(T) << std::endl;
+               << " dim = " << dim << " size of <T>= " << sizeof(T) << '\n';
         std::cout << stream.str();
         // throw std::ANNException(stream.str(), -1, __FUNCSIG__, __FILE__,
         //                            __LINE__);
@@ -486,7 +491,7 @@ inline void load_bin_impl(std::basic_istream<char>& reader, size_t actual_file_s
     reader.read((char*)data, npts * dim * sizeof(T));
 
     std::cout << "Last bytes: " << getValues<T>(data + (npts - 2) * dim, dim);
-    std::cout << "Finished reading bin file." << std::endl;
+    std::cout << "Finished reading bin file." << '\n';
 
 #if 0
 	// added by Somesh
@@ -507,7 +512,7 @@ inline void load_bin(const std::string& bin_file, T*& data, size_t& npts, size_t
     // cached_ifstream reader(bin_file, read_blk_size);
     // size_t actual_file_size = reader.get_file_size();
     // END OLS
-    std::cout << "Reading bin file " << bin_file.c_str() << " ..." << std::endl;
+    std::cout << "Reading bin file " << bin_file.c_str() << " ..." << '\n';
     std::ifstream reader(bin_file, std::ios::binary | std::ios::ate);
     uint64_t      fsize = reader.tellg();
     reader.seekg(0);
