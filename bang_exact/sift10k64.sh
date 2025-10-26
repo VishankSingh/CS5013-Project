@@ -10,11 +10,11 @@ do
     ./build/bang_exact \
         . \
         . \
-        ./siftfiles/sift10k_index_disk.bin \
-        ./siftfiles/siftsmall_query.bin \
+        ../data/sift10k/sift10k_index_disk.bin \
+        ../data/sift10k/siftsmall_query.bin \
         . \
         . \
-        ./siftfiles/sift10k_groundtruth.bin \
+        ../data/sift10k/sift10k_groundtruth.bin \
         400 1 256 512 256 10 8 1 << EOM >> output.txt
 y
 y
