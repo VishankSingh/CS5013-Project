@@ -31,7 +31,19 @@ typedef enum : uint8_t { INIT, PRUNED, NEIGHBOR } NodeState;
 
 #define VISITED_NODES_SIZE 10000
 
-// Size of one vector in the graph
+// Size of one vector in the graph (sift10k_randomgraph.bin)
+
+/*
+graph is a random graph of size 10000
+graph has format
+
+struct node {
+    float vec[128];
+    uint degree;
+    float neighbors[degree][128];
+} node_t;
+
+*/
 const unsigned graphEntrySize        = D * sizeof(float) + sizeof(unsigned) + R * sizeof(unsigned);
 const unsigned reverseIndexEntrySize = (MAX_REVERSE_INDEX_ENTRIES + 1) * sizeof(unsigned);
 

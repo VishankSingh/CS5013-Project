@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// handles the batch vamana
+// d_queryVecs contains 10000 128 dim vectors
 void vamanaInner(uint8_t* d_graph, float* d_queryVecs, float alpha, unsigned batchStart,
                  unsigned batchSize) {
     unsigned* d_visitedSets;
@@ -119,6 +121,20 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
     fread(graph, graphEntrySize, NUM_QUERIES, graphFile);
     fclose(graphFile);
 
+    /*
+    graph is a random graph of size 10000
+    graph has format
+
+    struct node {
+        float vec[128];
+        uint degree;
+        float neighbors[degree][128];
+    } node_t;
+
+    basepoints is all the points in the graph
+    float basepoinst[N][128];
+    */
+
     // Read basepoints
     unsigned numBasePoints  = N - NUM_QUERIES;
     float*   basePoints     = (float*)malloc(numBasePoints * D * sizeof(float));
@@ -137,6 +153,8 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
     cputimer.Start();
 
     // Copy coordinates to graph
+    // since NUM_QUERIES = N = 10,000 this loop doesnt run
+    // It just puts the extra basepoints into the 'graph' without adding neighbors.
     for (int i = NUM_QUERIES; i < N; i++) {
         float* queryVec = (float*)(graph + i * graphEntrySize);
         for (int j = 0; j < D; j++) {
