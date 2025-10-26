@@ -3,8 +3,7 @@
 {\ttfamily \#include $<$stdlib.\+h$>$}\newline
 {\ttfamily \#include $<$time.\+h$>$}\newline
 {\ttfamily \#include \char`\"{}vamana.\+h\char`\"{}}\newline
-Include dependency graph for util.\+cu\+:
-\nopagebreak
+Include dependency graph for util.\+cu\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -16,22 +15,22 @@ Include dependency graph for util.\+cu\+:
 \item 
 void \mbox{\hyperlink{util_8cu_af73a07fc0b480f8ed5507eb82b52b99a}{generate\+Random\+Graph}} (uint8\+\_\+t $\ast$graph, unsigned batch\+Start, unsigned batch\+Size)
 \item 
-\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{util_8cu_ad76db03f64976465c7126b641da7dc60}{compute\+Dists}} (uint8\+\_\+t $\ast$d\+\_\+graph, unsigned $\ast$d\+\_\+nodes, unsigned $\ast$d\+\_\+node\+Count, float $\ast$d\+\_\+query\+Vecs, float $\ast$d\+\_\+dists, unsigned row\+Size)
+void \mbox{\hyperlink{util_8cu_a0d45b3041508a6aaa6a801bb08b2eea0}{compute\+Dists}} (uint8\+\_\+t $\ast$d\+\_\+graph, unsigned $\ast$d\+\_\+nodes, unsigned $\ast$d\+\_\+node\+Count, float $\ast$d\+\_\+query\+Vecs, float $\ast$d\+\_\+dists, unsigned row\+Size)
 \item 
-\+\_\+\+\_\+device\+\_\+\+\_\+ unsigned \mbox{\hyperlink{util_8cu_aa6bb89097af1de1b0ad45ff1b55864ee}{lower\+Bound}} (float arr\mbox{[}$\,$\mbox{]}, unsigned lo, unsigned hi, float target)
+unsigned \mbox{\hyperlink{util_8cu_a7d7b22de4e48770872dfb2cca36c8379}{lower\+Bound}} (float arr\mbox{[}$\,$\mbox{]}, unsigned lo, unsigned hi, float target)
 \item 
-\+\_\+\+\_\+device\+\_\+\+\_\+ unsigned \mbox{\hyperlink{util_8cu_af6799685d11a34c09dea152865916759}{upper\+Bound}} (float arr\mbox{[}$\,$\mbox{]}, unsigned lo, unsigned hi, float target)
+unsigned \mbox{\hyperlink{util_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f}{upper\+Bound}} (float arr\mbox{[}$\,$\mbox{]}, unsigned lo, unsigned hi, float target)
 \item 
-\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{util_8cu_a874f5dd6b3f09dfb42c53cf41aea873b}{sort\+By\+Distance}} (unsigned $\ast$d\+\_\+items, unsigned $\ast$d\+\_\+item\+Count, float $\ast$d\+\_\+dists, unsigned $\ast$d\+\_\+items\+Aux, float $\ast$d\+\_\+dists\+Aux, unsigned row\+Size)
+void \mbox{\hyperlink{util_8cu_ad74430e11b73bdd3ac49c49621b1e9a4}{sort\+By\+Distance}} (unsigned $\ast$d\+\_\+items, unsigned $\ast$d\+\_\+item\+Count, float $\ast$d\+\_\+dists, unsigned $\ast$d\+\_\+items\+Aux, float $\ast$d\+\_\+dists\+Aux, unsigned row\+Size)
 \end{DoxyCompactItemize}
 
 
 \doxysubsection{Function Documentation}
-\mbox{\Hypertarget{util_8cu_ad76db03f64976465c7126b641da7dc60}\label{util_8cu_ad76db03f64976465c7126b641da7dc60}} 
+\mbox{\Hypertarget{util_8cu_a0d45b3041508a6aaa6a801bb08b2eea0}\label{util_8cu_a0d45b3041508a6aaa6a801bb08b2eea0}} 
 \index{util.cu@{util.cu}!computeDists@{computeDists}}
 \index{computeDists@{computeDists}!util.cu@{util.cu}}
 \doxysubsubsection{\texorpdfstring{computeDists()}{computeDists()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void compute\+Dists (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+graph,  }\item[{unsigned $\ast$}]{d\+\_\+nodes,  }\item[{unsigned $\ast$}]{d\+\_\+node\+Count,  }\item[{float $\ast$}]{d\+\_\+query\+Vecs,  }\item[{float $\ast$}]{d\+\_\+dists,  }\item[{unsigned}]{row\+Size }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void compute\+Dists (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+graph,  }\item[{unsigned $\ast$}]{d\+\_\+nodes,  }\item[{unsigned $\ast$}]{d\+\_\+node\+Count,  }\item[{float $\ast$}]{d\+\_\+query\+Vecs,  }\item[{float $\ast$}]{d\+\_\+dists,  }\item[{unsigned}]{row\+Size }\end{DoxyParamCaption})}
 
 \mbox{\Hypertarget{util_8cu_af73a07fc0b480f8ed5507eb82b52b99a}\label{util_8cu_af73a07fc0b480f8ed5507eb82b52b99a}} 
 \index{util.cu@{util.cu}!generateRandomGraph@{generateRandomGraph}}
@@ -39,32 +38,32 @@ void \mbox{\hyperlink{util_8cu_af73a07fc0b480f8ed5507eb82b52b99a}{generate\+Rand
 \doxysubsubsection{\texorpdfstring{generateRandomGraph()}{generateRandomGraph()}}
 {\footnotesize\ttfamily void generate\+Random\+Graph (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{graph,  }\item[{unsigned}]{batch\+Start,  }\item[{unsigned}]{batch\+Size }\end{DoxyParamCaption})}
 
-\mbox{\Hypertarget{util_8cu_aa6bb89097af1de1b0ad45ff1b55864ee}\label{util_8cu_aa6bb89097af1de1b0ad45ff1b55864ee}} 
+\mbox{\Hypertarget{util_8cu_a7d7b22de4e48770872dfb2cca36c8379}\label{util_8cu_a7d7b22de4e48770872dfb2cca36c8379}} 
 \index{util.cu@{util.cu}!lowerBound@{lowerBound}}
 \index{lowerBound@{lowerBound}!util.cu@{util.cu}}
 \doxysubsubsection{\texorpdfstring{lowerBound()}{lowerBound()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+device\+\_\+\+\_\+ unsigned lower\+Bound (\begin{DoxyParamCaption}\item[{float}]{arr\mbox{[}$\,$\mbox{]},  }\item[{unsigned}]{lo,  }\item[{unsigned}]{hi,  }\item[{float}]{target }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily unsigned lower\+Bound (\begin{DoxyParamCaption}\item[{float}]{arr\mbox{[}$\,$\mbox{]},  }\item[{unsigned}]{lo,  }\item[{unsigned}]{hi,  }\item[{float}]{target }\end{DoxyParamCaption})}
 
 Here is the caller graph for this function\+:
 \nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=350pt]{util_8cu_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph}
+\includegraphics[width=350pt]{util_8cu_a7d7b22de4e48770872dfb2cca36c8379_icgraph}
 \end{center}
 \end{figure}
-\mbox{\Hypertarget{util_8cu_a874f5dd6b3f09dfb42c53cf41aea873b}\label{util_8cu_a874f5dd6b3f09dfb42c53cf41aea873b}} 
+\mbox{\Hypertarget{util_8cu_ad74430e11b73bdd3ac49c49621b1e9a4}\label{util_8cu_ad74430e11b73bdd3ac49c49621b1e9a4}} 
 \index{util.cu@{util.cu}!sortByDistance@{sortByDistance}}
 \index{sortByDistance@{sortByDistance}!util.cu@{util.cu}}
 \doxysubsubsection{\texorpdfstring{sortByDistance()}{sortByDistance()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void sort\+By\+Distance (\begin{DoxyParamCaption}\item[{unsigned $\ast$}]{d\+\_\+items,  }\item[{unsigned $\ast$}]{d\+\_\+item\+Count,  }\item[{float $\ast$}]{d\+\_\+dists,  }\item[{unsigned $\ast$}]{d\+\_\+items\+Aux,  }\item[{float $\ast$}]{d\+\_\+dists\+Aux,  }\item[{unsigned}]{row\+Size }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void sort\+By\+Distance (\begin{DoxyParamCaption}\item[{unsigned $\ast$}]{d\+\_\+items,  }\item[{unsigned $\ast$}]{d\+\_\+item\+Count,  }\item[{float $\ast$}]{d\+\_\+dists,  }\item[{unsigned $\ast$}]{d\+\_\+items\+Aux,  }\item[{float $\ast$}]{d\+\_\+dists\+Aux,  }\item[{unsigned}]{row\+Size }\end{DoxyParamCaption})}
 
 Here is the call graph for this function\+:
 \nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=282pt]{util_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph}
+\includegraphics[width=282pt]{util_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph}
 \end{center}
 \end{figure}
 Here is the caller graph for this function\+:
@@ -72,20 +71,20 @@ Here is the caller graph for this function\+:
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=350pt]{util_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph}
+\includegraphics[width=350pt]{util_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph}
 \end{center}
 \end{figure}
-\mbox{\Hypertarget{util_8cu_af6799685d11a34c09dea152865916759}\label{util_8cu_af6799685d11a34c09dea152865916759}} 
+\mbox{\Hypertarget{util_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f}\label{util_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f}} 
 \index{util.cu@{util.cu}!upperBound@{upperBound}}
 \index{upperBound@{upperBound}!util.cu@{util.cu}}
 \doxysubsubsection{\texorpdfstring{upperBound()}{upperBound()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+device\+\_\+\+\_\+ unsigned upper\+Bound (\begin{DoxyParamCaption}\item[{float}]{arr\mbox{[}$\,$\mbox{]},  }\item[{unsigned}]{lo,  }\item[{unsigned}]{hi,  }\item[{float}]{target }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily unsigned upper\+Bound (\begin{DoxyParamCaption}\item[{float}]{arr\mbox{[}$\,$\mbox{]},  }\item[{unsigned}]{lo,  }\item[{unsigned}]{hi,  }\item[{float}]{target }\end{DoxyParamCaption})}
 
 Here is the caller graph for this function\+:
 \nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=350pt]{util_8cu_af6799685d11a34c09dea152865916759_icgraph}
+\includegraphics[width=350pt]{util_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph}
 \end{center}
 \end{figure}

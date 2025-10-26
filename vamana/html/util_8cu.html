@@ -96,24 +96,24 @@ Include dependency graph for util.cu:</div>
 Functions</h2></td></tr>
 <tr class="memitem:af73a07fc0b480f8ed5507eb82b52b99a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#af73a07fc0b480f8ed5507eb82b52b99a">generateRandomGraph</a> (uint8_t *graph, unsigned batchStart, unsigned batchSize)</td></tr>
 <tr class="separator:af73a07fc0b480f8ed5507eb82b52b99a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad76db03f64976465c7126b641da7dc60"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#ad76db03f64976465c7126b641da7dc60">computeDists</a> (uint8_t *d_graph, unsigned *d_nodes, unsigned *d_nodeCount, float *d_queryVecs, float *d_dists, unsigned rowSize)</td></tr>
-<tr class="separator:ad76db03f64976465c7126b641da7dc60"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6bb89097af1de1b0ad45ff1b55864ee"><td class="memItemLeft" align="right" valign="top">__device__ unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#aa6bb89097af1de1b0ad45ff1b55864ee">lowerBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
-<tr class="separator:aa6bb89097af1de1b0ad45ff1b55864ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6799685d11a34c09dea152865916759"><td class="memItemLeft" align="right" valign="top">__device__ unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#af6799685d11a34c09dea152865916759">upperBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
-<tr class="separator:af6799685d11a34c09dea152865916759"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a874f5dd6b3f09dfb42c53cf41aea873b"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b">sortByDistance</a> (unsigned *d_items, unsigned *d_itemCount, float *d_dists, unsigned *d_itemsAux, float *d_distsAux, unsigned rowSize)</td></tr>
-<tr class="separator:a874f5dd6b3f09dfb42c53cf41aea873b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d45b3041508a6aaa6a801bb08b2eea0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#a0d45b3041508a6aaa6a801bb08b2eea0">computeDists</a> (uint8_t *d_graph, unsigned *d_nodes, unsigned *d_nodeCount, float *d_queryVecs, float *d_dists, unsigned rowSize)</td></tr>
+<tr class="separator:a0d45b3041508a6aaa6a801bb08b2eea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d7b22de4e48770872dfb2cca36c8379"><td class="memItemLeft" align="right" valign="top">unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#a7d7b22de4e48770872dfb2cca36c8379">lowerBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
+<tr class="separator:a7d7b22de4e48770872dfb2cca36c8379"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c6b2ba2a2656aa02fe23c2fe45b927f"><td class="memItemLeft" align="right" valign="top">unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#a6c6b2ba2a2656aa02fe23c2fe45b927f">upperBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
+<tr class="separator:a6c6b2ba2a2656aa02fe23c2fe45b927f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad74430e11b73bdd3ac49c49621b1e9a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4">sortByDistance</a> (unsigned *d_items, unsigned *d_itemCount, float *d_dists, unsigned *d_itemsAux, float *d_distsAux, unsigned rowSize)</td></tr>
+<tr class="separator:ad74430e11b73bdd3ac49c49621b1e9a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ad76db03f64976465c7126b641da7dc60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad76db03f64976465c7126b641da7dc60">&#9670;&nbsp;</a></span>computeDists()</h2>
+<a id="a0d45b3041508a6aaa6a801bb08b2eea0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d45b3041508a6aaa6a801bb08b2eea0">&#9670;&nbsp;</a></span>computeDists()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void computeDists </td>
+          <td class="memname">void computeDists </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>d_graph</em>, </td>
@@ -192,14 +192,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aa6bb89097af1de1b0ad45ff1b55864ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6bb89097af1de1b0ad45ff1b55864ee">&#9670;&nbsp;</a></span>lowerBound()</h2>
+<a id="a7d7b22de4e48770872dfb2cca36c8379"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d7b22de4e48770872dfb2cca36c8379">&#9670;&nbsp;</a></span>lowerBound()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ unsigned lowerBound </td>
+          <td class="memname">unsigned lowerBound </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
           <td class="paramname"><em>arr</em>[], </td>
@@ -232,13 +232,13 @@ Functions</h2></td></tr>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="util_8cu_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph.png" border="0" usemap="#autil_8cu_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph" alt=""/></div>
-<map name="autil_8cu_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph" id="autil_8cu_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph">
+<div class="center"><img src="util_8cu_a7d7b22de4e48770872dfb2cca36c8379_icgraph.png" border="0" usemap="#autil_8cu_a7d7b22de4e48770872dfb2cca36c8379_icgraph" alt=""/></div>
+<map name="autil_8cu_a7d7b22de4e48770872dfb2cca36c8379_icgraph" id="autil_8cu_a7d7b22de4e48770872dfb2cca36c8379_icgraph">
 <area shape="rect" title=" " alt="" coords="995,81,1093,108"/>
-<area shape="rect" href="reverseEdge_8cu.html#a3197d9baf5a3cc12283f7b62da7dbea6" title=" " alt="" coords="765,5,947,32"/>
-<area shape="rect" href="outNeighbors_8cu.html#ae150e32e222b4c9fdabd3690cb4578c6" title=" " alt="" coords="779,56,933,83"/>
-<area shape="rect" href="greedySearch_8cu.html#ad7f081279201fc99c979bc01be69292b" title=" " alt="" coords="785,107,927,133"/>
-<area shape="rect" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b" title=" " alt="" coords="795,157,917,184"/>
+<area shape="rect" href="reverseEdge_8cu.html#abefd5dcc943fa6a7911e72c511c7483b" title=" " alt="" coords="765,5,947,32"/>
+<area shape="rect" href="outNeighbors_8cu.html#ab5607d5cd17ccf0d5b199e52a6ebb1c2" title=" " alt="" coords="779,56,933,83"/>
+<area shape="rect" href="greedySearch_8cu.html#a0cedfa43575adbc055331e2a5070e800" title=" " alt="" coords="785,107,927,133"/>
+<area shape="rect" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4" title=" " alt="" coords="795,157,917,184"/>
 <area shape="rect" href="outNeighbors_8cu.html#ab481251e1ae32509c33c0fac70e6fd2e" title=" " alt="" coords="548,107,716,133"/>
 <area shape="rect" href="reverseEdge_8cu.html#ae50e29b34958cd3ec869755ec3feb5e0" title=" " alt="" coords="547,157,717,184"/>
 <area shape="rect" href="greedySearch_8cu.html#a32220ffe2280e58d1a4f65d2b8a0bbde" title=" " alt="" coords="577,208,687,235"/>
@@ -251,14 +251,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a874f5dd6b3f09dfb42c53cf41aea873b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a874f5dd6b3f09dfb42c53cf41aea873b">&#9670;&nbsp;</a></span>sortByDistance()</h2>
+<a id="ad74430e11b73bdd3ac49c49621b1e9a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad74430e11b73bdd3ac49c49621b1e9a4">&#9670;&nbsp;</a></span>sortByDistance()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void sortByDistance </td>
+          <td class="memname">void sortByDistance </td>
           <td>(</td>
           <td class="paramtype">unsigned *&#160;</td>
           <td class="paramname"><em>d_items</em>, </td>
@@ -303,18 +303,18 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="util_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph.png" border="0" usemap="#autil_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph" alt=""/></div>
-<map name="autil_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph" id="autil_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph">
+<div class="center"><img src="util_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph.png" border="0" usemap="#autil_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph" alt=""/></div>
+<map name="autil_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph" id="autil_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph">
 <area shape="rect" title=" " alt="" coords="5,31,127,57"/>
-<area shape="rect" href="util_8cu.html#aa6bb89097af1de1b0ad45ff1b55864ee" title=" " alt="" coords="175,5,274,32"/>
-<area shape="rect" href="util_8cu.html#af6799685d11a34c09dea152865916759" title=" " alt="" coords="175,56,275,83"/>
+<area shape="rect" href="util_8cu.html#a7d7b22de4e48770872dfb2cca36c8379" title=" " alt="" coords="175,5,274,32"/>
+<area shape="rect" href="util_8cu.html#a6c6b2ba2a2656aa02fe23c2fe45b927f" title=" " alt="" coords="175,56,275,83"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="util_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph.png" border="0" usemap="#autil_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph" alt=""/></div>
-<map name="autil_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph" id="autil_8cu_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph">
+<div class="center"><img src="util_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph.png" border="0" usemap="#autil_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph" alt=""/></div>
+<map name="autil_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph" id="autil_8cu_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph">
 <area shape="rect" title=" " alt="" coords="765,56,887,83"/>
 <area shape="rect" href="outNeighbors_8cu.html#ab481251e1ae32509c33c0fac70e6fd2e" title=" " alt="" coords="548,5,716,32"/>
 <area shape="rect" href="reverseEdge_8cu.html#ae50e29b34958cd3ec869755ec3feb5e0" title=" " alt="" coords="547,56,717,83"/>
@@ -328,14 +328,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="af6799685d11a34c09dea152865916759"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6799685d11a34c09dea152865916759">&#9670;&nbsp;</a></span>upperBound()</h2>
+<a id="a6c6b2ba2a2656aa02fe23c2fe45b927f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c6b2ba2a2656aa02fe23c2fe45b927f">&#9670;&nbsp;</a></span>upperBound()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ unsigned upperBound </td>
+          <td class="memname">unsigned upperBound </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
           <td class="paramname"><em>arr</em>[], </td>
@@ -368,13 +368,13 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="util_8cu_af6799685d11a34c09dea152865916759_icgraph.png" border="0" usemap="#autil_8cu_af6799685d11a34c09dea152865916759_icgraph" alt=""/></div>
-<map name="autil_8cu_af6799685d11a34c09dea152865916759_icgraph" id="autil_8cu_af6799685d11a34c09dea152865916759_icgraph">
+<div class="center"><img src="util_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph.png" border="0" usemap="#autil_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph" alt=""/></div>
+<map name="autil_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph" id="autil_8cu_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph">
 <area shape="rect" title=" " alt="" coords="995,81,1095,108"/>
-<area shape="rect" href="reverseEdge_8cu.html#a3197d9baf5a3cc12283f7b62da7dbea6" title=" " alt="" coords="765,5,947,32"/>
-<area shape="rect" href="outNeighbors_8cu.html#ae150e32e222b4c9fdabd3690cb4578c6" title=" " alt="" coords="779,56,933,83"/>
-<area shape="rect" href="greedySearch_8cu.html#ad7f081279201fc99c979bc01be69292b" title=" " alt="" coords="785,107,927,133"/>
-<area shape="rect" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b" title=" " alt="" coords="795,157,917,184"/>
+<area shape="rect" href="reverseEdge_8cu.html#abefd5dcc943fa6a7911e72c511c7483b" title=" " alt="" coords="765,5,947,32"/>
+<area shape="rect" href="outNeighbors_8cu.html#ab5607d5cd17ccf0d5b199e52a6ebb1c2" title=" " alt="" coords="779,56,933,83"/>
+<area shape="rect" href="greedySearch_8cu.html#a0cedfa43575adbc055331e2a5070e800" title=" " alt="" coords="785,107,927,133"/>
+<area shape="rect" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4" title=" " alt="" coords="795,157,917,184"/>
 <area shape="rect" href="outNeighbors_8cu.html#ab481251e1ae32509c33c0fac70e6fd2e" title=" " alt="" coords="548,107,716,133"/>
 <area shape="rect" href="reverseEdge_8cu.html#ae50e29b34958cd3ec869755ec3feb5e0" title=" " alt="" coords="547,157,717,184"/>
 <area shape="rect" href="greedySearch_8cu.html#a32220ffe2280e58d1a4f65d2b8a0bbde" title=" " alt="" coords="577,208,687,235"/>

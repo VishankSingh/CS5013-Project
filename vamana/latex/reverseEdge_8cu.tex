@@ -2,8 +2,7 @@
 \label{reverseEdge_8cu}\index{src/reverseEdge.cu@{src/reverseEdge.cu}}
 {\ttfamily \#include $<$cuda/std/limits$>$}\newline
 {\ttfamily \#include \char`\"{}vamana.\+h\char`\"{}}\newline
-Include dependency graph for reverse\+Edge.\+cu\+:
-\nopagebreak
+Include dependency graph for reverse\+Edge.\+cu\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -13,15 +12,15 @@ Include dependency graph for reverse\+Edge.\+cu\+:
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{reverseEdge_8cu_a507a68a50bb2d386e9a64d9b5ce32557}{load\+Query\+Vecs}} (uint8\+\_\+t $\ast$d\+\_\+graph, float $\ast$d\+\_\+query\+Vecs)
+void \mbox{\hyperlink{reverseEdge_8cu_a1ff398b8cfacf64f64fa5b77dfe79709}{load\+Query\+Vecs}} (uint8\+\_\+t $\ast$d\+\_\+graph, float $\ast$d\+\_\+query\+Vecs)
 \item 
-\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{reverseEdge_8cu_aede55ac70d2cb10fce66e9daeb92939d}{parse\+Reverse\+Index}} (uint8\+\_\+t $\ast$d\+\_\+reverse\+Edge\+Index, unsigned $\ast$d\+\_\+reverse\+Edges, unsigned $\ast$d\+\_\+reverse\+Edge\+Count, unsigned $\ast$degree\+Counts)
+void \mbox{\hyperlink{reverseEdge_8cu_a6bb8058dcea2346cfe13b856323f7dfa}{parse\+Reverse\+Index}} (uint8\+\_\+t $\ast$d\+\_\+reverse\+Edge\+Index, unsigned $\ast$d\+\_\+reverse\+Edges, unsigned $\ast$d\+\_\+reverse\+Edge\+Count, unsigned $\ast$degree\+Counts)
 \item 
-\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{reverseEdge_8cu_a3e9b5aee1dee5f65bdcfed6b1f38f037}{get\+Prunable\+Query\+IDs}} (unsigned $\ast$d\+\_\+reverse\+Edge\+Count, unsigned $\ast$d\+\_\+query\+IDs, unsigned $\ast$d\+\_\+query\+Count)
+void \mbox{\hyperlink{reverseEdge_8cu_a26c87eab3367d3d24df02faf464fd4cc}{get\+Prunable\+Query\+IDs}} (unsigned $\ast$d\+\_\+reverse\+Edge\+Count, unsigned $\ast$d\+\_\+query\+IDs, unsigned $\ast$d\+\_\+query\+Count)
 \item 
-\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{reverseEdge_8cu_a3197d9baf5a3cc12283f7b62da7dbea6}{merge\+Into\+Reverse\+Edges}} (unsigned $\ast$d\+\_\+reverse\+Edge\+Count, unsigned $\ast$d\+\_\+reverse\+Edges, float $\ast$d\+\_\+reverse\+Edge\+Dists, unsigned $\ast$d\+\_\+neighbors\+Count, unsigned $\ast$d\+\_\+neighbors, float $\ast$d\+\_\+neighbors\+Dist)
+void \mbox{\hyperlink{reverseEdge_8cu_abefd5dcc943fa6a7911e72c511c7483b}{merge\+Into\+Reverse\+Edges}} (unsigned $\ast$d\+\_\+reverse\+Edge\+Count, unsigned $\ast$d\+\_\+reverse\+Edges, float $\ast$d\+\_\+reverse\+Edge\+Dists, unsigned $\ast$d\+\_\+neighbors\+Count, unsigned $\ast$d\+\_\+neighbors, float $\ast$d\+\_\+neighbors\+Dist)
 \item 
-\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{reverseEdge_8cu_a58405bf9c90e06935aa57d68593c591b}{prune\+Reverse\+Edges}} (uint8\+\_\+t $\ast$d\+\_\+graph, unsigned $\ast$d\+\_\+query\+IDs, unsigned $\ast$d\+\_\+reverse\+Edges, unsigned $\ast$d\+\_\+reverse\+Edge\+Count, float $\ast$d\+\_\+reverse\+Edge\+Dists, \mbox{\hyperlink{vamana_8h_ae4163e43570728b98ae046fe63093a44}{Node\+State}} $\ast$d\+\_\+reverse\+Edge\+Status, float $\ast$d\+\_\+query\+Vecs, float alpha)
+void \mbox{\hyperlink{reverseEdge_8cu_afd9cbcff007968988ea4652fa48cc954}{prune\+Reverse\+Edges}} (uint8\+\_\+t $\ast$d\+\_\+graph, unsigned $\ast$d\+\_\+query\+IDs, unsigned $\ast$d\+\_\+reverse\+Edges, unsigned $\ast$d\+\_\+reverse\+Edge\+Count, float $\ast$d\+\_\+reverse\+Edge\+Dists, \mbox{\hyperlink{vamana_8h_ae4163e43570728b98ae046fe63093a44}{Node\+State}} $\ast$d\+\_\+reverse\+Edge\+Status, float $\ast$d\+\_\+query\+Vecs, float alpha)
 \item 
 void \mbox{\hyperlink{reverseEdge_8cu_ae50e29b34958cd3ec869755ec3feb5e0}{compute\+Reverse\+Edges}} (uint8\+\_\+t $\ast$d\+\_\+graph, uint8\+\_\+t $\ast$d\+\_\+reverse\+Edge\+Index, float alpha)
 \end{DoxyCompactItemize}
@@ -42,57 +41,56 @@ Here is the call graph for this function\+:
 \includegraphics[width=350pt]{reverseEdge_8cu_ae50e29b34958cd3ec869755ec3feb5e0_cgraph}
 \end{center}
 \end{figure}
-Here is the caller graph for this function\+:
-\nopagebreak
+Here is the caller graph for this function\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
 \includegraphics[width=350pt]{reverseEdge_8cu_ae50e29b34958cd3ec869755ec3feb5e0_icgraph}
 \end{center}
 \end{figure}
-\mbox{\Hypertarget{reverseEdge_8cu_a3e9b5aee1dee5f65bdcfed6b1f38f037}\label{reverseEdge_8cu_a3e9b5aee1dee5f65bdcfed6b1f38f037}} 
+\mbox{\Hypertarget{reverseEdge_8cu_a26c87eab3367d3d24df02faf464fd4cc}\label{reverseEdge_8cu_a26c87eab3367d3d24df02faf464fd4cc}} 
 \index{reverseEdge.cu@{reverseEdge.cu}!getPrunableQueryIDs@{getPrunableQueryIDs}}
 \index{getPrunableQueryIDs@{getPrunableQueryIDs}!reverseEdge.cu@{reverseEdge.cu}}
 \doxysubsubsection{\texorpdfstring{getPrunableQueryIDs()}{getPrunableQueryIDs()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void get\+Prunable\+Query\+IDs (\begin{DoxyParamCaption}\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{unsigned $\ast$}]{d\+\_\+query\+IDs,  }\item[{unsigned $\ast$}]{d\+\_\+query\+Count }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void get\+Prunable\+Query\+IDs (\begin{DoxyParamCaption}\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{unsigned $\ast$}]{d\+\_\+query\+IDs,  }\item[{unsigned $\ast$}]{d\+\_\+query\+Count }\end{DoxyParamCaption})}
 
 Here is the caller graph for this function\+:
 \nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=350pt]{reverseEdge_8cu_a3e9b5aee1dee5f65bdcfed6b1f38f037_icgraph}
+\includegraphics[width=350pt]{reverseEdge_8cu_a26c87eab3367d3d24df02faf464fd4cc_icgraph}
 \end{center}
 \end{figure}
-\mbox{\Hypertarget{reverseEdge_8cu_a507a68a50bb2d386e9a64d9b5ce32557}\label{reverseEdge_8cu_a507a68a50bb2d386e9a64d9b5ce32557}} 
+\mbox{\Hypertarget{reverseEdge_8cu_a1ff398b8cfacf64f64fa5b77dfe79709}\label{reverseEdge_8cu_a1ff398b8cfacf64f64fa5b77dfe79709}} 
 \index{reverseEdge.cu@{reverseEdge.cu}!loadQueryVecs@{loadQueryVecs}}
 \index{loadQueryVecs@{loadQueryVecs}!reverseEdge.cu@{reverseEdge.cu}}
 \doxysubsubsection{\texorpdfstring{loadQueryVecs()}{loadQueryVecs()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void load\+Query\+Vecs (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+graph,  }\item[{float $\ast$}]{d\+\_\+query\+Vecs }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void load\+Query\+Vecs (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+graph,  }\item[{float $\ast$}]{d\+\_\+query\+Vecs }\end{DoxyParamCaption})}
 
-\mbox{\Hypertarget{reverseEdge_8cu_a3197d9baf5a3cc12283f7b62da7dbea6}\label{reverseEdge_8cu_a3197d9baf5a3cc12283f7b62da7dbea6}} 
+\mbox{\Hypertarget{reverseEdge_8cu_abefd5dcc943fa6a7911e72c511c7483b}\label{reverseEdge_8cu_abefd5dcc943fa6a7911e72c511c7483b}} 
 \index{reverseEdge.cu@{reverseEdge.cu}!mergeIntoReverseEdges@{mergeIntoReverseEdges}}
 \index{mergeIntoReverseEdges@{mergeIntoReverseEdges}!reverseEdge.cu@{reverseEdge.cu}}
 \doxysubsubsection{\texorpdfstring{mergeIntoReverseEdges()}{mergeIntoReverseEdges()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void merge\+Into\+Reverse\+Edges (\begin{DoxyParamCaption}\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edges,  }\item[{float $\ast$}]{d\+\_\+reverse\+Edge\+Dists,  }\item[{unsigned $\ast$}]{d\+\_\+neighbors\+Count,  }\item[{unsigned $\ast$}]{d\+\_\+neighbors,  }\item[{float $\ast$}]{d\+\_\+neighbors\+Dist }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void merge\+Into\+Reverse\+Edges (\begin{DoxyParamCaption}\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edges,  }\item[{float $\ast$}]{d\+\_\+reverse\+Edge\+Dists,  }\item[{unsigned $\ast$}]{d\+\_\+neighbors\+Count,  }\item[{unsigned $\ast$}]{d\+\_\+neighbors,  }\item[{float $\ast$}]{d\+\_\+neighbors\+Dist }\end{DoxyParamCaption})}
 
 Here is the call graph for this function\+:
 \nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=327pt]{reverseEdge_8cu_a3197d9baf5a3cc12283f7b62da7dbea6_cgraph}
+\includegraphics[width=327pt]{reverseEdge_8cu_abefd5dcc943fa6a7911e72c511c7483b_cgraph}
 \end{center}
 \end{figure}
-\mbox{\Hypertarget{reverseEdge_8cu_aede55ac70d2cb10fce66e9daeb92939d}\label{reverseEdge_8cu_aede55ac70d2cb10fce66e9daeb92939d}} 
+\mbox{\Hypertarget{reverseEdge_8cu_a6bb8058dcea2346cfe13b856323f7dfa}\label{reverseEdge_8cu_a6bb8058dcea2346cfe13b856323f7dfa}} 
 \index{reverseEdge.cu@{reverseEdge.cu}!parseReverseIndex@{parseReverseIndex}}
 \index{parseReverseIndex@{parseReverseIndex}!reverseEdge.cu@{reverseEdge.cu}}
 \doxysubsubsection{\texorpdfstring{parseReverseIndex()}{parseReverseIndex()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void parse\+Reverse\+Index (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+reverse\+Edge\+Index,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edges,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{unsigned $\ast$}]{degree\+Counts }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void parse\+Reverse\+Index (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+reverse\+Edge\+Index,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edges,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{unsigned $\ast$}]{degree\+Counts }\end{DoxyParamCaption})}
 
-\mbox{\Hypertarget{reverseEdge_8cu_a58405bf9c90e06935aa57d68593c591b}\label{reverseEdge_8cu_a58405bf9c90e06935aa57d68593c591b}} 
+\mbox{\Hypertarget{reverseEdge_8cu_afd9cbcff007968988ea4652fa48cc954}\label{reverseEdge_8cu_afd9cbcff007968988ea4652fa48cc954}} 
 \index{reverseEdge.cu@{reverseEdge.cu}!pruneReverseEdges@{pruneReverseEdges}}
 \index{pruneReverseEdges@{pruneReverseEdges}!reverseEdge.cu@{reverseEdge.cu}}
 \doxysubsubsection{\texorpdfstring{pruneReverseEdges()}{pruneReverseEdges()}}
-{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void prune\+Reverse\+Edges (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+graph,  }\item[{unsigned $\ast$}]{d\+\_\+query\+IDs,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edges,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{float $\ast$}]{d\+\_\+reverse\+Edge\+Dists,  }\item[{\mbox{\hyperlink{vamana_8h_ae4163e43570728b98ae046fe63093a44}{Node\+State}} $\ast$}]{d\+\_\+reverse\+Edge\+Status,  }\item[{float $\ast$}]{d\+\_\+query\+Vecs,  }\item[{float}]{alpha }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void prune\+Reverse\+Edges (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{d\+\_\+graph,  }\item[{unsigned $\ast$}]{d\+\_\+query\+IDs,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edges,  }\item[{unsigned $\ast$}]{d\+\_\+reverse\+Edge\+Count,  }\item[{float $\ast$}]{d\+\_\+reverse\+Edge\+Dists,  }\item[{\mbox{\hyperlink{vamana_8h_ae4163e43570728b98ae046fe63093a44}{Node\+State}} $\ast$}]{d\+\_\+reverse\+Edge\+Status,  }\item[{float $\ast$}]{d\+\_\+query\+Vecs,  }\item[{float}]{alpha }\end{DoxyParamCaption})}
 

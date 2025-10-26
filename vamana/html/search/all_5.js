@@ -1,8 +1,8 @@
 var searchData=
 [
   ['generaterandomgraph_19',['generateRandomGraph',['../util_8cu.html#af73a07fc0b480f8ed5507eb82b52b99a',1,'generateRandomGraph(uint8_t *graph, unsigned batchStart, unsigned batchSize):&#160;util.cu'],['../vamana_8h.html#af73a07fc0b480f8ed5507eb82b52b99a',1,'generateRandomGraph(uint8_t *graph, unsigned batchStart, unsigned batchSize):&#160;util.cu']]],
-  ['getneighbors_20',['getNeighbors',['../outNeighbors_8cu.html#a43e0cf8195fac6e204adef1562468450',1,'getNeighbors(uint8_t *d_graph, unsigned batchStart, unsigned *d_neighbors, unsigned *d_neighborsCount):&#160;outNeighbors.cu'],['../vamana_8h.html#a43e0cf8195fac6e204adef1562468450',1,'getNeighbors(uint8_t *d_graph, unsigned batchStart, unsigned *d_neighbors, unsigned *d_neighborsCount):&#160;outNeighbors.cu']]],
-  ['getprunablequeryids_21',['getPrunableQueryIDs',['../reverseEdge_8cu.html#a3e9b5aee1dee5f65bdcfed6b1f38f037',1,'reverseEdge.cu']]],
+  ['getneighbors_20',['getNeighbors',['../outNeighbors_8cu.html#a8bf20b50261c7a794b94a2e93bbb7ba6',1,'getNeighbors(uint8_t *d_graph, unsigned batchStart, unsigned *d_neighbors, unsigned *d_neighborsCount):&#160;outNeighbors.cu'],['../vamana_8h.html#a8bf20b50261c7a794b94a2e93bbb7ba6',1,'getNeighbors(uint8_t *d_graph, unsigned batchStart, unsigned *d_neighbors, unsigned *d_neighborsCount):&#160;outNeighbors.cu']]],
+  ['getprunablequeryids_21',['getPrunableQueryIDs',['../reverseEdge_8cu.html#a26c87eab3367d3d24df02faf464fd4cc',1,'reverseEdge.cu']]],
   ['gpuassert_22',['gpuAssert',['../vamana_8h.html#ab3e90881a2476fd461eb2bcfcaa7cf63',1,'vamana.h']]],
   ['gpuerrchk_23',['gpuErrchk',['../vamana_8h.html#a3f6ea8e9ef58125936d50d7e1181aa7a',1,'vamana.h']]],
   ['gputimer_24',['GPUTimer',['../structGPUTimer.html',1,'GPUTimer'],['../structGPUTimer.html#a64c14923bcb31704c74c4ca444b71b34',1,'GPUTimer::GPUTimer()']]],

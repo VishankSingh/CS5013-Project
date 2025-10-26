@@ -146,48 +146,48 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a7c749c0f64bc9f99b6a720e5e80774fb"><td class="memItemLeft" align="right" valign="top">__device__ unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a7c749c0f64bc9f99b6a720e5e80774fb">bf_hashFn1</a> (unsigned x)</td></tr>
-<tr class="separator:a7c749c0f64bc9f99b6a720e5e80774fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fd7f0d3b36fa4b03fe7ff5039158fc5"><td class="memItemLeft" align="right" valign="top">__device__ unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a9fd7f0d3b36fa4b03fe7ff5039158fc5">bf_hashFn2</a> (unsigned x)</td></tr>
-<tr class="separator:a9fd7f0d3b36fa4b03fe7ff5039158fc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a013982bc374d59531834c1e354e30008"><td class="memItemLeft" align="right" valign="top">__device__ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a013982bc374d59531834c1e354e30008">bf_check</a> (bool *bf, unsigned x)</td></tr>
-<tr class="separator:a013982bc374d59531834c1e354e30008"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a275a7ba1ae10305f51440423e8dc2e5c"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a275a7ba1ae10305f51440423e8dc2e5c">bf_set</a> (bool *bf, unsigned x)</td></tr>
-<tr class="separator:a275a7ba1ae10305f51440423e8dc2e5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fa8ae2cfdc7206a47e9122872c752c0"><td class="memItemLeft" align="right" valign="top">unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a4fa8ae2cfdc7206a47e9122872c752c0">bf_hashFn1</a> (unsigned x)</td></tr>
+<tr class="separator:a4fa8ae2cfdc7206a47e9122872c752c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88e46a502c4bc2104b3226c294e8f752"><td class="memItemLeft" align="right" valign="top">unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a88e46a502c4bc2104b3226c294e8f752">bf_hashFn2</a> (unsigned x)</td></tr>
+<tr class="separator:a88e46a502c4bc2104b3226c294e8f752"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a25bf95d583b29c78ef1d600d78e8ce"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a2a25bf95d583b29c78ef1d600d78e8ce">bf_check</a> (bool *bf, unsigned x)</td></tr>
+<tr class="separator:a2a25bf95d583b29c78ef1d600d78e8ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae33f5b277bdeef8c87b566f3421242b0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ae33f5b277bdeef8c87b566f3421242b0">bf_set</a> (bool *bf, unsigned x)</td></tr>
+<tr class="separator:ae33f5b277bdeef8c87b566f3421242b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af73a07fc0b480f8ed5507eb82b52b99a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#af73a07fc0b480f8ed5507eb82b52b99a">generateRandomGraph</a> (uint8_t *graph, unsigned batchStart, unsigned batchSize)</td></tr>
 <tr class="separator:af73a07fc0b480f8ed5507eb82b52b99a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3763fea05063df8bd2a62dc2a73146c"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ac3763fea05063df8bd2a62dc2a73146c">filterNeighbors</a> (uint8_t *d_graph, bool *d_hasParent, unsigned *d_parents, bool *d_bloomFilters, unsigned *d_neighbors, unsigned *d_neighborsCount, unsigned *d_visitedSet, unsigned *d_visitedSetCount)</td></tr>
-<tr class="separator:ac3763fea05063df8bd2a62dc2a73146c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac10d7739cc8fa785398b0e95e7fb7c8"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#aac10d7739cc8fa785398b0e95e7fb7c8">computeNeighborDists</a> (uint8_t *d_graph, unsigned *d_neighbors, unsigned *d_neighborsCount, float *d_queryVecs, float *d_neighborDists)</td></tr>
-<tr class="separator:aac10d7739cc8fa785398b0e95e7fb7c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afaa2482101628abfba5747a382860271"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#afaa2482101628abfba5747a382860271">sortNeighborDists</a> (unsigned *d_neighbors, unsigned *d_neighborsCount, float *d_neighborsDist, unsigned *d_neighborsAux, float *d_neighborsDistAux)</td></tr>
-<tr class="separator:afaa2482101628abfba5747a382860271"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6bb89097af1de1b0ad45ff1b55864ee"><td class="memItemLeft" align="right" valign="top">__device__ unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#aa6bb89097af1de1b0ad45ff1b55864ee">lowerBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
-<tr class="separator:aa6bb89097af1de1b0ad45ff1b55864ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6799685d11a34c09dea152865916759"><td class="memItemLeft" align="right" valign="top">__device__ unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#af6799685d11a34c09dea152865916759">upperBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
-<tr class="separator:af6799685d11a34c09dea152865916759"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac4e1b6d8ea13e5e3bc5ef3af678beba8"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ac4e1b6d8ea13e5e3bc5ef3af678beba8">mergeIntoWorklist</a> (unsigned *d_worklistCount, unsigned *d_worklist, float *d_worklistDist, unsigned *d_worklistVisited, unsigned d_neighborsCount, unsigned *d_neighbors, float *d_neighborsDist, bool *d_hasParent, unsigned *d_parents, bool *d_nextIter)</td></tr>
-<tr class="separator:ac4e1b6d8ea13e5e3bc5ef3af678beba8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43e0cf8195fac6e204adef1562468450"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a43e0cf8195fac6e204adef1562468450">getNeighbors</a> (uint8_t *d_graph, unsigned batchStart, unsigned *d_neighbors, unsigned *d_neighborsCount)</td></tr>
-<tr class="separator:a43e0cf8195fac6e204adef1562468450"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a016823c3d029c7bc95201d25a91c9f66"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a016823c3d029c7bc95201d25a91c9f66">computeVisitedSetDists</a> (uint8_t *d_graph, unsigned *d_visitedSet, unsigned *d_visitedSetCount, float *d_queryVecs, float *d_visitedSetDists)</td></tr>
-<tr class="separator:a016823c3d029c7bc95201d25a91c9f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a670dcffa9d96ac3ba25166ab90eb3e43"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a670dcffa9d96ac3ba25166ab90eb3e43">sortVisitedSets</a> (unsigned *d_visitedSet, unsigned *d_visitedSetCount, float *d_visitedSetDists, unsigned *d_visitedSetAux, float *d_visitedSetDistsAux)</td></tr>
-<tr class="separator:a670dcffa9d96ac3ba25166ab90eb3e43"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b1b66f226f9e99ad647f8a1a10037d6"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a2b1b66f226f9e99ad647f8a1a10037d6">mergeNeighborsIntoVisitedSet</a> (unsigned *d_visitedSetCount, unsigned *d_visitedSet, float *d_visitedSetDists, unsigned *d_neighborsCount, unsigned *d_neighbors, float *d_neighborsDist)</td></tr>
-<tr class="separator:a2b1b66f226f9e99ad647f8a1a10037d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97b3c13cfe034dae54fb0d7a092f799c"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a97b3c13cfe034dae54fb0d7a092f799c">pruneOutNeighbors</a> (uint8_t *d_graph, unsigned batchStart, unsigned *d_visitedSet, unsigned *d_visitedSetCount, float *d_visitedSetDists, <a class="el" href="vamana_8h.html#ae4163e43570728b98ae046fe63093a44">NodeState</a> *d_visitedSetStatus, float *d_queryVecs, uint8_t *d_reverseEdgeIndex, float alpha, unsigned iter, bool *d_nextIter)</td></tr>
-<tr class="separator:a97b3c13cfe034dae54fb0d7a092f799c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30e31f1b815e7b8d0cda5ae8868e72da"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a30e31f1b815e7b8d0cda5ae8868e72da">filterNeighbors</a> (uint8_t *d_graph, bool *d_hasParent, unsigned *d_parents, bool *d_bloomFilters, unsigned *d_neighbors, unsigned *d_neighborsCount, unsigned *d_visitedSet, unsigned *d_visitedSetCount)</td></tr>
+<tr class="separator:a30e31f1b815e7b8d0cda5ae8868e72da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab62d4e9f4e0e21510a4692595b4a37d8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ab62d4e9f4e0e21510a4692595b4a37d8">computeNeighborDists</a> (uint8_t *d_graph, unsigned *d_neighbors, unsigned *d_neighborsCount, float *d_queryVecs, float *d_neighborDists)</td></tr>
+<tr class="separator:ab62d4e9f4e0e21510a4692595b4a37d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f89e864abd72821bfea6f126f16093c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a8f89e864abd72821bfea6f126f16093c">sortNeighborDists</a> (unsigned *d_neighbors, unsigned *d_neighborsCount, float *d_neighborsDist, unsigned *d_neighborsAux, float *d_neighborsDistAux)</td></tr>
+<tr class="separator:a8f89e864abd72821bfea6f126f16093c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d7b22de4e48770872dfb2cca36c8379"><td class="memItemLeft" align="right" valign="top">unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a7d7b22de4e48770872dfb2cca36c8379">lowerBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
+<tr class="separator:a7d7b22de4e48770872dfb2cca36c8379"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c6b2ba2a2656aa02fe23c2fe45b927f"><td class="memItemLeft" align="right" valign="top">unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a6c6b2ba2a2656aa02fe23c2fe45b927f">upperBound</a> (float arr[], unsigned lo, unsigned hi, float target)</td></tr>
+<tr class="separator:a6c6b2ba2a2656aa02fe23c2fe45b927f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc803b99a5d9084206e9e78f093fc010"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#adc803b99a5d9084206e9e78f093fc010">mergeIntoWorklist</a> (unsigned *d_worklistCount, unsigned *d_worklist, float *d_worklistDist, unsigned *d_worklistVisited, unsigned d_neighborsCount, unsigned *d_neighbors, float *d_neighborsDist, bool *d_hasParent, unsigned *d_parents, bool *d_nextIter)</td></tr>
+<tr class="separator:adc803b99a5d9084206e9e78f093fc010"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bf20b50261c7a794b94a2e93bbb7ba6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a8bf20b50261c7a794b94a2e93bbb7ba6">getNeighbors</a> (uint8_t *d_graph, unsigned batchStart, unsigned *d_neighbors, unsigned *d_neighborsCount)</td></tr>
+<tr class="separator:a8bf20b50261c7a794b94a2e93bbb7ba6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d5911244a68852b015f24c0aa18e9ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a5d5911244a68852b015f24c0aa18e9ac">computeVisitedSetDists</a> (uint8_t *d_graph, unsigned *d_visitedSet, unsigned *d_visitedSetCount, float *d_queryVecs, float *d_visitedSetDists)</td></tr>
+<tr class="separator:a5d5911244a68852b015f24c0aa18e9ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4885e3ab27562c575cc881f0914c8281"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a4885e3ab27562c575cc881f0914c8281">sortVisitedSets</a> (unsigned *d_visitedSet, unsigned *d_visitedSetCount, float *d_visitedSetDists, unsigned *d_visitedSetAux, float *d_visitedSetDistsAux)</td></tr>
+<tr class="separator:a4885e3ab27562c575cc881f0914c8281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa54499da2bbc223bae921387ca63c9c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#aaa54499da2bbc223bae921387ca63c9c">mergeNeighborsIntoVisitedSet</a> (unsigned *d_visitedSetCount, unsigned *d_visitedSet, float *d_visitedSetDists, unsigned *d_neighborsCount, unsigned *d_neighbors, float *d_neighborsDist)</td></tr>
+<tr class="separator:aaa54499da2bbc223bae921387ca63c9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f1cf78df2bbc85b83eb386859dad720"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a1f1cf78df2bbc85b83eb386859dad720">pruneOutNeighbors</a> (uint8_t *d_graph, unsigned batchStart, unsigned *d_visitedSet, unsigned *d_visitedSetCount, float *d_visitedSetDists, <a class="el" href="vamana_8h.html#ae4163e43570728b98ae046fe63093a44">NodeState</a> *d_visitedSetStatus, float *d_queryVecs, uint8_t *d_reverseEdgeIndex, float alpha, unsigned iter, bool *d_nextIter)</td></tr>
+<tr class="separator:a1f1cf78df2bbc85b83eb386859dad720"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32220ffe2280e58d1a4f65d2b8a0bbde"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a32220ffe2280e58d1a4f65d2b8a0bbde">greedySearch</a> (uint8_t *d_graph, float *d_queryVecs, unsigned *d_visitedSets, unsigned *d_visitedSetCount, unsigned batchStart, unsigned batchSize)</td></tr>
 <tr class="separator:a32220ffe2280e58d1a4f65d2b8a0bbde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab481251e1ae32509c33c0fac70e6fd2e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ab481251e1ae32509c33c0fac70e6fd2e">computeOutNeighbors</a> (uint8_t *d_graph, float *d_queryVecs, unsigned *d_visitedSets, unsigned *d_visitedSetCount, float alpha, uint8_t *d_reverseEdgeIndex, unsigned batchStart, unsigned batchSize)</td></tr>
 <tr class="separator:ab481251e1ae32509c33c0fac70e6fd2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae50e29b34958cd3ec869755ec3feb5e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ae50e29b34958cd3ec869755ec3feb5e0">computeReverseEdges</a> (uint8_t *d_graph, uint8_t *d_reverseEdgeIndex, float alpha)</td></tr>
 <tr class="separator:ae50e29b34958cd3ec869755ec3feb5e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad76db03f64976465c7126b641da7dc60"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ad76db03f64976465c7126b641da7dc60">computeDists</a> (uint8_t *d_graph, unsigned *d_nodes, unsigned *d_nodeCount, float *d_queryVecs, float *d_dists, unsigned rowSize)</td></tr>
-<tr class="separator:ad76db03f64976465c7126b641da7dc60"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a874f5dd6b3f09dfb42c53cf41aea873b"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a874f5dd6b3f09dfb42c53cf41aea873b">sortByDistance</a> (unsigned *d_items, unsigned *d_itemCount, float *d_dists, unsigned *d_itemsAux, float *d_distsAux, unsigned rowSize)</td></tr>
-<tr class="separator:a874f5dd6b3f09dfb42c53cf41aea873b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d45b3041508a6aaa6a801bb08b2eea0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a0d45b3041508a6aaa6a801bb08b2eea0">computeDists</a> (uint8_t *d_graph, unsigned *d_nodes, unsigned *d_nodeCount, float *d_queryVecs, float *d_dists, unsigned rowSize)</td></tr>
+<tr class="separator:a0d45b3041508a6aaa6a801bb08b2eea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad74430e11b73bdd3ac49c49621b1e9a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ad74430e11b73bdd3ac49c49621b1e9a4">sortByDistance</a> (unsigned *d_items, unsigned *d_itemCount, float *d_dists, unsigned *d_itemsAux, float *d_distsAux, unsigned rowSize)</td></tr>
+<tr class="separator:ad74430e11b73bdd3ac49c49621b1e9a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3e90881a2476fd461eb2bcfcaa7cf63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ab3e90881a2476fd461eb2bcfcaa7cf63">gpuAssert</a> (cudaError_t code, const char *file, int line, bool abort=true)</td></tr>
 <tr class="separator:ab3e90881a2476fd461eb2bcfcaa7cf63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -195,9 +195,9 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:a9f1beb7d7a6f4cea63e2de2409d21536"><td class="memItemLeft" align="right" valign="top">const unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a9f1beb7d7a6f4cea63e2de2409d21536">BF_MEMORY</a></td></tr>
 <tr class="separator:a9f1beb7d7a6f4cea63e2de2409d21536"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9dae5b364a8aa413d910b828179bbd70"><td class="memItemLeft" align="right" valign="top">const unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a9dae5b364a8aa413d910b828179bbd70">graphEntrySize</a> = <a class="el" href="vamana_8h.html#af316c33cc298530f245e8b55330e86b5">D</a> * sizeof(float) + sizeof(unsigned) + <a class="el" href="vamana_8h.html#a5c71a5e59a53413cd6c270266d63b031">R</a> * sizeof(unsigned)</td></tr>
+<tr class="memitem:a9dae5b364a8aa413d910b828179bbd70"><td class="memItemLeft" align="right" valign="top">const unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#a9dae5b364a8aa413d910b828179bbd70">graphEntrySize</a> = 128 * sizeof(float) + sizeof(unsigned) + 64 * sizeof(unsigned)</td></tr>
 <tr class="separator:a9dae5b364a8aa413d910b828179bbd70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae558f06d591d10b2b909591db1a55fa7"><td class="memItemLeft" align="right" valign="top">const unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ae558f06d591d10b2b909591db1a55fa7">reverseIndexEntrySize</a> = (<a class="el" href="vamana_8h.html#a2029e38b88cd6f354d279a45952f1910">MAX_REVERSE_INDEX_ENTRIES</a> + 1) * sizeof(unsigned)</td></tr>
+<tr class="memitem:ae558f06d591d10b2b909591db1a55fa7"><td class="memItemLeft" align="right" valign="top">const unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vamana_8h.html#ae558f06d591d10b2b909591db1a55fa7">reverseIndexEntrySize</a> = ( 500 + 1) * sizeof(unsigned)</td></tr>
 <tr class="separator:ae558f06d591d10b2b909591db1a55fa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
@@ -397,14 +397,14 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a013982bc374d59531834c1e354e30008"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a013982bc374d59531834c1e354e30008">&#9670;&nbsp;</a></span>bf_check()</h2>
+<a id="a2a25bf95d583b29c78ef1d600d78e8ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a25bf95d583b29c78ef1d600d78e8ce">&#9670;&nbsp;</a></span>bf_check()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ bool bf_check </td>
+          <td class="memname">bool bf_check </td>
           <td>(</td>
           <td class="paramtype">bool *&#160;</td>
           <td class="paramname"><em>bf</em>, </td>
@@ -425,33 +425,33 @@ Variables</h2></td></tr>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a013982bc374d59531834c1e354e30008_cgraph.png" border="0" usemap="#avamana_8h_a013982bc374d59531834c1e354e30008_cgraph" alt=""/></div>
-<map name="avamana_8h_a013982bc374d59531834c1e354e30008_cgraph" id="avamana_8h_a013982bc374d59531834c1e354e30008_cgraph">
+<div class="center"><img src="vamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_cgraph.png" border="0" usemap="#avamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_cgraph" alt=""/></div>
+<map name="avamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_cgraph" id="avamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_cgraph">
 <area shape="rect" title=" " alt="" coords="5,31,85,57"/>
-<area shape="rect" href="bloomFilter_8cu.html#a7c749c0f64bc9f99b6a720e5e80774fb" title=" " alt="" coords="133,5,231,32"/>
-<area shape="rect" href="bloomFilter_8cu.html#a9fd7f0d3b36fa4b03fe7ff5039158fc5" title=" " alt="" coords="133,56,231,83"/>
+<area shape="rect" href="bloomFilter_8cu.html#a4fa8ae2cfdc7206a47e9122872c752c0" title=" " alt="" coords="133,5,231,32"/>
+<area shape="rect" href="bloomFilter_8cu.html#a88e46a502c4bc2104b3226c294e8f752" title=" " alt="" coords="133,56,231,83"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a013982bc374d59531834c1e354e30008_icgraph.png" border="0" usemap="#avamana_8h_a013982bc374d59531834c1e354e30008_icgraph" alt=""/></div>
-<map name="avamana_8h_a013982bc374d59531834c1e354e30008_icgraph" id="avamana_8h_a013982bc374d59531834c1e354e30008_icgraph">
+<div class="center"><img src="vamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_icgraph.png" border="0" usemap="#avamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_icgraph" alt=""/></div>
+<map name="avamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_icgraph" id="avamana_8h_a2a25bf95d583b29c78ef1d600d78e8ce_icgraph">
 <area shape="rect" title=" " alt="" coords="172,5,252,32"/>
-<area shape="rect" href="greedySearch_8cu.html#ac3763fea05063df8bd2a62dc2a73146c" title=" " alt="" coords="5,5,124,32"/>
+<area shape="rect" href="greedySearch_8cu.html#a30e31f1b815e7b8d0cda5ae8868e72da" title=" " alt="" coords="5,5,124,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a7c749c0f64bc9f99b6a720e5e80774fb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7c749c0f64bc9f99b6a720e5e80774fb">&#9670;&nbsp;</a></span>bf_hashFn1()</h2>
+<a id="a4fa8ae2cfdc7206a47e9122872c752c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fa8ae2cfdc7206a47e9122872c752c0">&#9670;&nbsp;</a></span>bf_hashFn1()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ unsigned bf_hashFn1 </td>
+          <td class="memname">unsigned bf_hashFn1 </td>
           <td>(</td>
           <td class="paramtype">unsigned&#160;</td>
           <td class="paramname"><em>x</em></td><td>)</td>
@@ -462,25 +462,25 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a7c749c0f64bc9f99b6a720e5e80774fb_icgraph.png" border="0" usemap="#avamana_8h_a7c749c0f64bc9f99b6a720e5e80774fb_icgraph" alt=""/></div>
-<map name="avamana_8h_a7c749c0f64bc9f99b6a720e5e80774fb_icgraph" id="avamana_8h_a7c749c0f64bc9f99b6a720e5e80774fb_icgraph">
+<div class="center"><img src="vamana_8h_a4fa8ae2cfdc7206a47e9122872c752c0_icgraph.png" border="0" usemap="#avamana_8h_a4fa8ae2cfdc7206a47e9122872c752c0_icgraph" alt=""/></div>
+<map name="avamana_8h_a4fa8ae2cfdc7206a47e9122872c752c0_icgraph" id="avamana_8h_a4fa8ae2cfdc7206a47e9122872c752c0_icgraph">
 <area shape="rect" title=" " alt="" coords="300,31,397,57"/>
-<area shape="rect" href="bloomFilter_8cu.html#a013982bc374d59531834c1e354e30008" title=" " alt="" coords="172,5,252,32"/>
-<area shape="rect" href="bloomFilter_8cu.html#a275a7ba1ae10305f51440423e8dc2e5c" title=" " alt="" coords="181,56,243,83"/>
-<area shape="rect" href="greedySearch_8cu.html#ac3763fea05063df8bd2a62dc2a73146c" title=" " alt="" coords="5,31,124,57"/>
+<area shape="rect" href="bloomFilter_8cu.html#a2a25bf95d583b29c78ef1d600d78e8ce" title=" " alt="" coords="172,5,252,32"/>
+<area shape="rect" href="bloomFilter_8cu.html#ae33f5b277bdeef8c87b566f3421242b0" title=" " alt="" coords="181,56,243,83"/>
+<area shape="rect" href="greedySearch_8cu.html#a30e31f1b815e7b8d0cda5ae8868e72da" title=" " alt="" coords="5,31,124,57"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a9fd7f0d3b36fa4b03fe7ff5039158fc5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9fd7f0d3b36fa4b03fe7ff5039158fc5">&#9670;&nbsp;</a></span>bf_hashFn2()</h2>
+<a id="a88e46a502c4bc2104b3226c294e8f752"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88e46a502c4bc2104b3226c294e8f752">&#9670;&nbsp;</a></span>bf_hashFn2()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ unsigned bf_hashFn2 </td>
+          <td class="memname">unsigned bf_hashFn2 </td>
           <td>(</td>
           <td class="paramtype">unsigned&#160;</td>
           <td class="paramname"><em>x</em></td><td>)</td>
@@ -491,25 +491,25 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a9fd7f0d3b36fa4b03fe7ff5039158fc5_icgraph.png" border="0" usemap="#avamana_8h_a9fd7f0d3b36fa4b03fe7ff5039158fc5_icgraph" alt=""/></div>
-<map name="avamana_8h_a9fd7f0d3b36fa4b03fe7ff5039158fc5_icgraph" id="avamana_8h_a9fd7f0d3b36fa4b03fe7ff5039158fc5_icgraph">
+<div class="center"><img src="vamana_8h_a88e46a502c4bc2104b3226c294e8f752_icgraph.png" border="0" usemap="#avamana_8h_a88e46a502c4bc2104b3226c294e8f752_icgraph" alt=""/></div>
+<map name="avamana_8h_a88e46a502c4bc2104b3226c294e8f752_icgraph" id="avamana_8h_a88e46a502c4bc2104b3226c294e8f752_icgraph">
 <area shape="rect" title=" " alt="" coords="300,31,397,57"/>
-<area shape="rect" href="bloomFilter_8cu.html#a013982bc374d59531834c1e354e30008" title=" " alt="" coords="172,5,252,32"/>
-<area shape="rect" href="bloomFilter_8cu.html#a275a7ba1ae10305f51440423e8dc2e5c" title=" " alt="" coords="181,56,243,83"/>
-<area shape="rect" href="greedySearch_8cu.html#ac3763fea05063df8bd2a62dc2a73146c" title=" " alt="" coords="5,31,124,57"/>
+<area shape="rect" href="bloomFilter_8cu.html#a2a25bf95d583b29c78ef1d600d78e8ce" title=" " alt="" coords="172,5,252,32"/>
+<area shape="rect" href="bloomFilter_8cu.html#ae33f5b277bdeef8c87b566f3421242b0" title=" " alt="" coords="181,56,243,83"/>
+<area shape="rect" href="greedySearch_8cu.html#a30e31f1b815e7b8d0cda5ae8868e72da" title=" " alt="" coords="5,31,124,57"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a275a7ba1ae10305f51440423e8dc2e5c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a275a7ba1ae10305f51440423e8dc2e5c">&#9670;&nbsp;</a></span>bf_set()</h2>
+<a id="ae33f5b277bdeef8c87b566f3421242b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae33f5b277bdeef8c87b566f3421242b0">&#9670;&nbsp;</a></span>bf_set()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ void bf_set </td>
+          <td class="memname">void bf_set </td>
           <td>(</td>
           <td class="paramtype">bool *&#160;</td>
           <td class="paramname"><em>bf</em>, </td>
@@ -530,33 +530,33 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_cgraph.png" border="0" usemap="#avamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_cgraph" alt=""/></div>
-<map name="avamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_cgraph" id="avamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_cgraph">
+<div class="center"><img src="vamana_8h_ae33f5b277bdeef8c87b566f3421242b0_cgraph.png" border="0" usemap="#avamana_8h_ae33f5b277bdeef8c87b566f3421242b0_cgraph" alt=""/></div>
+<map name="avamana_8h_ae33f5b277bdeef8c87b566f3421242b0_cgraph" id="avamana_8h_ae33f5b277bdeef8c87b566f3421242b0_cgraph">
 <area shape="rect" title=" " alt="" coords="5,31,68,57"/>
-<area shape="rect" href="bloomFilter_8cu.html#a7c749c0f64bc9f99b6a720e5e80774fb" title=" " alt="" coords="116,5,213,32"/>
-<area shape="rect" href="bloomFilter_8cu.html#a9fd7f0d3b36fa4b03fe7ff5039158fc5" title=" " alt="" coords="116,56,213,83"/>
+<area shape="rect" href="bloomFilter_8cu.html#a4fa8ae2cfdc7206a47e9122872c752c0" title=" " alt="" coords="116,5,213,32"/>
+<area shape="rect" href="bloomFilter_8cu.html#a88e46a502c4bc2104b3226c294e8f752" title=" " alt="" coords="116,56,213,83"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_icgraph.png" border="0" usemap="#avamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_icgraph" alt=""/></div>
-<map name="avamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_icgraph" id="avamana_8h_a275a7ba1ae10305f51440423e8dc2e5c_icgraph">
+<div class="center"><img src="vamana_8h_ae33f5b277bdeef8c87b566f3421242b0_icgraph.png" border="0" usemap="#avamana_8h_ae33f5b277bdeef8c87b566f3421242b0_icgraph" alt=""/></div>
+<map name="avamana_8h_ae33f5b277bdeef8c87b566f3421242b0_icgraph" id="avamana_8h_ae33f5b277bdeef8c87b566f3421242b0_icgraph">
 <area shape="rect" title=" " alt="" coords="172,5,235,32"/>
-<area shape="rect" href="greedySearch_8cu.html#ac3763fea05063df8bd2a62dc2a73146c" title=" " alt="" coords="5,5,124,32"/>
+<area shape="rect" href="greedySearch_8cu.html#a30e31f1b815e7b8d0cda5ae8868e72da" title=" " alt="" coords="5,5,124,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="ad76db03f64976465c7126b641da7dc60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad76db03f64976465c7126b641da7dc60">&#9670;&nbsp;</a></span>computeDists()</h2>
+<a id="a0d45b3041508a6aaa6a801bb08b2eea0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d45b3041508a6aaa6a801bb08b2eea0">&#9670;&nbsp;</a></span>computeDists()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void computeDists </td>
+          <td class="memname">void computeDists </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>d_graph</em>, </td>
@@ -601,14 +601,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="aac10d7739cc8fa785398b0e95e7fb7c8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac10d7739cc8fa785398b0e95e7fb7c8">&#9670;&nbsp;</a></span>computeNeighborDists()</h2>
+<a id="ab62d4e9f4e0e21510a4692595b4a37d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab62d4e9f4e0e21510a4692595b4a37d8">&#9670;&nbsp;</a></span>computeNeighborDists()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void computeNeighborDists </td>
+          <td class="memname">void computeNeighborDists </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>d_graph</em>, </td>
@@ -714,11 +714,11 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="vamana_8h_ab481251e1ae32509c33c0fac70e6fd2e_cgraph.png" border="0" usemap="#avamana_8h_ab481251e1ae32509c33c0fac70e6fd2e_cgraph" alt=""/></div>
 <map name="avamana_8h_ab481251e1ae32509c33c0fac70e6fd2e_cgraph" id="avamana_8h_ab481251e1ae32509c33c0fac70e6fd2e_cgraph">
 <area shape="rect" title=" " alt="" coords="5,81,173,108"/>
-<area shape="rect" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b" title=" " alt="" coords="224,31,345,57"/>
+<area shape="rect" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4" title=" " alt="" coords="224,31,345,57"/>
 <area shape="rect" href="structGPUTimer.html#ae9f777e37fc9a4770d9a7cb6d00ccb4a" title=" " alt="" coords="221,81,348,108"/>
 <area shape="rect" href="structGPUTimer.html#a6323951673ff683c3a0eb57899f26d32" title=" " alt="" coords="222,132,347,159"/>
-<area shape="rect" href="util_8cu.html#aa6bb89097af1de1b0ad45ff1b55864ee" title=" " alt="" coords="397,5,495,32"/>
-<area shape="rect" href="util_8cu.html#af6799685d11a34c09dea152865916759" title=" " alt="" coords="396,56,496,83"/>
+<area shape="rect" href="util_8cu.html#a7d7b22de4e48770872dfb2cca36c8379" title=" " alt="" coords="397,5,495,32"/>
+<area shape="rect" href="util_8cu.html#a6c6b2ba2a2656aa02fe23c2fe45b927f" title=" " alt="" coords="396,56,496,83"/>
 </map>
 </div>
 <div class="dynheader">
@@ -773,10 +773,10 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="vamana_8h_ae50e29b34958cd3ec869755ec3feb5e0_cgraph.png" border="0" usemap="#avamana_8h_ae50e29b34958cd3ec869755ec3feb5e0_cgraph" alt=""/></div>
 <map name="avamana_8h_ae50e29b34958cd3ec869755ec3feb5e0_cgraph" id="avamana_8h_ae50e29b34958cd3ec869755ec3feb5e0_cgraph">
 <area shape="rect" title=" " alt="" coords="5,31,176,57"/>
-<area shape="rect" href="reverseEdge_8cu.html#a3e9b5aee1dee5f65bdcfed6b1f38f037" title=" " alt="" coords="224,5,384,32"/>
-<area shape="rect" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b" title=" " alt="" coords="243,56,365,83"/>
-<area shape="rect" href="util_8cu.html#aa6bb89097af1de1b0ad45ff1b55864ee" title=" " alt="" coords="433,31,531,57"/>
-<area shape="rect" href="util_8cu.html#af6799685d11a34c09dea152865916759" title=" " alt="" coords="432,81,532,108"/>
+<area shape="rect" href="reverseEdge_8cu.html#a26c87eab3367d3d24df02faf464fd4cc" title=" " alt="" coords="224,5,384,32"/>
+<area shape="rect" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4" title=" " alt="" coords="243,56,365,83"/>
+<area shape="rect" href="util_8cu.html#a7d7b22de4e48770872dfb2cca36c8379" title=" " alt="" coords="433,31,531,57"/>
+<area shape="rect" href="util_8cu.html#a6c6b2ba2a2656aa02fe23c2fe45b927f" title=" " alt="" coords="432,81,532,108"/>
 </map>
 </div>
 <div class="dynheader">
@@ -794,14 +794,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a016823c3d029c7bc95201d25a91c9f66"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a016823c3d029c7bc95201d25a91c9f66">&#9670;&nbsp;</a></span>computeVisitedSetDists()</h2>
+<a id="a5d5911244a68852b015f24c0aa18e9ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d5911244a68852b015f24c0aa18e9ac">&#9670;&nbsp;</a></span>computeVisitedSetDists()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void computeVisitedSetDists </td>
+          <td class="memname">void computeVisitedSetDists </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>d_graph</em>, </td>
@@ -840,14 +840,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="ac3763fea05063df8bd2a62dc2a73146c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac3763fea05063df8bd2a62dc2a73146c">&#9670;&nbsp;</a></span>filterNeighbors()</h2>
+<a id="a30e31f1b815e7b8d0cda5ae8868e72da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30e31f1b815e7b8d0cda5ae8868e72da">&#9670;&nbsp;</a></span>filterNeighbors()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void filterNeighbors </td>
+          <td class="memname">void filterNeighbors </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>d_graph</em>, </td>
@@ -904,13 +904,13 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_ac3763fea05063df8bd2a62dc2a73146c_cgraph.png" border="0" usemap="#avamana_8h_ac3763fea05063df8bd2a62dc2a73146c_cgraph" alt=""/></div>
-<map name="avamana_8h_ac3763fea05063df8bd2a62dc2a73146c_cgraph" id="avamana_8h_ac3763fea05063df8bd2a62dc2a73146c_cgraph">
+<div class="center"><img src="vamana_8h_a30e31f1b815e7b8d0cda5ae8868e72da_cgraph.png" border="0" usemap="#avamana_8h_a30e31f1b815e7b8d0cda5ae8868e72da_cgraph" alt=""/></div>
+<map name="avamana_8h_a30e31f1b815e7b8d0cda5ae8868e72da_cgraph" id="avamana_8h_a30e31f1b815e7b8d0cda5ae8868e72da_cgraph">
 <area shape="rect" title=" " alt="" coords="5,31,124,57"/>
-<area shape="rect" href="bloomFilter_8cu.html#a013982bc374d59531834c1e354e30008" title=" " alt="" coords="172,5,252,32"/>
-<area shape="rect" href="bloomFilter_8cu.html#a275a7ba1ae10305f51440423e8dc2e5c" title=" " alt="" coords="181,56,243,83"/>
-<area shape="rect" href="bloomFilter_8cu.html#a7c749c0f64bc9f99b6a720e5e80774fb" title=" " alt="" coords="300,5,397,32"/>
-<area shape="rect" href="bloomFilter_8cu.html#a9fd7f0d3b36fa4b03fe7ff5039158fc5" title=" " alt="" coords="300,56,397,83"/>
+<area shape="rect" href="bloomFilter_8cu.html#a2a25bf95d583b29c78ef1d600d78e8ce" title=" " alt="" coords="172,5,252,32"/>
+<area shape="rect" href="bloomFilter_8cu.html#ae33f5b277bdeef8c87b566f3421242b0" title=" " alt="" coords="181,56,243,83"/>
+<area shape="rect" href="bloomFilter_8cu.html#a4fa8ae2cfdc7206a47e9122872c752c0" title=" " alt="" coords="300,5,397,32"/>
+<area shape="rect" href="bloomFilter_8cu.html#a88e46a502c4bc2104b3226c294e8f752" title=" " alt="" coords="300,56,397,83"/>
 </map>
 </div>
 
@@ -950,14 +950,14 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a43e0cf8195fac6e204adef1562468450"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43e0cf8195fac6e204adef1562468450">&#9670;&nbsp;</a></span>getNeighbors()</h2>
+<a id="a8bf20b50261c7a794b94a2e93bbb7ba6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bf20b50261c7a794b94a2e93bbb7ba6">&#9670;&nbsp;</a></span>getNeighbors()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void getNeighbors </td>
+          <td class="memname">void getNeighbors </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>d_graph</em>, </td>
@@ -1093,9 +1093,9 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="vamana_8h_a32220ffe2280e58d1a4f65d2b8a0bbde_cgraph.png" border="0" usemap="#avamana_8h_a32220ffe2280e58d1a4f65d2b8a0bbde_cgraph" alt=""/></div>
 <map name="avamana_8h_a32220ffe2280e58d1a4f65d2b8a0bbde_cgraph" id="avamana_8h_a32220ffe2280e58d1a4f65d2b8a0bbde_cgraph">
 <area shape="rect" title=" " alt="" coords="5,31,116,57"/>
-<area shape="rect" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b" title=" " alt="" coords="164,31,285,57"/>
-<area shape="rect" href="util_8cu.html#aa6bb89097af1de1b0ad45ff1b55864ee" title=" " alt="" coords="334,5,433,32"/>
-<area shape="rect" href="util_8cu.html#af6799685d11a34c09dea152865916759" title=" " alt="" coords="333,56,433,83"/>
+<area shape="rect" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4" title=" " alt="" coords="164,31,285,57"/>
+<area shape="rect" href="util_8cu.html#a7d7b22de4e48770872dfb2cca36c8379" title=" " alt="" coords="334,5,433,32"/>
+<area shape="rect" href="util_8cu.html#a6c6b2ba2a2656aa02fe23c2fe45b927f" title=" " alt="" coords="333,56,433,83"/>
 </map>
 </div>
 <div class="dynheader">
@@ -1113,14 +1113,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="aa6bb89097af1de1b0ad45ff1b55864ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6bb89097af1de1b0ad45ff1b55864ee">&#9670;&nbsp;</a></span>lowerBound()</h2>
+<a id="a7d7b22de4e48770872dfb2cca36c8379"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d7b22de4e48770872dfb2cca36c8379">&#9670;&nbsp;</a></span>lowerBound()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ unsigned lowerBound </td>
+          <td class="memname">unsigned lowerBound </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
           <td class="paramname"><em>arr</em>[], </td>
@@ -1153,13 +1153,13 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph.png" border="0" usemap="#avamana_8h_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph" alt=""/></div>
-<map name="avamana_8h_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph" id="avamana_8h_aa6bb89097af1de1b0ad45ff1b55864ee_icgraph">
+<div class="center"><img src="vamana_8h_a7d7b22de4e48770872dfb2cca36c8379_icgraph.png" border="0" usemap="#avamana_8h_a7d7b22de4e48770872dfb2cca36c8379_icgraph" alt=""/></div>
+<map name="avamana_8h_a7d7b22de4e48770872dfb2cca36c8379_icgraph" id="avamana_8h_a7d7b22de4e48770872dfb2cca36c8379_icgraph">
 <area shape="rect" title=" " alt="" coords="995,81,1093,108"/>
-<area shape="rect" href="reverseEdge_8cu.html#a3197d9baf5a3cc12283f7b62da7dbea6" title=" " alt="" coords="765,5,947,32"/>
-<area shape="rect" href="outNeighbors_8cu.html#ae150e32e222b4c9fdabd3690cb4578c6" title=" " alt="" coords="779,56,933,83"/>
-<area shape="rect" href="greedySearch_8cu.html#ad7f081279201fc99c979bc01be69292b" title=" " alt="" coords="785,107,927,133"/>
-<area shape="rect" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b" title=" " alt="" coords="795,157,917,184"/>
+<area shape="rect" href="reverseEdge_8cu.html#abefd5dcc943fa6a7911e72c511c7483b" title=" " alt="" coords="765,5,947,32"/>
+<area shape="rect" href="outNeighbors_8cu.html#ab5607d5cd17ccf0d5b199e52a6ebb1c2" title=" " alt="" coords="779,56,933,83"/>
+<area shape="rect" href="greedySearch_8cu.html#a0cedfa43575adbc055331e2a5070e800" title=" " alt="" coords="785,107,927,133"/>
+<area shape="rect" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4" title=" " alt="" coords="795,157,917,184"/>
 <area shape="rect" href="outNeighbors_8cu.html#ab481251e1ae32509c33c0fac70e6fd2e" title=" " alt="" coords="548,107,716,133"/>
 <area shape="rect" href="reverseEdge_8cu.html#ae50e29b34958cd3ec869755ec3feb5e0" title=" " alt="" coords="547,157,717,184"/>
 <area shape="rect" href="greedySearch_8cu.html#a32220ffe2280e58d1a4f65d2b8a0bbde" title=" " alt="" coords="577,208,687,235"/>
@@ -1172,14 +1172,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="ac4e1b6d8ea13e5e3bc5ef3af678beba8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4e1b6d8ea13e5e3bc5ef3af678beba8">&#9670;&nbsp;</a></span>mergeIntoWorklist()</h2>
+<a id="adc803b99a5d9084206e9e78f093fc010"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc803b99a5d9084206e9e78f093fc010">&#9670;&nbsp;</a></span>mergeIntoWorklist()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void mergeIntoWorklist </td>
+          <td class="memname">void mergeIntoWorklist </td>
           <td>(</td>
           <td class="paramtype">unsigned *&#160;</td>
           <td class="paramname"><em>d_worklistCount</em>, </td>
@@ -1248,14 +1248,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a2b1b66f226f9e99ad647f8a1a10037d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2b1b66f226f9e99ad647f8a1a10037d6">&#9670;&nbsp;</a></span>mergeNeighborsIntoVisitedSet()</h2>
+<a id="aaa54499da2bbc223bae921387ca63c9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa54499da2bbc223bae921387ca63c9c">&#9670;&nbsp;</a></span>mergeNeighborsIntoVisitedSet()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void mergeNeighborsIntoVisitedSet </td>
+          <td class="memname">void mergeNeighborsIntoVisitedSet </td>
           <td>(</td>
           <td class="paramtype">unsigned *&#160;</td>
           <td class="paramname"><em>d_visitedSetCount</em>, </td>
@@ -1300,14 +1300,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a97b3c13cfe034dae54fb0d7a092f799c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97b3c13cfe034dae54fb0d7a092f799c">&#9670;&nbsp;</a></span>pruneOutNeighbors()</h2>
+<a id="a1f1cf78df2bbc85b83eb386859dad720"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f1cf78df2bbc85b83eb386859dad720">&#9670;&nbsp;</a></span>pruneOutNeighbors()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void pruneOutNeighbors </td>
+          <td class="memname">void pruneOutNeighbors </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>d_graph</em>, </td>
@@ -1382,14 +1382,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a874f5dd6b3f09dfb42c53cf41aea873b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a874f5dd6b3f09dfb42c53cf41aea873b">&#9670;&nbsp;</a></span>sortByDistance()</h2>
+<a id="ad74430e11b73bdd3ac49c49621b1e9a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad74430e11b73bdd3ac49c49621b1e9a4">&#9670;&nbsp;</a></span>sortByDistance()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void sortByDistance </td>
+          <td class="memname">void sortByDistance </td>
           <td>(</td>
           <td class="paramtype">unsigned *&#160;</td>
           <td class="paramname"><em>d_items</em>, </td>
@@ -1434,18 +1434,18 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph.png" border="0" usemap="#avamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph" alt=""/></div>
-<map name="avamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph" id="avamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_cgraph">
+<div class="center"><img src="vamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph.png" border="0" usemap="#avamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph" alt=""/></div>
+<map name="avamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph" id="avamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_cgraph">
 <area shape="rect" title=" " alt="" coords="5,31,127,57"/>
-<area shape="rect" href="util_8cu.html#aa6bb89097af1de1b0ad45ff1b55864ee" title=" " alt="" coords="175,5,274,32"/>
-<area shape="rect" href="util_8cu.html#af6799685d11a34c09dea152865916759" title=" " alt="" coords="175,56,275,83"/>
+<area shape="rect" href="util_8cu.html#a7d7b22de4e48770872dfb2cca36c8379" title=" " alt="" coords="175,5,274,32"/>
+<area shape="rect" href="util_8cu.html#a6c6b2ba2a2656aa02fe23c2fe45b927f" title=" " alt="" coords="175,56,275,83"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph.png" border="0" usemap="#avamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph" alt=""/></div>
-<map name="avamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph" id="avamana_8h_a874f5dd6b3f09dfb42c53cf41aea873b_icgraph">
+<div class="center"><img src="vamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph.png" border="0" usemap="#avamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph" alt=""/></div>
+<map name="avamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph" id="avamana_8h_ad74430e11b73bdd3ac49c49621b1e9a4_icgraph">
 <area shape="rect" title=" " alt="" coords="765,56,887,83"/>
 <area shape="rect" href="outNeighbors_8cu.html#ab481251e1ae32509c33c0fac70e6fd2e" title=" " alt="" coords="548,5,716,32"/>
 <area shape="rect" href="reverseEdge_8cu.html#ae50e29b34958cd3ec869755ec3feb5e0" title=" " alt="" coords="547,56,717,83"/>
@@ -1459,14 +1459,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="afaa2482101628abfba5747a382860271"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afaa2482101628abfba5747a382860271">&#9670;&nbsp;</a></span>sortNeighborDists()</h2>
+<a id="a8f89e864abd72821bfea6f126f16093c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f89e864abd72821bfea6f126f16093c">&#9670;&nbsp;</a></span>sortNeighborDists()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void sortNeighborDists </td>
+          <td class="memname">void sortNeighborDists </td>
           <td>(</td>
           <td class="paramtype">unsigned *&#160;</td>
           <td class="paramname"><em>d_neighbors</em>, </td>
@@ -1505,14 +1505,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a670dcffa9d96ac3ba25166ab90eb3e43"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a670dcffa9d96ac3ba25166ab90eb3e43">&#9670;&nbsp;</a></span>sortVisitedSets()</h2>
+<a id="a4885e3ab27562c575cc881f0914c8281"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4885e3ab27562c575cc881f0914c8281">&#9670;&nbsp;</a></span>sortVisitedSets()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__global__ void sortVisitedSets </td>
+          <td class="memname">void sortVisitedSets </td>
           <td>(</td>
           <td class="paramtype">unsigned *&#160;</td>
           <td class="paramname"><em>d_visitedSet</em>, </td>
@@ -1551,14 +1551,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="af6799685d11a34c09dea152865916759"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6799685d11a34c09dea152865916759">&#9670;&nbsp;</a></span>upperBound()</h2>
+<a id="a6c6b2ba2a2656aa02fe23c2fe45b927f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c6b2ba2a2656aa02fe23c2fe45b927f">&#9670;&nbsp;</a></span>upperBound()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">__device__ unsigned upperBound </td>
+          <td class="memname">unsigned upperBound </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
           <td class="paramname"><em>arr</em>[], </td>
@@ -1591,13 +1591,13 @@ Here is the caller graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="vamana_8h_af6799685d11a34c09dea152865916759_icgraph.png" border="0" usemap="#avamana_8h_af6799685d11a34c09dea152865916759_icgraph" alt=""/></div>
-<map name="avamana_8h_af6799685d11a34c09dea152865916759_icgraph" id="avamana_8h_af6799685d11a34c09dea152865916759_icgraph">
+<div class="center"><img src="vamana_8h_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph.png" border="0" usemap="#avamana_8h_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph" alt=""/></div>
+<map name="avamana_8h_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph" id="avamana_8h_a6c6b2ba2a2656aa02fe23c2fe45b927f_icgraph">
 <area shape="rect" title=" " alt="" coords="995,81,1095,108"/>
-<area shape="rect" href="reverseEdge_8cu.html#a3197d9baf5a3cc12283f7b62da7dbea6" title=" " alt="" coords="765,5,947,32"/>
-<area shape="rect" href="outNeighbors_8cu.html#ae150e32e222b4c9fdabd3690cb4578c6" title=" " alt="" coords="779,56,933,83"/>
-<area shape="rect" href="greedySearch_8cu.html#ad7f081279201fc99c979bc01be69292b" title=" " alt="" coords="785,107,927,133"/>
-<area shape="rect" href="util_8cu.html#a874f5dd6b3f09dfb42c53cf41aea873b" title=" " alt="" coords="795,157,917,184"/>
+<area shape="rect" href="reverseEdge_8cu.html#abefd5dcc943fa6a7911e72c511c7483b" title=" " alt="" coords="765,5,947,32"/>
+<area shape="rect" href="outNeighbors_8cu.html#ab5607d5cd17ccf0d5b199e52a6ebb1c2" title=" " alt="" coords="779,56,933,83"/>
+<area shape="rect" href="greedySearch_8cu.html#a0cedfa43575adbc055331e2a5070e800" title=" " alt="" coords="785,107,927,133"/>
+<area shape="rect" href="util_8cu.html#ad74430e11b73bdd3ac49c49621b1e9a4" title=" " alt="" coords="795,157,917,184"/>
 <area shape="rect" href="outNeighbors_8cu.html#ab481251e1ae32509c33c0fac70e6fd2e" title=" " alt="" coords="548,107,716,133"/>
 <area shape="rect" href="reverseEdge_8cu.html#ae50e29b34958cd3ec869755ec3feb5e0" title=" " alt="" coords="547,157,717,184"/>
 <area shape="rect" href="greedySearch_8cu.html#a32220ffe2280e58d1a4f65d2b8a0bbde" title=" " alt="" coords="577,208,687,235"/>
@@ -1623,8 +1623,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">=</div>
-<div class="line">    (<a class="code" href="vamana_8h.html#ac66e8347fa3517b82386cba73a590ea4">BF_ENTRIES</a> &amp; 0xFFFFFFFC) + <span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span>)</div>
-<div class="ttc" id="avamana_8h_html_ac66e8347fa3517b82386cba73a590ea4"><div class="ttname"><a href="vamana_8h.html#ac66e8347fa3517b82386cba73a590ea4">BF_ENTRIES</a></div><div class="ttdeci">#define BF_ENTRIES</div><div class="ttdef"><b>Definition:</b> vamana.h:8</div></div>
+<div class="line">    ( 399887U  &amp; 0xFFFFFFFC) + <span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span>)</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1635,7 +1634,7 @@ Here is the caller graph for this function:</div>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const unsigned graphEntrySize = <a class="el" href="vamana_8h.html#af316c33cc298530f245e8b55330e86b5">D</a> * sizeof(float) + sizeof(unsigned) + <a class="el" href="vamana_8h.html#a5c71a5e59a53413cd6c270266d63b031">R</a> * sizeof(unsigned)</td>
+          <td class="memname">const unsigned graphEntrySize = 128 * sizeof(float) + sizeof(unsigned) + 64 * sizeof(unsigned)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1649,7 +1648,7 @@ Here is the caller graph for this function:</div>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const unsigned reverseIndexEntrySize = (<a class="el" href="vamana_8h.html#a2029e38b88cd6f354d279a45952f1910">MAX_REVERSE_INDEX_ENTRIES</a> + 1) * sizeof(unsigned)</td>
+          <td class="memname">const unsigned reverseIndexEntrySize = ( 500 + 1) * sizeof(unsigned)</td>
         </tr>
       </table>
 </div><div class="memdoc">
