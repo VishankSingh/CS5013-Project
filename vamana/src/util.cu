@@ -1,11 +1,11 @@
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
 
 #ifndef VAMANA_H
 #include "vamana.h"
 #endif
 
-void generateRandomGraph(uint8_t *graph, unsigned batchStart, unsigned batchSize) {
+void generateRandomGraph(uint8_t* graph, unsigned batchStart, unsigned batchSize) {
     srand(0);
     for (int i = batchStart; i < batchSize; i++) {
         unsigned* neighbors = (unsigned*)(graph + (i * graphEntrySize + D * sizeof(float))) + 1;
@@ -15,18 +15,13 @@ void generateRandomGraph(uint8_t *graph, unsigned batchStart, unsigned batchSize
     }
 }
 
-__global__ void computeDists(uint8_t *d_graph,
-                             unsigned *d_nodes,
-                             unsigned *d_nodeCount,
-                             float *d_queryVecs,
-                             float *d_dists,
-                             unsigned rowSize) {
-
+__global__ void computeDists(uint8_t* d_graph, unsigned* d_nodes, unsigned* d_nodeCount,
+                             float* d_queryVecs, float* d_dists, unsigned rowSize) {
     unsigned queryID = blockIdx.x;
-    unsigned tid = threadIdx.x;
+    unsigned tid     = threadIdx.x;
 
-    float *queryVec = d_queryVecs + D*queryID;          // Pointer to query vector
-    unsigned offset = rowSize * queryID;
+    float*   queryVec = d_queryVecs + D * queryID;  // Pointer to query vector
+    unsigned offset   = rowSize * queryID;
     unsigned numNodes = d_nodeCount[queryID];
 
     // Initialize distances to zero
@@ -39,13 +34,13 @@ __global__ void computeDists(uint8_t *d_graph,
     // if (queryID == 0 & tid == 0) printf("NumNodes: %d\n", numNodes);
 
     // Assign 8 threads to each node
-    for (unsigned j = tid/8; j < numNodes; j += (blockDim.x + 7) / 8) {
-        unsigned node = d_nodes[offset + j];
-        float *nodeVec = (float*)(d_graph + graphEntrySize*node); // Pointer to node vector
-        float sum = 0;
+    for (unsigned j = tid / 8; j < numNodes; j += (blockDim.x + 7) / 8) {
+        unsigned node    = d_nodes[offset + j];
+        float*   nodeVec = (float*)(d_graph + graphEntrySize * node);  // Pointer to node vector
+        float    sum     = 0;
 
         // Sum up 8 dimensions in parallel
-        for (unsigned i = tid%8; i < D; i += 8) {
+        for (unsigned i = tid % 8; i < D; i += 8) {
             float diff = nodeVec[i] - queryVec[i];
             sum += diff * diff;
         }
@@ -63,7 +58,7 @@ __global__ void computeDists(uint8_t *d_graph,
         }
         atomicAdd(&d_dists[offset + j], sum);
     }
-    */    
+    */
 }
 
 __device__ unsigned lowerBound(float arr[], unsigned lo, unsigned hi, float target) {
@@ -90,39 +85,36 @@ __device__ unsigned upperBound(float arr[], unsigned lo, unsigned hi, float targ
     return lo;
 }
 
-__global__ void sortByDistance(unsigned *d_items,
-                               unsigned *d_itemCount,
-                               float *d_dists,
-                               unsigned *d_itemsAux,
-                               float *d_distsAux,
-                               unsigned rowSize) {
-
+__global__ void sortByDistance(unsigned* d_items, unsigned* d_itemCount, float* d_dists,
+                               unsigned* d_itemsAux, float* d_distsAux, unsigned rowSize) {
     unsigned queryID = blockIdx.x;
-    unsigned tid = threadIdx.x;
+    unsigned tid     = threadIdx.x;
 
     unsigned numItems = d_itemCount[queryID];
-    unsigned offset = queryID * rowSize;
+    unsigned offset   = queryID * rowSize;
 
     extern __shared__ unsigned sortedPositions[];
 
     for (unsigned subarraySize = 2; subarraySize < 2 * numItems; subarraySize *= 2) {
         unsigned subarrayID = tid / subarraySize;
-        unsigned start = subarrayID * subarraySize;
-        unsigned mid = min(start + subarraySize / 2, numItems);
-        unsigned end = min(start + subarraySize, numItems);        
+        unsigned start      = subarrayID * subarraySize;
+        unsigned mid        = min(start + subarraySize / 2, numItems);
+        unsigned end        = min(start + subarraySize, numItems);
 
         unsigned before;
 
         if (tid >= start && tid < mid) {
-            // If current thread corresponds to lower half, find the no. of elements before this element from the upper half
-            before = lowerBound(&d_dists[offset + mid], 0, end-mid, d_dists[offset + tid]);
+            // If current thread corresponds to lower half, find the no. of elements before this
+            // element from the upper half
+            before = lowerBound(&d_dists[offset + mid], 0, end - mid, d_dists[offset + tid]);
             sortedPositions[tid] = tid + before;
         } else if (tid >= mid && tid < end) {
-            // If current thread corresponds to upper half, find the no. of elements before this element from the lower half
-            before = upperBound(&d_dists[offset + start], 0, mid-start, d_dists[offset + tid]);
-            sortedPositions[tid] = before + (tid - mid + start); 
+            // If current thread corresponds to upper half, find the no. of elements before this
+            // element from the lower half
+            before = upperBound(&d_dists[offset + start], 0, mid - start, d_dists[offset + tid]);
+            sortedPositions[tid] = before + (tid - mid + start);
         }
-       
+
         __syncthreads();
         __threadfence_block();
 
@@ -142,6 +134,6 @@ __global__ void sortByDistance(unsigned *d_items,
         }
 
         __syncthreads();
-        __threadfence_block();   
+        __threadfence_block();
     }
 }
