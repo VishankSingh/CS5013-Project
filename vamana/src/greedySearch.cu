@@ -188,41 +188,51 @@ __global__ void mergeIntoWorklist(unsigned* d_worklistCount, unsigned* d_worklis
 }
 
 // Performs greedy search and returns the visited sets
-void greedySearch(uint8_t* d_graph, float* d_queryVecs, unsigned* d_visitedSets,
-                  unsigned* d_visitedSetCount, unsigned batchStart, unsigned batchSize) {
-    bool*     d_hasParent;
-    unsigned* d_parents;
+void greedySearch(uint8_t* d_graph, float* d_queryVecs, unsigned* d_visitedSets /*empty*/,
+                  unsigned* d_visitedSetCount /*0*/, unsigned batchStart, unsigned batchSize) {
+    bool*     d_hasParent;  // 10k
+    unsigned* d_parents;    // 10k unsigned
     bool*     d_bloomFilters;
 
     gpuErrchk(cudaMalloc(&d_hasParent, batchSize * sizeof(bool)));
     gpuErrchk(cudaMalloc(&d_parents, batchSize * sizeof(unsigned)));
+    size_t allocSize = batchSize * BF_MEMORY * sizeof(bool);
+
+    printf("Allocating %.2f MB (%zu bytes) for d_bloomFilters\n", allocSize / (1024.0 * 1024.0),
+           allocSize);
+
     gpuErrchk(cudaMalloc(&d_bloomFilters, batchSize * BF_MEMORY * sizeof(bool)));
     gpuErrchk(cudaMemset(d_bloomFilters, 0, batchSize * BF_MEMORY * sizeof(bool)));
 
-    unsigned* d_neighbors;
-    unsigned* d_neighborsCount;
-    float*    d_neighborDists;
-    unsigned* d_neighborsAux;
-    float*    d_neighborDistsAux;
+    unsigned* d_neighbors;         // 10k * (64+1) unsigned
+    unsigned* d_neighborsCount;    // 10k * 1
+    float*    d_neighborDists;     // 10k * (64+1) float
+    unsigned* d_neighborsAux;      // 10k * (64+1) unsigned
+    float*    d_neighborDistsAux;  // 10k * (64+1) unsigned
 
     gpuErrchk(cudaMalloc(&d_neighbors, batchSize * (R + 1) * sizeof(unsigned)));
+    gpuErrchk(cudaMemset(d_neighbors, 0, batchSize * (R + 1) * sizeof(unsigned)));
+
     gpuErrchk(cudaMalloc(&d_neighborsCount, batchSize * sizeof(unsigned)));
+    gpuErrchk(cudaMemset(d_neighborsCount, 0, batchSize * sizeof(unsigned)));
+
     gpuErrchk(cudaMalloc(&d_neighborDists, batchSize * (R + 1) * sizeof(float)));
     gpuErrchk(cudaMalloc(&d_neighborsAux, batchSize * (R + 1) * sizeof(unsigned)));
     gpuErrchk(cudaMalloc(&d_neighborDistsAux, batchSize * (R + 1) * sizeof(float)));
-    gpuErrchk(cudaMemset(d_neighbors, 0, batchSize * (R + 1) * sizeof(unsigned)));
-    gpuErrchk(cudaMemset(d_neighborsCount, 0, batchSize * sizeof(unsigned)));
 
-    unsigned* d_worklist;
-    unsigned* d_worklistCount;
-    float*    d_worklistDist;
-    bool*     d_worklistVisited;
+    // 150 is worklist size
+    unsigned* d_worklist;         // 10k * 150 unsigned
+    unsigned* d_worklistCount;    // 10k unsigned
+    float*    d_worklistDist;     // 10k * 150 float
+    bool*     d_worklistVisited;  // 10k * 150 bool
 
     gpuErrchk(cudaMalloc(&d_worklist, batchSize * L * sizeof(unsigned)));
+
     gpuErrchk(cudaMalloc(&d_worklistCount, batchSize * sizeof(unsigned)));
+    gpuErrchk(cudaMemset(d_worklistCount, 0, batchSize * sizeof(unsigned)));
+
     gpuErrchk(cudaMalloc(&d_worklistDist, batchSize * L * sizeof(float)));
     gpuErrchk(cudaMalloc(&d_worklistVisited, batchSize * L * sizeof(bool)));
-    gpuErrchk(cudaMemset(d_worklistCount, 0, batchSize * sizeof(unsigned)));
 
     bool  nextIter;
     bool* d_nextIter;
@@ -234,9 +244,9 @@ void greedySearch(uint8_t* d_graph, float* d_queryVecs, unsigned* d_visitedSets,
                                          d_worklistDist, d_worklistVisited);
     // cudaDeviceSynchronize();
 
-    unsigned* neighbors     = (unsigned*)malloc((R + 1) * sizeof(unsigned));
-    float*    neighborsDist = (float*)malloc((R + 1) * sizeof(float));
-    unsigned* worklist      = (unsigned*)malloc(L * sizeof(unsigned));
+    // unsigned* neighbors     = (unsigned*)malloc((R + 1) * sizeof(unsigned));
+    // float*    neighborsDist = (float*)malloc((R + 1) * sizeof(float));
+    // unsigned* worklist      = (unsigned*)malloc(L * sizeof(unsigned));
 
     int iter = 0;
     do {

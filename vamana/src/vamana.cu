@@ -135,32 +135,32 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
     float basepoinst[N][128];
     */
 
-    // Read basepoints
-    unsigned numBasePoints  = N - NUM_QUERIES;
-    float*   basePoints     = (float*)malloc(numBasePoints * D * sizeof(float));
-    FILE*    basePointsFile = fopen(basePointsPath, "rb");
-    if (!basePointsFile) {
-        printf("Could not open basepoints file.\n");
-        return;
-    }
-    fseek(basePointsFile, 8, SEEK_CUR);  // SKip first 8 bytes
-    fread(basePoints, D * sizeof(float), numBasePoints, basePointsFile);
-    fclose(basePointsFile);
+    // // Read basepoints
+    // unsigned numBasePoints  = N - NUM_QUERIES;
+    // float*   basePoints     = (float*)malloc(numBasePoints * D * sizeof(float));
+    // FILE*    basePointsFile = fopen(basePointsPath, "rb");
+    // if (!basePointsFile) {
+    //     printf("Could not open basepoints file.\n");
+    //     return;
+    // }
+    // fseek(basePointsFile, 8, SEEK_CUR);  // SKip first 8 bytes
+    // fread(basePoints, D * sizeof(float), numBasePoints, basePointsFile);
+    // fclose(basePointsFile);
 
-    cputimer.Stop();
-    printf("Reading graph and basepoints: %f sec\n", cputimer.Elapsed());
+    // cputimer.Stop();
+    // printf("Reading graph and basepoints: %f sec\n", cputimer.Elapsed());
 
-    cputimer.Start();
+    // cputimer.Start();
 
-    // Copy coordinates to graph
-    // since NUM_QUERIES = N = 10,000 this loop doesnt run
-    // It just puts the extra basepoints into the 'graph' without adding neighbors.
-    for (int i = NUM_QUERIES; i < N; i++) {
-        float* queryVec = (float*)(graph + i * graphEntrySize);
-        for (int j = 0; j < D; j++) {
-            queryVec[j] = basePoints[i * D + j];
-        }
-    }
+    // // Copy coordinates to graph
+    // // since NUM_QUERIES = N = 10,000 this loop doesnt run
+    // // It just puts the extra basepoints into the 'graph' without adding neighbors.
+    // for (int i = NUM_QUERIES; i < N; i++) {
+    //     float* queryVec = (float*)(graph + i * graphEntrySize);
+    //     for (int j = 0; j < D; j++) {
+    //         queryVec[j] = basePoints[i * D + j];
+    //     }
+    // }
 
     cputimer.Stop();
     printf("Copying query vectors: %f sec\n", cputimer.Elapsed());
