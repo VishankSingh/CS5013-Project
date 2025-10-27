@@ -124,8 +124,6 @@ void parANN(int argc, char** argv) {
     unsigned medoidID = MEDOID;
     // unsigned K4_blockSize = 256;
 
-    std::cout << "[medoidID=" << medoidID << ", numQueries=" << numQueries << "]\n";
-
     printf("BF Memory = %u BF_ENTRIES = %u\n", BF_MEMORY, BF_ENTRIES);
 
     // Check if files exist
@@ -184,7 +182,6 @@ void parANN(int argc, char** argv) {
 #endif
     uint8_t* pIndex         = NULL;
     off_t    size_indexfile = caclulate_filesize(graphAdjListAndFP_file.c_str());
-    PRINT_VAR(size_indexfile);
 
     pIndex = (uint8_t*)malloc(size_indexfile);
     if (NULL == pIndex) {

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "timer.h"
 
+// Vishank: reduced the size of bloom filter to fit in gpu
 #define BF_ENTRIES 39988U  // per query, max entries in BF, (prime number)
 const unsigned BF_MEMORY =
     (BF_ENTRIES & 0xFFFFFFFC) + sizeof(unsigned);  // 4-byte mem aligned size for actual allocation
