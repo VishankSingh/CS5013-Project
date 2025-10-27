@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "timer.h"
 
-#define BF_ENTRIES 399887U  // per query, max entries in BF, (prime number)
+#define BF_ENTRIES 39988U  // per query, max entries in BF, (prime number)
 const unsigned BF_MEMORY =
     (BF_ENTRIES & 0xFFFFFFFC) + sizeof(unsigned);  // 4-byte mem aligned size for actual allocation
 
