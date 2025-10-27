@@ -135,32 +135,61 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
     float basepoinst[N][128];
     */
 
-    // // Read basepoints
-    // unsigned numBasePoints  = N - NUM_QUERIES;
-    // float*   basePoints     = (float*)malloc(numBasePoints * D * sizeof(float));
-    // FILE*    basePointsFile = fopen(basePointsPath, "rb");
-    // if (!basePointsFile) {
-    //     printf("Could not open basepoints file.\n");
-    //     return;
-    // }
-    // fseek(basePointsFile, 8, SEEK_CUR);  // SKip first 8 bytes
-    // fread(basePoints, D * sizeof(float), numBasePoints, basePointsFile);
-    // fclose(basePointsFile);
+    /*
+    Vishank:
 
-    // cputimer.Stop();
-    // printf("Reading graph and basepoints: %f sec\n", cputimer.Elapsed());
+    I was thinking since we have a base sift10_randomgraph.bin and extra basepoints
+    what we can do is, on adding, pass the addition points as basepoints.
 
-    // cputimer.Start();
+    on delete, find the point parallely and then swap the deleted points data with the last point
+    and zero out the last
 
-    // // Copy coordinates to graph
-    // // since NUM_QUERIES = N = 10,000 this loop doesnt run
-    // // It just puts the extra basepoints into the 'graph' without adding neighbors.
-    // for (int i = NUM_QUERIES; i < N; i++) {
-    //     float* queryVec = (float*)(graph + i * graphEntrySize);
-    //     for (int j = 0; j < D; j++) {
-    //         queryVec[j] = basePoints[i * D + j];
-    //     }
-    // }
+    similarly, on search, invoke the greedy search function defined in greedySearch.cu.
+
+
+    If (add) {
+        add the points to base points, use vamanaOuter to get the new graph
+    } else if (delete) {
+        search for points parallely, and then swap out the deleting points with end points and zero
+        out the ends.
+        rerun vamanaOuter
+    } else if (search) {
+        invoke greedySearch(d_graph, d_queryVecs, d_visitedSets, d_visitedSetCount, 0, graph size);
+    }
+
+
+    */
+
+    // #define get_base
+#if defined(get_base)
+    // Read basepoints
+    unsigned numBasePoints  = N - NUM_QUERIES;
+    float*   basePoints     = (float*)malloc(numBasePoints * D * sizeof(float));
+    FILE*    basePointsFile = fopen(basePointsPath, "rb");
+    if (!basePointsFile) {
+        printf("Could not open basepoints file.\n");
+        return;
+    }
+    fseek(basePointsFile, 8, SEEK_CUR);  // SKip first 8 bytes
+    fread(basePoints, D * sizeof(float), numBasePoints, basePointsFile);
+    fclose(basePointsFile);
+
+    cputimer.Stop();
+    printf("Reading graph and basepoints: %f sec\n", cputimer.Elapsed());
+
+    cputimer.Start();
+
+    // Copy coordinates to graph
+    // since NUM_QUERIES = N = 10,000 this loop doesnt run
+    // It just puts the extra basepoints into the 'graph' without adding neighbors.
+    for (int i = NUM_QUERIES; i < N; i++) {
+        float* queryVec = (float*)(graph + i * graphEntrySize);
+        for (int j = 0; j < D; j++) {
+            queryVec[j] = basePoints[i * D + j];
+        }
+    }
+
+#endif
 
     cputimer.Stop();
     printf("Copying query vectors: %f sec\n", cputimer.Elapsed());
