@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "vamana.h"
+
 struct Graph_t {
     // probably needed just for the transfer at the start
     // since the graph will reside on gpu the whole time
