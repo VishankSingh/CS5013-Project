@@ -188,7 +188,7 @@ __global__ void mergeIntoWorklist(unsigned* d_worklistCount, unsigned* d_worklis
 }
 
 // Performs greedy search and returns the visited sets
-void greedySearch(uint8_t* d_graph, float* d_queryVecs, unsigned* d_visitedSets /*empty*/,
+void greedySearch(uint8_t* d_graph, float* d_queryVecs, unsigned* d_visitedSet /*empty*/,
                   unsigned* d_visitedSetCount /*0*/, unsigned batchStart, unsigned batchSize) {
     bool*     d_hasParent;  // 10k
     unsigned* d_parents;    // 10k unsigned
@@ -254,7 +254,7 @@ void greedySearch(uint8_t* d_graph, float* d_queryVecs, unsigned* d_visitedSets 
         gpuErrchk(cudaMemset(d_nextIter, false, sizeof(bool)));
 
         filterNeighbors<<<batchSize, R>>>(d_graph, d_hasParent, d_parents, d_bloomFilters,
-                                          d_neighbors, d_neighborsCount, d_visitedSets,
+                                          d_neighbors, d_neighborsCount, d_visitedSet,
                                           d_visitedSetCount);
 
         // gpuErrchk(cudaDeviceSynchronize());

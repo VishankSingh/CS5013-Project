@@ -135,31 +135,6 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
     float basepoinst[N][128];
     */
 
-    /*
-    Vishank:
-
-    I was thinking since we have a base sift10_randomgraph.bin and extra basepoints
-    what we can do is, on adding, pass the addition points as basepoints.
-
-    on delete, find the point parallely and then swap the deleted points data with the last point
-    and zero out the last
-
-    similarly, on search, invoke the greedy search function defined in greedySearch.cu.
-
-
-    If (add) {
-        add the points to base points, use vamanaOuter to get the new graph
-    } else if (delete) {
-        search for points parallely, and then swap out the deleting points with end points and zero
-        out the ends.
-        rerun vamanaOuter
-    } else if (search) {
-        invoke greedySearch(d_graph, d_queryVecs, d_visitedSets, d_visitedSetCount, 0, graph size);
-    }
-
-
-    */
-
     // #define get_base
 #if defined(get_base)
     // Read basepoints
