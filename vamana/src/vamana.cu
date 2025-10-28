@@ -1,9 +1,12 @@
 #include <time.h>
 #include <cstring>
+#include <iostream>
 
 #ifndef VAMANA_H
 #include "vamana.h"
 #endif
+
+#include "graph.cuh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,14 +66,20 @@ void vamanaInner(uint8_t* d_graph, float* d_queryVecs, float alpha, unsigned bat
     printf("vamanaInner frees: %f sec\n", cputimer.Elapsed());
 }
 
-void vamanaOuter(uint8_t* graph, float alpha) {
+void vamanaOuter(Graph_t& graph_struct, float alpha) {
+    uint8_t* graph = graph_struct.graph;
+
     int batchSize = 10000;
 
-    uint8_t* d_graph;
+    // uint8_t* d_graph;
+    uint8_t* d_graph = graph_struct.d_graph;
     float*   queryVecs;
     float*   d_queryVecs;
 
     gpuErrchk(cudaMalloc(&d_graph, N * graphEntrySize * sizeof(uint8_t)));
+    graph_struct.d_graph_capacity = N;
+    graph_struct.d_graph_size     = N;
+
     gpuErrchk(cudaMalloc(&d_queryVecs, batchSize * D * sizeof(float)));
     queryVecs = (float*)malloc(batchSize * D * sizeof(float));
     gpuErrchk(
@@ -97,20 +106,24 @@ void vamanaOuter(uint8_t* graph, float alpha) {
     // Copy graph back onto CPU
     gpuErrchk(
         cudaMemcpy(graph, d_graph, N * graphEntrySize * sizeof(uint8_t), cudaMemcpyDeviceToHost));
-    cudaFree(d_graph);
+    // cudaFree(d_graph);
     cudaFree(d_queryVecs);
 }
 
-void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
+void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath, Graph_t& graph_struct) {
     CPUTimer cputimer;
     cputimer.Start();
 
-    uint8_t* graph = (uint8_t*)malloc(N * graphEntrySize);
-    if (!graph) {
+    // excess alloc for adding more points. or we can chain it *shrug*.
+    graph_struct.graph          = (uint8_t*)calloc(N, graphEntrySize);
+    graph_struct.graph_capacity = N;
+
+    if (!graph_struct.graph) {
         printf("Could not allocate memory for graph.\n");
         return;
     }
-    memset(graph, 0, N * graphEntrySize);  // Zero out the graph
+    // already zeroed out
+    // memset(graph_struct.graph, 0, N * graphEntrySize);  // Zero out the graph
 
     // Read graph from file
     FILE* graphFile = fopen(graphFilePath, "rb");
@@ -118,8 +131,10 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
         printf("Could not open graph file.\n");
         return;
     }
-    fread(graph, graphEntrySize, NUM_QUERIES, graphFile);
+    fread(graph_struct.graph, graphEntrySize, NUM_QUERIES, graphFile);
     fclose(graphFile);
+
+    graph_struct.graph_size = NUM_QUERIES;
 
     /*
     graph is a random graph of size 10000
@@ -128,7 +143,7 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
     struct node {
         float vec[128];
         uint degree;
-        float neighbors[degree][128];
+        uint neighbors[degree];
     } node_t;
 
     basepoints is all the points in the graph
@@ -177,7 +192,7 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
     // }
 
     cputimer.Start();
-    vamanaOuter(graph, 1.5);
+    vamanaOuter(graph_struct, 1.5);
     cputimer.Stop();
     printf("Vamana: %f sec\n", cputimer.Elapsed());
 
@@ -189,7 +204,7 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath) {
         return;
     }
 
-    fwrite(graph, graphEntrySize, N, outFile);
+    fwrite(graph_struct.graph, graphEntrySize, N, outFile);
 
     cputimer.Stop();
     printf("Writing graph to file: %f sec\n", cputimer.Elapsed());
@@ -201,6 +216,14 @@ int main(int argc, char** argv) {
         printf("Usage: %s <graph> <basepoints> <output>\n", argv[0]);
         return 1;
     }
-    driverFn(argv[1], argv[2], argv[3]);
+    Graph_t graph_struct;
+    driverFn(argv[1], argv[2], argv[3], graph_struct);
+
+    std::cout << graph_struct.graph_capacity << " " << graph_struct.graph_size << '\n';
+    std::cout << graph_struct.d_graph_capacity << " " << graph_struct.d_graph_size << '\n';
+
+    // we have the graph_struct with all data. we just need to implement insert/delete methods.
+    // add workfloat handler here;
+
     return 0;
 }

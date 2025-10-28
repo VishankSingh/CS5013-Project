@@ -7,7 +7,7 @@
 
 // Vishank: reduced the size of bloom filter to fit in gpu
 #define BF_ENTRIES 39988U  // per query, max entries in BF, (prime number)
-const unsigned BF_MEMORY =
+constexpr unsigned BF_MEMORY =
     (BF_ENTRIES & 0xFFFFFFFC) + sizeof(unsigned);  // 4-byte mem aligned size for actual allocation
 
 typedef enum : uint8_t { INIT, PRUNED, NEIGHBOR } NodeState;
@@ -45,8 +45,8 @@ struct node {
 } node_t;
 
 */
-const unsigned graphEntrySize        = D * sizeof(float) + sizeof(unsigned) + R * sizeof(unsigned);
-const unsigned reverseIndexEntrySize = (MAX_REVERSE_INDEX_ENTRIES + 1) * sizeof(unsigned);
+constexpr unsigned graphEntrySize = D * sizeof(float) + sizeof(unsigned) + R * sizeof(unsigned);
+constexpr unsigned reverseIndexEntrySize = (MAX_REVERSE_INDEX_ENTRIES + 1) * sizeof(unsigned);
 
 // Bloom Filter
 __device__ unsigned bf_hashFn1(unsigned x);
