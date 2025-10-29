@@ -28834,3 +28834,180 @@ events:
       CMAKE_SYSTEM_INCLUDE_PATH:
         - "/usr/include/X11"
 ...
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/snap/cmake/1487/share/cmake-4.1/Modules/FindCUDAToolkit.cmake:1043 (find_path)"
+      - "CMakeLists.txt:5 (find_package)"
+    mode: "path"
+    variable: "CUDAToolkit_CUBLAS_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "cublas_v2.h"
+    candidate_directories:
+      - "/usr/local/cuda/targets/x86_64-linux/include/"
+    found: "/usr/local/cuda/targets/x86_64-linux/include/"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/usr/local/cuda"
+      ENV{PATH}:
+        - "/usr/local/cuda/bin"
+        - "/home/vis/.local/bin"
+        - "/usr/local/cuda/bin"
+        - "/home/vis/miniconda3/condabin"
+        - "/home/vis/.cargo/bin"
+        - "/home/vis/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+        - "/snap/bin"
+        - "/home/vis/.vscode/extensions/ms-python.debugpy-2025.14.1-linux-x64/bundled/scripts/noConfigScripts"
+        - "/home/vis/.config/Code/User/globalStorage/github.copilot-chat/debugCommand"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/snap/cmake/1487"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+...
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/snap/cmake/1487/share/cmake-4.1/Modules/FindCUDAToolkit.cmake:1043 (find_path)"
+      - "CMakeLists.txt:5 (find_package)"
+    mode: "path"
+    variable: "CUDAToolkit_CUBLAS_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "cublas_v2.h"
+    candidate_directories:
+      - "/usr/local/cuda/targets/x86_64-linux/include/"
+    found: "/usr/local/cuda/targets/x86_64-linux/include/"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/usr/local/cuda"
+      ENV{PATH}:
+        - "/usr/local/cuda/bin"
+        - "/home/vis/.local/bin"
+        - "/usr/local/cuda/bin"
+        - "/home/vis/miniconda3/condabin"
+        - "/home/vis/.cargo/bin"
+        - "/home/vis/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+        - "/snap/bin"
+        - "/home/vis/.vscode/extensions/ms-python.debugpy-2025.14.1-linux-x64/bundled/scripts/noConfigScripts"
+        - "/home/vis/.config/Code/User/globalStorage/github.copilot-chat/debugCommand"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/snap/cmake/1487"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+...
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/snap/cmake/1487/share/cmake-4.1/Modules/FindCUDAToolkit.cmake:1043 (find_path)"
+      - "CMakeLists.txt:5 (find_package)"
+    mode: "path"
+    variable: "CUDAToolkit_CUBLAS_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "cublas_v2.h"
+    candidate_directories:
+      - "/usr/local/cuda/targets/x86_64-linux/include/"
+    found: "/usr/local/cuda/targets/x86_64-linux/include/"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "/usr/local/cuda"
+      ENV{PATH}:
+        - "/usr/local/cuda/bin"
+        - "/home/vis/.local/bin"
+        - "/usr/local/cuda/bin"
+        - "/home/vis/miniconda3/condabin"
+        - "/home/vis/.cargo/bin"
+        - "/home/vis/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+        - "/snap/bin"
+        - "/home/vis/.vscode/extensions/ms-python.debugpy-2025.14.1-linux-x64/bundled/scripts/noConfigScripts"
+        - "/home/vis/.config/Code/User/globalStorage/github.copilot-chat/debugCommand"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/snap/cmake/1487"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+...

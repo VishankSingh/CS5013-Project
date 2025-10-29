@@ -5,11 +5,6 @@
 #include <cstdio>
 #include "timer.h"
 
-// Vishank: reduced the size of bloom filter to fit in gpu
-#define BF_ENTRIES 39988U  // per query, max entries in BF, (prime number)
-constexpr unsigned BF_MEMORY =
-    (BF_ENTRIES & 0xFFFFFFFC) + sizeof(unsigned);  // 4-byte mem aligned size for actual allocation
-
 using NodeState = enum : uint8_t { INIT, PRUNED, NEIGHBOR };
 
 // Number of vertices in graph
@@ -47,12 +42,6 @@ struct node {
 */
 constexpr unsigned graphEntrySize = D * sizeof(float) + sizeof(unsigned) + R * sizeof(unsigned);
 constexpr unsigned reverseIndexEntrySize = (MAX_REVERSE_INDEX_ENTRIES + 1) * sizeof(unsigned);
-
-// Bloom Filter
-__device__ unsigned bf_hashFn1(unsigned x);
-__device__ unsigned bf_hashFn2(unsigned x);
-__device__ bool     bf_check(bool* bf, unsigned x);
-__device__ void     bf_set(bool* bf, unsigned x);
 
 void generateRandomGraph(uint8_t* graph, unsigned batchStart, unsigned batchSize);
 

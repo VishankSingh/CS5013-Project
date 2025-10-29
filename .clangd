@@ -9,3 +9,17 @@ CompileFlags:
     - -I/usr/lib/gcc/x86_64-linux-gnu/12/include
     - -Iinclude
     - -Isrc
+
+  Remove:
+    - -forward-unknown-to-host-compiler
+    - -rdc=true
+    - --generate-code=arch=compute_60,code=[compute_60,sm_60]
+    - --generate-code=arch=compute_75,code=[compute_75,sm_75]
+    - --generate-code=arch=compute_80,code=[compute_80,sm_80]
+    - --generate-code=arch=compute_86,code=[compute_86,sm_86]
+    - --generate-code=arch=compute_89,code=[compute_89,sm_89]
+    - --generate-code=arch=compute_90,code=[compute_90,sm_90]
+    - --generate-code=arch=compute_120,code=[compute_120,sm_120]
+    - -Xcompiler=-fPIE
+    - -Xcudafe
+    - --diag_suppress=550

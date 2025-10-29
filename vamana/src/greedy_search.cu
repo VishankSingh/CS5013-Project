@@ -1,3 +1,4 @@
+#include "bloom_filter.cuh"
 #include "vamana.h"
 
 __device__ bool contains(unsigned* set, unsigned count, unsigned el) {

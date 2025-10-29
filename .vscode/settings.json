@@ -2,7 +2,7 @@
     "files.associations": {},
     "clangd.path": "/usr/lib/llvm-21/bin/clangd",
     "clangd.arguments": [
-        "--compile-commands-dir=build",
+        "--compile-commands-dir=vamana/build",
         "--header-insertion=never",
         "--header-insertion-decorators=0",
         "--cross-file-rename",
