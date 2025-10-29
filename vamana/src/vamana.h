@@ -1,9 +1,8 @@
 #pragma once
 #include <cstdlib>
-#define VAMANA_H
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include "timer.h"
 
 // Vishank: reduced the size of bloom filter to fit in gpu
@@ -11,7 +10,7 @@
 constexpr unsigned BF_MEMORY =
     (BF_ENTRIES & 0xFFFFFFFC) + sizeof(unsigned);  // 4-byte mem aligned size for actual allocation
 
-typedef enum : uint8_t { INIT, PRUNED, NEIGHBOR } NodeState;
+using NodeState = enum : uint8_t { INIT, PRUNED, NEIGHBOR };
 
 // Number of vertices in graph
 #define N 10000

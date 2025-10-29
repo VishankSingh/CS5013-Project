@@ -1,15 +1,13 @@
-#include <time.h>
 #include <cstring>
+#include <ctime>
 #include <iostream>
 
-#ifndef VAMANA_H
 #include "vamana.h"
-#endif
 
 #include "graph.cuh"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 // handles the batch vamana
 // d_queryVecs contains 10000 128 dim vectors

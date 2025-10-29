@@ -1,0 +1,23 @@
+# ninja log v5
+1	2634	1761737691057343942	CMakeFiles/fresh_vamana.dir/src/main.cu.o	312f6e6f1f6affe
+1	2760	1761738334523364599	CMakeFiles/fresh_vamana.dir/src/bloom_filter.cu.o	6aabf0c08baa4b1d
+1	4855	1761738336617340290	CMakeFiles/fresh_vamana.dir/src/out_neighbors.cu.o	8c8bd527cc27e8e0
+0	2617	1761737047853963544	CMakeFiles/fresh_vamana.dir/src/insert.cu.o	9d3d0191910e1d6a
+1	2759	1761738334522364610	CMakeFiles/fresh_vamana.dir/src/util.cu.o	d973fbf000659e93
+0	4758	1761737049994731459	CMakeFiles/fresh_vamana.dir/src/reverseEdge.cu.o	8053dd1dc5d0b516
+1	4712	1761738336474341948	CMakeFiles/fresh_vamana.dir/src/vamana.cu.o	7c9edad3fe5ef9ff
+5292	5346	1761738337112334554	fresh_vamana	fb36f1405e89e361
+0	2736	1761737047972950610	CMakeFiles/fresh_vamana.dir/src/greedySearch.cu.o	2b786c824ab53f3b
+0	3057	1761737048293915782	CMakeFiles/fresh_vamana.dir/src/bloomFilter.cu.o	d9dd80a2651d02e4
+1	2860	1761738334622363448	CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o	ed130234637e317
+1	5117	1761738336880337241	CMakeFiles/fresh_vamana.dir/src/reverse_edge.cu.o	98e4c593964f944d
+5117	5292	1761738337058335179	CMakeFiles/fresh_vamana.dir/cmake_device_link.o	84fc6fac0ea4c907
+0	4934	1761737050170712437	CMakeFiles/fresh_vamana.dir/src/outNeighbors.cu.o	4ba1cf6c1adbb9bb
+1	3411	1761739038300202553	CMakeFiles/fresh_vamana.dir/src/bloom_filter.cu.o	6aabf0c08baa4b1d
+1	3592	1761739038479223429	CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o	ed130234637e317
+2	3933	1761739038820263198	CMakeFiles/fresh_vamana.dir/src/util.cu.o	d973fbf000659e93
+1	5022	1761739039911390256	CMakeFiles/fresh_vamana.dir/src/out_neighbors.cu.o	8c8bd527cc27e8e0
+2	5196	1761739040085410498	CMakeFiles/fresh_vamana.dir/src/reverse_edge.cu.o	98e4c593964f944d
+2	5544	1761739040433450947	CMakeFiles/fresh_vamana.dir/src/vamana.cu.o	7c9edad3fe5ef9ff
+5544	5731	1761739040623473031	CMakeFiles/fresh_vamana.dir/cmake_device_link.o	84fc6fac0ea4c907
+5731	5789	1761739040681479772	fresh_vamana	fb36f1405e89e361

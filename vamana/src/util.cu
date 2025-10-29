@@ -1,9 +1,7 @@
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 
-#ifndef VAMANA_H
 #include "vamana.h"
-#endif
 
 void generateRandomGraph(uint8_t* graph, unsigned batchStart, unsigned batchSize) {
     srand(0);
