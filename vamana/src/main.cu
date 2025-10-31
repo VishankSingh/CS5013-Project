@@ -1,0 +1,29 @@
+#include "graph.cuh"
+#include "utils.h"
+#include "vamana.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <iostream>
+
+int main(int argc, char** argv) {
+    if (argc != 4) {
+        printf("Usage: %s <graph> <basepoints> <output>\n", argv[0]);
+        return 1;
+    }
+
+    // Graph_t<float, 128, 64> graph_struct;
+    // driverFn(argv[1], argv[2], argv[3], graph_struct);
+
+    // std::cout << graph_struct.h_graph_capacity << " " << graph_struct.h_graph_size << '\n';
+    // std::cout << graph_struct.d_graph_capacity << " " << graph_struct.d_graph_size << '\n';
+
+    // we have the graph_struct with all data. we just need to implement insert/delete methods.
+    // add workfloat handler here;
+
+    auto graph = nullptr;
+
+    return 0;
+}

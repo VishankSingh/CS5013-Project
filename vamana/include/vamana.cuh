@@ -1,5 +1,7 @@
 #pragma once
+#include <memory>
 #include <vector>
+#include "graph.cuh"
 
 // TODO: design this
 
@@ -24,11 +26,14 @@ float basepoinst[N][128];
 template <typename Data__>
 class Vamana {
    public:
+    Vamana(std::unique_ptr<Graph_t<dtype_g, 128, 64>> graph) : graph_(std::move(graph)) {};
+
     void insert_(/*something*/);
     void delete_(/*something*/);
     void search_(/*something*/);
 
    private:
+    std::unique_ptr<Graph_t<dtype_g, 128, 64>> graph_;
     // Data structures
     //
 };

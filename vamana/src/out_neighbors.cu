@@ -22,7 +22,7 @@ __global__ void getNeighbors(uint8_t* d_graph, unsigned batchStart, unsigned* d_
     __syncthreads();
 
     // Loop over each neighbor
-    for (int ii = tid; ii < degree; ii += blockDim.x) {
+    for (uint ii = tid; ii < degree; ii += blockDim.x) {
         d_neighbors[(R + 1) * queryID + ii] = neighborPtr[ii];
     }
 }
@@ -147,7 +147,7 @@ __global__ void pruneOutNeighbors(uint8_t* d_graph, unsigned batchStart, unsigne
 
         __syncthreads();
 
-        int pStar = *pStarShared;
+        uint pStar = *pStarShared;
         if (pStar == cuda::std::numeric_limits<unsigned>::max()) {
             return;
         }

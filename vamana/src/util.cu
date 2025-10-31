@@ -5,7 +5,7 @@
 
 void generateRandomGraph(uint8_t* graph, unsigned batchStart, unsigned batchSize) {
     srand(0);
-    for (int i = batchStart; i < batchSize; i++) {
+    for (uint i = batchStart; i < batchSize; i++) {
         unsigned* neighbors = (unsigned*)(graph + (i * graphEntrySize + D * sizeof(float))) + 1;
         for (int j = 0; j < R; j++) {
             neighbors[j] = (rand() % batchSize) + batchStart;
@@ -117,7 +117,7 @@ __global__ void sortByDistance(unsigned* d_items, unsigned* d_itemCount, float* 
         __threadfence_block();
 
         // Copy the neigbors to correct positions in auxiliary array
-        for (int i = tid; i < numItems; i += blockDim.x) {
+        for (uint i = tid; i < numItems; i += blockDim.x) {
             d_itemsAux[offset + sortedPositions[i]] = d_items[offset + i];
             d_distsAux[offset + sortedPositions[i]] = d_dists[offset + i];
         }
@@ -126,7 +126,7 @@ __global__ void sortByDistance(unsigned* d_items, unsigned* d_itemCount, float* 
         __threadfence_block();
 
         // Copy from auxiliary array back into original array
-        for (int i = tid; i < numItems; i += blockDim.x) {
+        for (uint i = tid; i < numItems; i += blockDim.x) {
             d_items[offset + i] = d_itemsAux[offset + i];
             d_dists[offset + i] = d_distsAux[offset + i];
         }

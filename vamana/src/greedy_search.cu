@@ -2,7 +2,7 @@
 #include "vamana.h"
 
 __device__ bool contains(unsigned* set, unsigned count, unsigned el) {
-    for (int i = 0; i < count; i++) {
+    for (uint i = 0; i < count; i++) {
         if (set[i] == el) {
             return true;
         }

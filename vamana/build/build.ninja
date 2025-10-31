@@ -49,14 +49,6 @@ cmake_ninja_workdir = /home/vis/Desk/MyVault/Semester$ 5/GPU$ Programming/projec
 
 build cmake_object_order_depends_target_fresh_vamana: phony || .
 
-build CMakeFiles/fresh_vamana.dir/src/bloom_filter.cu.o: CUDA_COMPILER__fresh_vamana_unscanned_Release /home/vis/Desk/MyVault/Semester$ 5/GPU$ Programming/project/BANG-Billion-Scale-ANN/BANG_Exactdistance/vamana/src/bloom_filter.cu || cmake_object_order_depends_target_fresh_vamana
-  CONFIG = Release
-  DEP_FILE = CMakeFiles/fresh_vamana.dir/src/bloom_filter.cu.o.d
-  FLAGS = -O3 -DNDEBUG -O3 -rdc=true -std=c++20 "--generate-code=arch=compute_60,code=[compute_60,sm_60]" "--generate-code=arch=compute_75,code=[compute_75,sm_75]" "--generate-code=arch=compute_80,code=[compute_80,sm_80]" "--generate-code=arch=compute_86,code=[compute_86,sm_86]" "--generate-code=arch=compute_89,code=[compute_89,sm_89]" "--generate-code=arch=compute_90,code=[compute_90,sm_90]" "--generate-code=arch=compute_120,code=[compute_120,sm_120]" -Xcompiler=-fPIE -Wall -Wextra -Wno-unused-parameter -Wno-deprecated-gpu-targets -Xcompiler -Wno-unused-variable -Xcudafe --diag_suppress=550
-  INCLUDES = -I/usr/local/cuda/targets/x86_64-linux/include -I"/home/vis/Desk/MyVault/Semester 5/GPU Programming/project/BANG-Billion-Scale-ANN/BANG_Exactdistance/vamana/include"
-  OBJECT_DIR = CMakeFiles/fresh_vamana.dir
-  OBJECT_FILE_DIR = CMakeFiles/fresh_vamana.dir/src
-
 build CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o: CUDA_COMPILER__fresh_vamana_unscanned_Release /home/vis/Desk/MyVault/Semester$ 5/GPU$ Programming/project/BANG-Billion-Scale-ANN/BANG_Exactdistance/vamana/src/greedy_search.cu || cmake_object_order_depends_target_fresh_vamana
   CONFIG = Release
   DEP_FILE = CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o.d
@@ -121,7 +113,7 @@ build CMakeFiles/fresh_vamana.dir/src/vamana.cu.o: CUDA_COMPILER__fresh_vamana_u
 #############################################
 # Link the executable CMakeFiles/fresh_vamana.dir/cmake_device_link.o
 
-build CMakeFiles/fresh_vamana.dir/cmake_device_link.o: CUDA_EXECUTABLE_DEVICE_LINKER__fresh_vamana_Release CMakeFiles/fresh_vamana.dir/src/bloom_filter.cu.o CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o CMakeFiles/fresh_vamana.dir/src/insert.cu.o CMakeFiles/fresh_vamana.dir/src/main.cu.o CMakeFiles/fresh_vamana.dir/src/out_neighbors.cu.o CMakeFiles/fresh_vamana.dir/src/reverse_edge.cu.o CMakeFiles/fresh_vamana.dir/src/util.cu.o CMakeFiles/fresh_vamana.dir/src/vamana.cu.o
+build CMakeFiles/fresh_vamana.dir/cmake_device_link.o: CUDA_EXECUTABLE_DEVICE_LINKER__fresh_vamana_Release CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o CMakeFiles/fresh_vamana.dir/src/insert.cu.o CMakeFiles/fresh_vamana.dir/src/main.cu.o CMakeFiles/fresh_vamana.dir/src/out_neighbors.cu.o CMakeFiles/fresh_vamana.dir/src/reverse_edge.cu.o CMakeFiles/fresh_vamana.dir/src/util.cu.o CMakeFiles/fresh_vamana.dir/src/vamana.cu.o
   LANGUAGE_COMPILE_FLAGS = -O3 -DNDEBUG -O3 -rdc=true "--generate-code=arch=compute_60,code=[compute_60,sm_60]" "--generate-code=arch=compute_75,code=[compute_75,sm_75]" "--generate-code=arch=compute_80,code=[compute_80,sm_80]" "--generate-code=arch=compute_86,code=[compute_86,sm_86]" "--generate-code=arch=compute_89,code=[compute_89,sm_89]" "--generate-code=arch=compute_90,code=[compute_90,sm_90]" "--generate-code=arch=compute_120,code=[compute_120,sm_120]"
   LINK_LIBRARIES = -lcudadevrt -lcudart_static -lrt -lpthread -ldl
   OBJECT_DIR = CMakeFiles/fresh_vamana.dir
@@ -134,7 +126,7 @@ build CMakeFiles/fresh_vamana.dir/cmake_device_link.o: CUDA_EXECUTABLE_DEVICE_LI
 #############################################
 # Link the executable fresh_vamana
 
-build fresh_vamana: CUDA_EXECUTABLE_LINKER__fresh_vamana_Release CMakeFiles/fresh_vamana.dir/src/bloom_filter.cu.o CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o CMakeFiles/fresh_vamana.dir/src/insert.cu.o CMakeFiles/fresh_vamana.dir/src/main.cu.o CMakeFiles/fresh_vamana.dir/src/out_neighbors.cu.o CMakeFiles/fresh_vamana.dir/src/reverse_edge.cu.o CMakeFiles/fresh_vamana.dir/src/util.cu.o CMakeFiles/fresh_vamana.dir/src/vamana.cu.o CMakeFiles/fresh_vamana.dir/cmake_device_link.o
+build fresh_vamana: CUDA_EXECUTABLE_LINKER__fresh_vamana_Release CMakeFiles/fresh_vamana.dir/src/greedy_search.cu.o CMakeFiles/fresh_vamana.dir/src/insert.cu.o CMakeFiles/fresh_vamana.dir/src/main.cu.o CMakeFiles/fresh_vamana.dir/src/out_neighbors.cu.o CMakeFiles/fresh_vamana.dir/src/reverse_edge.cu.o CMakeFiles/fresh_vamana.dir/src/util.cu.o CMakeFiles/fresh_vamana.dir/src/vamana.cu.o CMakeFiles/fresh_vamana.dir/cmake_device_link.o
   CONFIG = Release
   FLAGS = -O3 -DNDEBUG -O3 -rdc=true "--generate-code=arch=compute_60,code=[compute_60,sm_60]" "--generate-code=arch=compute_75,code=[compute_75,sm_75]" "--generate-code=arch=compute_80,code=[compute_80,sm_80]" "--generate-code=arch=compute_86,code=[compute_86,sm_86]" "--generate-code=arch=compute_89,code=[compute_89,sm_89]" "--generate-code=arch=compute_90,code=[compute_90,sm_90]" "--generate-code=arch=compute_120,code=[compute_120,sm_120]"
   LINK_LIBRARIES = -lcudadevrt  -lcudart_static  -lrt  -lpthread  -ldl

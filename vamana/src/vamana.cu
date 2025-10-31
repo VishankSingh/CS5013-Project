@@ -64,8 +64,8 @@ void vamanaInner(uint8_t* d_graph, float* d_queryVecs, float alpha, unsigned bat
     printf("vamanaInner frees: %f sec\n", cputimer.Elapsed());
 }
 
-void vamanaOuter(Graph_t& graph_struct, float alpha) {
-    uint8_t* graph = graph_struct.graph;
+void vamanaOuter(Graph_t<dtype_g, 128, 64>& graph_struct, float alpha) {
+    uint8_t* graph = graph_struct.h_graph;
 
     int batchSize = 10000;
 
@@ -108,14 +108,15 @@ void vamanaOuter(Graph_t& graph_struct, float alpha) {
     cudaFree(d_queryVecs);
 }
 
-void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath, Graph_t& graph_struct) {
+void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath,
+              Graph_t<dtype_g, 128, 64>& graph_struct) {
     CPUTimer cputimer;
     cputimer.Start();
 
-    graph_struct.graph          = (uint8_t*)calloc(N, graphEntrySize);
-    graph_struct.graph_capacity = N;
+    graph_struct.h_graph          = (uint8_t*)calloc(N, graphEntrySize);
+    graph_struct.h_graph_capacity = N;
 
-    if (!graph_struct.graph) {
+    if (!graph_struct.h_graph) {
         printf("Could not allocate memory for graph.\n");
         return;
     }
@@ -128,10 +129,10 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath, Grap
         printf("Could not open graph file.\n");
         return;
     }
-    fread(graph_struct.graph, graphEntrySize, NUM_QUERIES, graphFile);
+    fread(graph_struct.h_graph, graphEntrySize, NUM_QUERIES, graphFile);
     fclose(graphFile);
 
-    graph_struct.graph_size = NUM_QUERIES;
+    graph_struct.h_graph_size = NUM_QUERIES;
 
     /*
     graph is a random graph of size 10000
@@ -201,26 +202,27 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath, Grap
         return;
     }
 
-    fwrite(graph_struct.graph, graphEntrySize, N, outFile);
+    fwrite(graph_struct.h_graph, graphEntrySize, N, outFile);
 
     cputimer.Stop();
     printf("Writing graph to file: %f sec\n", cputimer.Elapsed());
     fclose(outFile);
 }
 
-int main(int argc, char** argv) {
-    if (argc != 4) {
-        printf("Usage: %s <graph> <basepoints> <output>\n", argv[0]);
-        return 1;
-    }
-    Graph_t graph_struct;
-    driverFn(argv[1], argv[2], argv[3], graph_struct);
+// int main(int argc, char** argv) {
+//     if (argc != 4) {
+//         printf("Usage: %s <graph> <basepoints> <output>\n", argv[0]);
+//         return 1;
+//     }
 
-    std::cout << graph_struct.graph_capacity << " " << graph_struct.graph_size << '\n';
-    std::cout << graph_struct.d_graph_capacity << " " << graph_struct.d_graph_size << '\n';
+//     Graph_t<dtype_g, 128, 64> graph_struct;
+//     driverFn(argv[1], argv[2], argv[3], graph_struct);
 
-    // we have the graph_struct with all data. we just need to implement insert/delete methods.
-    // add workfloat handler here;
+//     std::cout << graph_struct.h_graph_capacity << " " << graph_struct.h_graph_size << '\n';
+//     std::cout << graph_struct.d_graph_capacity << " " << graph_struct.d_graph_size << '\n';
 
-    return 0;
-}
+//     // we have the graph_struct with all data. we just need to implement insert/delete methods.
+//     // add workfloat handler here;
+
+//     return 0;
+// }
