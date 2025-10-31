@@ -110,15 +110,3 @@ __global__ void computeDists(uint8_t* d_graph, unsigned* d_nodes, unsigned* d_no
 
 __global__ void sortByDistance(unsigned* d_items, unsigned* d_itemCount, float* d_dists,
                                unsigned* d_itemsAux, float* d_distsAux, unsigned rowSize);
-
-#define gpuErrchk(ans)                        \
-    {                                         \
-        gpuAssert((ans), __FILE__, __LINE__); \
-    }
-inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort = true) {
-    if (code != cudaSuccess) {
-        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-        if (abort)
-            exit(code);
-    }
-}

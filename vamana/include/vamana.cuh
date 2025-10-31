@@ -1,7 +1,7 @@
 #pragma once
-#include <memory>
-#include <vector>
 #include "graph.cuh"
+
+#include <memory>
 
 // TODO: design this
 
@@ -21,19 +21,19 @@ basepoints is all the points in the graph
 float basepoinst[N][128];
 */
 
-// float or integer graph points
-// for later part, not yet, just assume uint
-template <typename Data__>
-class Vamana {
-   public:
-    Vamana(std::unique_ptr<Graph_t<dtype_g, 128, 64>> graph) : graph_(std::move(graph)) {};
+using namespace FreshVamana::Consts;
 
-    void insert_(/*something*/);
-    void delete_(/*something*/);
-    void search_(/*something*/);
+template <GraphDataType DataType__>
+class VamanaIndex {
+   public:
+    VamanaIndex(std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> graph) : graph_(std::move(graph)) {};
+
+    void insertPoint(/*something*/);
+    void deletePoint(/*something*/);
+    void search(/*something*/);
 
    private:
-    std::unique_ptr<Graph_t<dtype_g, 128, 64>> graph_;
+    std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> graph_;
     // Data structures
     //
 };

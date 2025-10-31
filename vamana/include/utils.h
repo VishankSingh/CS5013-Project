@@ -1,5 +1,4 @@
 #pragma once
-
 #include "constants.h"
 #include "graph.cuh"
 
@@ -55,34 +54,64 @@ void logHostError(const char* file, int line, const char* caller, std::ostream& 
 #define LOG_HOST_ERROR(stream, msg, ...) \
     logHostError(__FILE__, __LINE__, __func__, stream, msg, ##__VA_ARGS__)
 
+inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort = true) {
+    if (code != cudaSuccess) {
+        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+        if (abort)
+            exit(code);
+    }
+}
+#define gpuErrchk(ans)                        \
+    {                                         \
+        gpuAssert((ans), __FILE__, __LINE__); \
+    }
 //==================================================================================================
-[[nodiscard]] bool read_bin(const std::filesystem::path& bin_path, uint8_t* buffer,
-                            size_t number_of_entries, size_t entry_size) {
+[[nodiscard]] inline bool readBin(const std::filesystem::path& bin_path, uint8_t* buffer,
+                                  size_t number_of_entries, size_t entry_size) {
     FILE* bin_file = fopen(bin_path.c_str(), "rb");
     if (!bin_file) {
         LOG_HOST_ERROR(std::cerr, "Failed to open bin file ", bin_path.c_str());
         // printf("Could not open bin file.\n");
         return false;
     }
-    fread(buffer, entry_size, number_of_entries, bin_file);
+
+    // constexpr size_t                      IO_BUFFER_SIZE = 4 * 1024 * 1024;
+    // static thread_local std::vector<char> io_buffer(IO_BUFFER_SIZE);
+    // setvbuf(bin_file, io_buffer.data(), _IOFBF, IO_BUFFER_SIZE);
+
+    const size_t read_count = fread(buffer, entry_size, number_of_entries, bin_file);
     fclose(bin_file);
+
+    if (read_count != number_of_entries) {
+        LOG_HOST_ERROR(std::cerr, "Incomplete read:", read_count, "of", number_of_entries);
+        return false;
+    }
     return true;
 }
 
+/*
+The returned graph should have d_graph correctly populated
+*/
 // don't mark noexcept
-[[nodiscard]] std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> init_graph(
-    const std::filesystem::path& graph_bin_path, const std::filesystem::path& basepoints_bin_path) {
+using namespace FreshVamana::Consts;
+[[nodiscard]] inline std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> initGraph(
+    const std::filesystem::path& graph_bin_path) {
     auto graph = std::make_unique<Graph_t<dtype_g, D_g, R_g>>();
 
-    graph->h_graph_size     = graph_size_g;
-    graph->h_graph_capacity = graph_size_g;
-    graph->h_graph          = (uint8_t*)std::calloc(graph_size_g, graph->get_graph_entry_size());
-    if (!read_bin(graph_bin_path, graph->h_graph, N_g, graph->get_graph_entry_size())) {
+    graph->h_graph_capacity = N_g;
+    graph->h_graph_size     = rg_bin_size_g;
+    graph->h_graph          = (uint8_t*)std::calloc(N_g, graph->get_graph_entry_size());
+    if (!readBin(graph_bin_path, graph->h_graph, rg_bin_size_g, graph->get_graph_entry_size())) {
         return nullptr;
     }
 
-    graph->d_graph_size     = N_g;
     graph->d_graph_capacity = N_g;
+    graph->d_graph_size     = rg_bin_size_g;
 
-    return nullptr;
+    gpuErrchk(cudaMalloc(&graph->d_graph, N_g * graph->get_graph_entry_size()));
+    // TODO: complete this
+    gpuErrchk(cudaMemcpy(graph->d_graph, graph->h_graph,
+                         rg_bin_size_g * graph->get_graph_entry_size(), cudaMemcpyHostToDevice));
+
+    return graph;
 }

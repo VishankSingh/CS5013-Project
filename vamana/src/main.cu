@@ -1,7 +1,9 @@
 #include "graph.cuh"
 #include "utils.h"
+#include "vamana.cuh"
 #include "vamana.h"
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -23,7 +25,11 @@ int main(int argc, char** argv) {
     // we have the graph_struct with all data. we just need to implement insert/delete methods.
     // add workfloat handler here;
 
-    auto graph = nullptr;
+    auto graph = initGraph(argv[1]);
+    std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
+    std::cout << graph->d_graph_capacity << " " << graph->d_graph_size << '\n';
+
+    VamanaIndex<dtype_g> index(std::move(graph));
 
     return 0;
 }

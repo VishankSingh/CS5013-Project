@@ -1,13 +1,11 @@
-#include <cstring>
-#include <ctime>
-#include <iostream>
-
-#include "vamana.h"
-
 #include "graph.cuh"
+#include "utils.h"
+#include "vamana.h"
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <ctime>
 
 // handles the batch vamana
 // d_queryVecs contains 10000 128 dim vectors
@@ -129,7 +127,7 @@ void driverFn(char* graphFilePath, char* basePointsPath, char* outFilePath,
         printf("Could not open graph file.\n");
         return;
     }
-    fread(graph_struct.h_graph, graphEntrySize, NUM_QUERIES, graphFile);
+    auto read_count = fread(graph_struct.h_graph, graphEntrySize, NUM_QUERIES, graphFile);
     fclose(graphFile);
 
     graph_struct.h_graph_size = NUM_QUERIES;

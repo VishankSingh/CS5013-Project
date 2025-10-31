@@ -1,5 +1,6 @@
 #include <cuda/std/limits>
 
+#include "utils.cuh"
 #include "vamana.h"
 
 __global__ void loadQueryVecs(uint8_t* d_graph, float* d_queryVecs) {

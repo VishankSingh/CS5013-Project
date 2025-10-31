@@ -1,8 +1,7 @@
 // graph.cuh
 #pragma once
-
-// #include "vamana.h"
 #include "constants.h"
+// #include "vamana.h"
 
 #include <cstdint>
 
