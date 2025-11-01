@@ -13,7 +13,11 @@
 // #define logfuncs
 
 template <typename Func>
-auto callWithLog(const char* func_name, const char* file, int line, const char* caller, Func&& func,
+auto callWithLog(const char*   func_name,
+                 const char*   file,
+                 int           line,
+                 const char*   caller,
+                 Func&&        func,
                  std::ostream& os = std::cout) {
     constexpr const char* cyan  = "\033[36m";
     constexpr const char* reset = "\033[0m";
@@ -36,8 +40,12 @@ auto callWithLog(const char* func_name, const char* file, int line, const char* 
 #endif
 
 template <typename... Args>
-void logHostError(const char* file, int line, const char* caller, std::ostream& os,
-                  const std::string& msg, Args&&... args) {
+void logHostError(const char*        file,
+                  int                line,
+                  const char*        caller,
+                  std::ostream&      os,
+                  const std::string& msg,
+                  Args&&... args) {
     constexpr const char* red   = "\033[31m";
     constexpr const char* reset = "\033[0m";
 
@@ -66,8 +74,10 @@ inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort =
         gpuAssert((ans), __FILE__, __LINE__); \
     }
 //==================================================================================================
-[[nodiscard]] inline bool readBin(const std::filesystem::path& bin_path, uint8_t* buffer,
-                                  size_t number_of_entries, size_t entry_size) {
+[[nodiscard]] inline bool readBin(const std::filesystem::path& bin_path,
+                                  uint8_t*                     buffer,
+                                  size_t                       number_of_entries,
+                                  size_t                       entry_size) {
     FILE* bin_file = fopen(bin_path.c_str(), "rb");
     if (!bin_file) {
         LOG_HOST_ERROR(std::cerr, "Failed to open bin file ", bin_path.c_str());
@@ -102,10 +112,8 @@ template <typename T__, uint D__, uint R__>
 
     auto graph = std::make_unique<GraphType>();
 
-    graph->h_graph_capacity = N_g;
-    graph->h_graph_size     = rg_bin_size_g;
-    graph->h_graph          = (uint8_t*)std::calloc(N_g, graph->get_graph_entry_size());
-    if (!readBin(graph_bin_path, graph->h_graph, rg_bin_size_g, graph->get_graph_entry_size())) {
+    uint8_t* h_graph = (uint8_t*)std::calloc(N_g, graph->get_graph_entry_size());
+    if (!readBin(graph_bin_path, h_graph, rg_bin_size_g, graph->get_graph_entry_size())) {
         return nullptr;
     }
 
@@ -114,9 +122,10 @@ template <typename T__, uint D__, uint R__>
 
     gpuErrchk(cudaMalloc(&graph->d_graph, N_g * graph->get_graph_entry_size()));
     // TODO: complete this
-    gpuErrchk(cudaMemcpy(graph->d_graph, graph->h_graph,
-                         rg_bin_size_g * graph->get_graph_entry_size(), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(graph->d_graph, h_graph, rg_bin_size_g * graph->get_graph_entry_size(),
+                         cudaMemcpyHostToDevice));
 
+    free(h_graph);
     std::cout << "[initGraph] Graph initialized: "
               << "N=" << N_g << ", D=" << D__ << ", R=" << R__
               << ", EntrySize=" << GraphType::get_graph_entry_size() << " bytes.\n";

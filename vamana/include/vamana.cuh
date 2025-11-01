@@ -93,19 +93,6 @@ class DeleteList {
 };
 
 template <typename T__, uint D__, uint R__>
-class VamanaIndex {
-   public:
-    using GraphType = Graph_t<T__, D__, R__>;
-
-    VamanaIndex(std::unique_ptr<GraphType> graph) : graph_(std::move(graph)) {};
-
-   private:
-    std::unique_ptr<GraphType> graph_;
-    // Data structures
-    //
-};
-
-template <typename T__, uint D__, uint R__>
 class Vamana {
    public:
     using GraphType = Graph_t<T__, D__, R__>;

@@ -1,7 +1,6 @@
 #include "graph.cuh"
 #include "utils.h"
 #include "vamana.cuh"
-#include "vamana.h"
 
 #include <cassert>
 #include <cstdio>
@@ -26,7 +25,7 @@ int main(int argc, char** argv) {
     // add workfloat handler here;
 
     std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> graph = initGraph<dtype_g, D_g, R_g>(argv[1]);
-    std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
+    // std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
     std::cout << graph->d_graph_capacity << " " << graph->d_graph_size << '\n';
 
     Vamana<dtype_g, D_g, R_g> index(std::move(graph));
