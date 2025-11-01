@@ -89,14 +89,18 @@ inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort =
     return true;
 }
 
+using namespace FreshVamana::Consts;
+
 /*
 The returned graph should have d_graph correctly populated
 */
 // don't mark noexcept
-using namespace FreshVamana::Consts;
-[[nodiscard]] inline std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> initGraph(
+template <typename T__, uint D__, uint R__>
+[[nodiscard]] inline std::unique_ptr<Graph_t<T__, D__, R__>> initGraph(
     const std::filesystem::path& graph_bin_path) {
-    auto graph = std::make_unique<Graph_t<dtype_g, D_g, R_g>>();
+    using GraphType = Graph_t<T__, D__, R__>;
+
+    auto graph = std::make_unique<GraphType>();
 
     graph->h_graph_capacity = N_g;
     graph->h_graph_size     = rg_bin_size_g;
@@ -112,6 +116,10 @@ using namespace FreshVamana::Consts;
     // TODO: complete this
     gpuErrchk(cudaMemcpy(graph->d_graph, graph->h_graph,
                          rg_bin_size_g * graph->get_graph_entry_size(), cudaMemcpyHostToDevice));
+
+    std::cout << "[initGraph] Graph initialized: "
+              << "N=" << N_g << ", D=" << D__ << ", R=" << R__
+              << ", EntrySize=" << GraphType::get_graph_entry_size() << " bytes.\n";
 
     return graph;
 }

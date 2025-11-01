@@ -1,7 +1,7 @@
 #include "bloom_filter.cuh"
 #include "vamana.h"
 
-#include "utils.cuh"
+#include "utils.h"
 
 __device__ bool contains(unsigned* set, unsigned count, unsigned el) {
     for (uint i = 0; i < count; i++) {

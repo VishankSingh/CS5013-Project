@@ -25,11 +25,11 @@ int main(int argc, char** argv) {
     // we have the graph_struct with all data. we just need to implement insert/delete methods.
     // add workfloat handler here;
 
-    auto graph = initGraph(argv[1]);
+    std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> graph = initGraph<dtype_g, D_g, R_g>(argv[1]);
     std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
     std::cout << graph->d_graph_capacity << " " << graph->d_graph_size << '\n';
 
-    VamanaIndex<dtype_g> index(std::move(graph));
+    Vamana<dtype_g, D_g, R_g> index(std::move(graph));
 
     return 0;
 }

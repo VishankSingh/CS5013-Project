@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-template <GraphDataType DataType__, uint D__, uint R__>
+template <typename T__, uint D__, uint R__>
 struct Graph_t {
     uint8_t* h_graph          = nullptr;
     uint     h_graph_size     = 0;
@@ -18,14 +18,10 @@ struct Graph_t {
     static constexpr uint dim    = D__;
     static constexpr uint degree = R__;
 
-    static constexpr GraphDataType graph_type = DataType__;
+    using value_type = T__;
 
     [[nodiscard]] static constexpr size_t get_graph_entry_size() noexcept {
-        if constexpr (graph_type == GraphDataType::unsupported) {
-            return 0;
-        } else {
-            return D__ * sizeof(DataType__) + sizeof(unsigned) + R__ * sizeof(unsigned);
-        }
+        return D__ * sizeof(T__) + sizeof(unsigned) + R__ * sizeof(unsigned);
     }
 };
 
