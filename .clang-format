@@ -1,5 +1,6 @@
 BasedOnStyle: Google
 IndentWidth: 4
+ContinuationIndentWidth: 4
 ColumnLimit: 100
 UseTab: Never
 BreakBeforeBraces: Attach
@@ -16,3 +17,18 @@ SpaceBeforeParens: ControlStatements
 ReflowComments: true
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
+
+AlignAfterOpenBracket: Align
+# BinPackArguments: false
+BinPackParameters: false
+# AllowAllArgumentsOnNextLine: false
+# AllowAllParametersOfDeclarationOnNextLine: false
+# PenaltyBreakBeforeFirstCallParameter: 0
+# PenaltyBreakParameter: 1
+# PenaltyBreakString: 1000
+# PenaltyReturnTypeOnItsOwnLine: 0
+# PenaltyBreakAssignment: 0
+# AlwaysBreakAfterReturnType: None
+# AlwaysBreakAfterDefinitionReturnType: None
+# AlwaysBreakAfterDeclarationReturnType: None
+# AllowShortBlocksOnASingleLine: false
