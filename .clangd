@@ -26,3 +26,4 @@ CompileFlags:
     - -Xcompiler=-fPIE
     - -Xcudafe
     - --diag_suppress=550
+    - -G

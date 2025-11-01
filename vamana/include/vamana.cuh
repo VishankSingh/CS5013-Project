@@ -1,8 +1,13 @@
 #pragma once
+#include "constants.cuh"
 #include "graph.cuh"
+#include "kernels.cuh"
+#include "search.cuh"
+#include "timer.h"
 #include "utils.cuh"
 
 #include <memory>
+#include <vector>
 
 // TODO: design this
 
@@ -51,7 +56,9 @@ class DeleteList {
 
         const size_t offset_bytes = static_cast<size_t>(size_) * getPointSize();
         uint8_t*     dst          = d_delete_list_ + offset_bytes;
-        gpuErrchk(cudaMemcpy(dst, reinterpret_cast<const uint8_t*>(d_point), getPointSize(),
+        gpuErrchk(cudaMemcpy(dst,
+                             reinterpret_cast<const uint8_t*>(d_point),
+                             getPointSize(),
                              cudaMemcpyDeviceToDevice));
         ++size_;
     }
@@ -68,7 +75,8 @@ class DeleteList {
         gpuErrchk(cudaMalloc(&new_buffer, static_cast<size_t>(new_capacity) * getPointSize()));
 
         if (d_delete_list_ && capacity_ > 0) {
-            gpuErrchk(cudaMemcpy(new_buffer, d_delete_list_,
+            gpuErrchk(cudaMemcpy(new_buffer,
+                                 d_delete_list_,
                                  static_cast<size_t>(capacity_) * getPointSize(),
                                  cudaMemcpyDeviceToDevice));
             cudaFree(d_delete_list_);
@@ -96,7 +104,78 @@ template <typename T__>
 class Vamana {
    public:
     using GraphType = GraphT<T__>;
-    Vamana(std::unique_ptr<GraphType> graph) : graph_(std::move(graph)) {};
+    Vamana(std::unique_ptr<GraphType> graph_arg) : graph_(std::move(graph_arg)) {
+        // size_t num_to_print = 128;
+        // std::vector<float> h_data(num_to_print);
+        // gpuErrchk(cudaMemcpy(h_data.data(), graph_->d_graph, num_to_print * sizeof(float),
+        //                      cudaMemcpyDeviceToHost));
+        // for (size_t i = 0; i < num_to_print; ++i) {
+        //     printf("[%3zu] %f\n", i, h_data[i]);
+        // }
+
+        unsigned* d_visitedSets;
+        unsigned* d_visitedSetCount;
+        uint8_t*  d_reverseEdgeIndex;
+
+        float alpha = 1.5;
+        T__*  d_queryVecs;
+        gpuErrchk(cudaMalloc(&d_queryVecs,
+                             FreshVamana::Consts::N_g * FreshVamana::Consts::D_g * sizeof(T__)));
+
+        for (uint i = 0; i < FreshVamana::Consts::N_g; i++) {
+            T__* src = (T__*)(graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_size_g);
+            T__* dst = (T__*)(d_queryVecs + i * FreshVamana::Consts::D_g);
+            cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
+        }
+
+        CPUTimer cputimer;
+
+        cputimer.Start();
+        gpuErrchk(cudaMalloc(&d_visitedSets,
+                             FreshVamana::Consts::N_g * FreshVamana::Consts::max_paren_per_query *
+                                 sizeof(unsigned)));
+        gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Consts::N_g * sizeof(unsigned)));
+        gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
+                             FreshVamana::Consts::N_g *
+                                 FreshVamana::Consts::reverse_index_entry_size * sizeof(uint8_t)));
+        gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Consts::N_g * sizeof(unsigned)));
+        cputimer.Stop();
+        printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
+
+        cputimer.Start();
+        greedySearch(graph_->d_graph,
+                     d_queryVecs,
+                     d_visitedSets,
+                     d_visitedSetCount,
+                     0,
+                     FreshVamana::Consts::N_g);
+        cputimer.Stop();
+        printf("greedySearch: %f sec\n", cputimer.Elapsed());
+
+        cputimer.Start();
+
+        computeOutNeighbors(graph_->d_graph,
+                            d_queryVecs,
+                            d_visitedSets,
+                            d_visitedSetCount,
+                            alpha,
+                            d_reverseEdgeIndex,
+                            0,
+                            FreshVamana::Consts::N_g);
+        cputimer.Stop();
+        printf("computeOutNeighbors: %f sec\n", cputimer.Elapsed());
+
+        cputimer.Start();
+        computeReverseEdges(graph_->d_graph, d_reverseEdgeIndex, alpha);
+        cputimer.Stop();
+        printf("computeReverseEdges: %f sec\n", cputimer.Elapsed());
+
+        cputimer.Start();
+        gpuErrchk(cudaFree(d_visitedSets));
+        gpuErrchk(cudaFree(d_visitedSetCount));
+        gpuErrchk(cudaFree(d_reverseEdgeIndex));
+        cputimer.Stop();
+    };
 
     void insertPoint(/*something*/);
     void deletePoint(/*something*/);

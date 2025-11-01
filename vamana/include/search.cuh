@@ -5,6 +5,8 @@
 #include "graph.cuh"
 #include "utils.cuh"
 
+#include "kernels.cuh"
+
 __device__ bool contains(unsigned* set, unsigned count, unsigned el) {
     for (uint i = 0; i < count; i++) {
         if (set[i] == el) {
@@ -25,12 +27,12 @@ __global__ void initializeParents(bool* d_hasParent, unsigned* d_parents) {
     }
 }
 
-__global__ void initializeWorklist(GraphT<FreshVamana::Consts::dtype_g>& graph,
-                                   float*                                d_queryVecs,
-                                   unsigned*                             d_worklist,
-                                   unsigned*                             d_worklistCount,
-                                   float*                                d_worklistDist,
-                                   bool*                                 d_worklistVisited) {
+__global__ void initializeWorklist(uint8_t*  d_graph,
+                                   float*    d_queryVecs,
+                                   unsigned* d_worklist,
+                                   unsigned* d_worklistCount,
+                                   float*    d_worklistDist,
+                                   bool*     d_worklistVisited) {
     unsigned queryID = blockIdx.x;
     unsigned tid     = threadIdx.x;
 
@@ -38,7 +40,7 @@ __global__ void initializeWorklist(GraphT<FreshVamana::Consts::dtype_g>& graph,
 
     float* queryVec = d_queryVecs + FreshVamana::Consts::D_g * queryID;
     float* medoidVec =
-        (float*)(graph.d_graph + graph.getGraphEntrySize() * FreshVamana::Consts::medoid_g);
+        (float*)(d_graph + FreshVamana::Consts::graph_entry_size_g * FreshVamana::Consts::medoid_g);
 
     if (tid == 0) {
         d_worklist[worklistOffset]        = FreshVamana::Consts::medoid_g;
@@ -65,14 +67,14 @@ __global__ void initializeWorklist(GraphT<FreshVamana::Consts::dtype_g>& graph,
  * d_visitedSet      - Array of visited points for each query
  * d_visitedSetCount - No. of visited points for each query
  */
-__global__ void filterNeighbors(GraphT<FreshVamana::Consts::dtype_g>& graph,
-                                bool*                                 d_hasParent,
-                                unsigned*                             d_parents,
-                                bool*                                 d_bloomFilters,
-                                unsigned*                             d_neighbors,
-                                unsigned*                             d_neighborsCount,
-                                unsigned*                             d_visitedSet,
-                                unsigned*                             d_visitedSetCount) {
+__global__ void filterNeighbors(uint8_t*  d_graph,
+                                bool*     d_hasParent,
+                                unsigned* d_parents,
+                                bool*     d_bloomFilters,
+                                unsigned* d_neighbors,
+                                unsigned* d_neighborsCount,
+                                unsigned* d_visitedSet,
+                                unsigned* d_visitedSetCount) {
     unsigned queryID = blockIdx.x;
     unsigned tid     = threadIdx.x;
 
@@ -84,7 +86,7 @@ __global__ void filterNeighbors(GraphT<FreshVamana::Consts::dtype_g>& graph,
     unsigned parent = d_parents[queryID];        // Get the parent for this query
 
     // Get the pointers to the degree and neighbors of the parent
-    unsigned* degreePtr   = (unsigned*)(graph.d_graph + parent * graph.getGraphEntrySize() +
+    unsigned* degreePtr   = (unsigned*)(d_graph + parent * FreshVamana::Consts::graph_entry_size_g +
                                       FreshVamana::Consts::D_g * sizeof(float));
     unsigned* neighborPtr = degreePtr + 1;
 
@@ -156,8 +158,10 @@ __global__ void mergeIntoWorklist(unsigned* d_worklistCount,
 
     if (tid < worklistSize) {
         // Fist L threads find new position for worklist elements
-        unsigned before      = lowerBound(&d_neighborsDist[neighborsOffset], 0, numNeighbors,
-                                          d_worklistDist[worklistOffset + tid]);
+        unsigned before      = lowerBound(&d_neighborsDist[neighborsOffset],
+                                     0,
+                                     numNeighbors,
+                                     d_worklistDist[worklistOffset + tid]);
         id                   = d_worklist[worklistOffset + tid];
         dist                 = d_worklistDist[worklistOffset + tid];
         visited              = d_worklistVisited[worklistOffset + tid];
@@ -166,8 +170,10 @@ __global__ void mergeIntoWorklist(unsigned* d_worklistCount,
     } else if (tid >= FreshVamana::Consts::L_g && tid < FreshVamana::Consts::L_g + numNeighbors) {
         // Next R + 1 threads find new position for neighbors
         unsigned idx         = tid - FreshVamana::Consts::L_g;  // Index into the neighbors array
-        unsigned before      = upperBound(&d_worklistDist[worklistOffset], 0, worklistSize,
-                                          d_neighborsDist[neighborsOffset + idx]);
+        unsigned before      = upperBound(&d_worklistDist[worklistOffset],
+                                     0,
+                                     worklistSize,
+                                     d_neighborsDist[neighborsOffset + idx]);
         id                   = d_neighbors[neighborsOffset + idx];
         dist                 = d_neighborsDist[neighborsOffset + idx];
         visited              = false;
@@ -206,12 +212,13 @@ __global__ void mergeIntoWorklist(unsigned* d_worklistCount,
 }
 
 // Performs greedy search and returns the visited sets
-void greedySearch(GraphT<FreshVamana::Consts::dtype_g>& graph,
-                  float*                                d_queryVecs,
-                  unsigned*                             d_visitedSet /*empty*/,
-                  unsigned*                             d_visitedSetCount /*0*/,
-                  unsigned                              batchStart,
-                  unsigned                              batchSize) {
+template <typename T__>
+void greedySearch(uint8_t*  d_graph,
+                  T__*      d_queryVecs,
+                  unsigned* d_visitedSet /*empty*/,
+                  unsigned* d_visitedSetCount /*0*/,
+                  unsigned  batchStart,
+                  unsigned  batchSize) {
     bool*     d_hasParent;  // 10k
     unsigned* d_parents;    // 10k unsigned
     bool*     d_bloomFilters;
@@ -220,7 +227,8 @@ void greedySearch(GraphT<FreshVamana::Consts::dtype_g>& graph,
     gpuErrchk(cudaMalloc(&d_parents, batchSize * sizeof(unsigned)));
     size_t allocSize = batchSize * BF_MEMORY * sizeof(bool);
 
-    printf("Allocating %.2f MB (%zu bytes) for d_bloomFilters\n", allocSize / (1024.0 * 1024.0),
+    printf("Allocating %.2f MB (%zu bytes) for d_bloomFilters\n",
+           allocSize / (1024.0 * 1024.0),
            allocSize);
 
     gpuErrchk(cudaMalloc(&d_bloomFilters, batchSize * BF_MEMORY * sizeof(bool)));
@@ -267,8 +275,8 @@ void greedySearch(GraphT<FreshVamana::Consts::dtype_g>& graph,
     gpuErrchk(cudaMalloc(&d_nextIter, sizeof(bool)));
 
     initializeParents<<<batchSize, 1>>>(d_hasParent, d_parents);
-    initializeWorklist<<<batchSize, 1>>>(graph, d_queryVecs, d_worklist, d_worklistCount,
-                                         d_worklistDist, d_worklistVisited);
+    initializeWorklist<<<batchSize, 1>>>(
+        d_graph, d_queryVecs, d_worklist, d_worklistCount, d_worklistDist, d_worklistVisited);
     // cudaDeviceSynchronize();
 
     // unsigned* neighbors     = (unsigned*)malloc((R + 1) * sizeof(unsigned));
@@ -280,29 +288,58 @@ void greedySearch(GraphT<FreshVamana::Consts::dtype_g>& graph,
         iter++;
         gpuErrchk(cudaMemset(d_nextIter, false, sizeof(bool)));
 
-        filterNeighbors<<<batchSize, FreshVamana::Consts::R_g>>>(
-            graph, d_hasParent, d_parents, d_bloomFilters, d_neighbors, d_neighborsCount,
-            d_visitedSet, d_visitedSetCount);
+        filterNeighbors<<<batchSize, FreshVamana::Consts::R_g>>>(d_graph,
+                                                                 d_hasParent,
+                                                                 d_parents,
+                                                                 d_bloomFilters,
+                                                                 d_neighbors,
+                                                                 d_neighborsCount,
+                                                                 d_visitedSet,
+                                                                 d_visitedSetCount);
 
         // gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
 
-        computeDists<<<batchSize, FreshVamana::Consts::R_g * 8>>>(
-            graph, d_neighbors, d_neighborsCount, d_queryVecs, d_neighborDists,
-            (FreshVamana::Consts::R_g + 1));
+        computeDists<<<batchSize, FreshVamana::Consts::R_g * 8>>>(d_graph,
+                                                                  d_neighbors,
+                                                                  d_neighborsCount,
+                                                                  d_queryVecs,
+                                                                  d_neighborDists,
+                                                                  (FreshVamana::Consts::R_g + 1));
         // gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
 
-        sortByDistance<<<batchSize, FreshVamana::Consts::R_g,
+        sortByDistance<<<batchSize,
+                         FreshVamana::Consts::R_g,
                          FreshVamana::Consts::R_g * sizeof(unsigned)>>>(
-            d_neighbors, d_neighborsCount, d_neighborDists, d_neighborsAux, d_neighborDistsAux,
+            d_neighbors,
+            d_neighborsCount,
+            d_neighborDists,
+            d_neighborsAux,
+            d_neighborDistsAux,
             FreshVamana::Consts::R_g + 1);
         // gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
 
         mergeIntoWorklist<<<batchSize, FreshVamana::Consts::R_g + FreshVamana::Consts::L_g>>>(
-            d_worklistCount, d_worklist, d_worklistDist, d_worklistVisited,
+            d_worklistCount,
+            d_worklist,
+            d_worklistDist,
+            d_worklistVisited,
 
-            d_neighborsCount, d_neighbors, d_neighborDists,
+            d_neighborsCount,
+            d_neighbors,
+            d_neighborDists,
 
-            d_hasParent, d_parents, d_nextIter);
+            d_hasParent,
+            d_parents,
+            d_nextIter);
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
+
         gpuErrchk(cudaMemcpy(&nextIter, d_nextIter, sizeof(bool), cudaMemcpyDeviceToHost));
     } while (nextIter);
 

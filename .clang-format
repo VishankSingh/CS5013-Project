@@ -19,7 +19,7 @@ AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 
 AlignAfterOpenBracket: Align
-# BinPackArguments: false
+BinPackArguments: false
 BinPackParameters: false
 # AllowAllArgumentsOnNextLine: false
 # AllowAllParametersOfDeclarationOnNextLine: false

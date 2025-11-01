@@ -11,4 +11,12 @@
     ],
     "C_Cpp.intelliSenseEngine": "disabled",
     "editor.formatOnSave": true,
+    "search.include": [
+        "vamana" // adjust this to your folder
+    ],
+    // Folders you want to exclude from search
+    "search.exclude": {
+        "vamana_old": true,
+        "bang_exact": true,
+    }
 }

@@ -114,156 +114,25 @@ template <typename T__>
 
     auto graph = std::make_unique<GraphType>();
 
-    uint8_t* h_graph = (uint8_t*)std::calloc(N_g, graph->getGraphEntrySize());
-    if (!readBin(graph_bin_path, h_graph, rg_bin_size_g, graph->getGraphEntrySize())) {
+    uint8_t* h_graph = (uint8_t*)std::calloc(N_g, FreshVamana::Consts::graph_entry_size_g);
+    if (!readBin(graph_bin_path, h_graph, rg_bin_size_g, FreshVamana::Consts::graph_entry_size_g)) {
         return nullptr;
     }
 
     graph->d_graph_capacity = N_g;
     graph->d_graph_size     = rg_bin_size_g;
 
-    gpuErrchk(cudaMalloc(&graph->d_graph, N_g * graph->getGraphEntrySize()));
+    gpuErrchk(cudaMalloc(&graph->d_graph, N_g * FreshVamana::Consts::graph_entry_size_g));
     // TODO: complete this
-    gpuErrchk(cudaMemcpy(graph->d_graph, h_graph, rg_bin_size_g * graph->getGraphEntrySize(),
+    gpuErrchk(cudaMemcpy(graph->d_graph, h_graph,
+                         rg_bin_size_g * FreshVamana::Consts::graph_entry_size_g,
                          cudaMemcpyHostToDevice));
 
     free(h_graph);
     std::cout << "[initGraph] Graph initialized: "
               << "N=" << N_g << ", D=" << FreshVamana::Consts::D_g
               << ", R=" << FreshVamana::Consts::R_g
-              << ", EntrySize=" << GraphType::getGraphEntrySize() << " bytes.\n";
+              << ", EntrySize=" << FreshVamana::Consts::graph_entry_size_g << " bytes.\n";
 
     return graph;
-}
-
-__global__ void computeDists(GraphT<FreshVamana::Consts::dtype_g>& graph,
-                             unsigned*                             d_nodes,
-                             unsigned*                             d_nodeCount,
-                             float*                                d_queryVecs,
-                             float*                                d_dists,
-                             unsigned                              rowSize) {
-    unsigned queryID = blockIdx.x;
-    unsigned tid     = threadIdx.x;
-
-    float* queryVec = d_queryVecs + FreshVamana::Consts::D_g * queryID;  // Pointer to query vector
-    unsigned offset = rowSize * queryID;
-    unsigned numNodes = d_nodeCount[queryID];
-
-    // Initialize distances to zero
-    for (unsigned i = tid; i < numNodes; i += blockDim.x) {
-        d_dists[offset + i] = 0;
-    }
-
-    __syncthreads();
-
-    // if (queryID == 0 & tid == 0) printf("NumNodes: %d\n", numNodes);
-
-    // Assign 8 threads to each node
-    for (unsigned j = tid / 8; j < numNodes; j += (blockDim.x + 7) / 8) {
-        unsigned node    = d_nodes[offset + j];
-        float*   nodeVec = (float*)(graph.d_graph + FreshVamana::Consts::graph_entry_size_g *
-                                                      node);  // Pointer to node vector
-        float    sum     = 0;
-
-        // Sum up 8 dimensions in parallel
-        for (unsigned i = tid % 8; i < FreshVamana::Consts::D_g; i += 8) {
-            float diff = nodeVec[i] - queryVec[i];
-            sum += diff * diff;
-        }
-        atomicAdd(&d_dists[offset + j], sum);
-    }
-
-    /*
-    for (unsigned j = tid; j < numNodes; j += blockDim.x) {
-        unsigned node = d_nodes[offset + j];
-        float *nodeVec = (float*)(d_graph + graphEntrySize*node); // Pointer to node vector
-        float sum = 0;
-        for (int i = 0; i < D; i++) {
-            float diff = nodeVec[i] - queryVec[i];
-            sum += diff * diff;
-        }
-        atomicAdd(&d_dists[offset + j], sum);
-    }
-    */
-}
-
-__device__ unsigned lowerBound(float arr[], unsigned lo, unsigned hi, float target) {
-    while (lo < hi) {
-        unsigned mid = (lo + hi) / 2;
-        if (target > arr[mid]) {
-            lo = mid + 1;
-        } else {
-            hi = mid;
-        }
-    }
-    return lo;
-}
-
-__device__ unsigned upperBound(float arr[], unsigned lo, unsigned hi, float target) {
-    while (lo < hi) {
-        unsigned mid = (lo + hi) / 2;
-        if (target >= arr[mid]) {
-            lo = mid + 1;
-        } else {
-            hi = mid;
-        }
-    }
-    return lo;
-}
-
-__global__ void sortByDistance(unsigned* d_items,
-                               unsigned* d_itemCount,
-                               float*    d_dists,
-                               unsigned* d_itemsAux,
-                               float*    d_distsAux,
-                               unsigned  rowSize) {
-    unsigned queryID = blockIdx.x;
-    unsigned tid     = threadIdx.x;
-
-    unsigned numItems = d_itemCount[queryID];
-    unsigned offset   = queryID * rowSize;
-
-    extern __shared__ unsigned sortedPositions[];
-
-    for (unsigned subarraySize = 2; subarraySize < 2 * numItems; subarraySize *= 2) {
-        unsigned subarrayID = tid / subarraySize;
-        unsigned start      = subarrayID * subarraySize;
-        unsigned mid        = min(start + subarraySize / 2, numItems);
-        unsigned end        = min(start + subarraySize, numItems);
-
-        unsigned before;
-
-        if (tid >= start && tid < mid) {
-            // If current thread corresponds to lower half, find the no. of elements before this
-            // element from the upper half
-            before = lowerBound(&d_dists[offset + mid], 0, end - mid, d_dists[offset + tid]);
-            sortedPositions[tid] = tid + before;
-        } else if (tid >= mid && tid < end) {
-            // If current thread corresponds to upper half, find the no. of elements before this
-            // element from the lower half
-            before = upperBound(&d_dists[offset + start], 0, mid - start, d_dists[offset + tid]);
-            sortedPositions[tid] = before + (tid - mid + start);
-        }
-
-        __syncthreads();
-        __threadfence_block();
-
-        // Copy the neigbors to correct positions in auxiliary array
-        for (uint i = tid; i < numItems; i += blockDim.x) {
-            d_itemsAux[offset + sortedPositions[i]] = d_items[offset + i];
-            d_distsAux[offset + sortedPositions[i]] = d_dists[offset + i];
-        }
-
-        __syncthreads();
-        __threadfence_block();
-
-        // Copy from auxiliary array back into original array
-        for (uint i = tid; i < numItems; i += blockDim.x) {
-            d_items[offset + i] = d_itemsAux[offset + i];
-            d_dists[offset + i] = d_distsAux[offset + i];
-        }
-
-        __syncthreads();
-        __threadfence_block();
-    }
 }
