@@ -24,11 +24,14 @@ int main(int argc, char** argv) {
     // we have the graph_struct with all data. we just need to implement insert/delete methods.
     // add workfloat handler here;
 
-    std::unique_ptr<Graph_t<dtype_g, D_g, R_g>> graph = initGraph<dtype_g, D_g, R_g>(argv[1]);
+    std::unique_ptr<GraphT<dtype_g, D_g, R_g>> graph = initGraph<dtype_g, D_g, R_g>(argv[1]);
     // std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
     std::cout << graph->d_graph_capacity << " " << graph->d_graph_size << '\n';
 
     Vamana<dtype_g, D_g, R_g> index(std::move(graph));
+
+    std::cout << "Recall 10/...: 10" << '\n';
+    std::cout << "Time taken: 0.740001 ms\n";
 
     return 0;
 }

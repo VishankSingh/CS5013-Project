@@ -106,9 +106,9 @@ The returned graph should have d_graph correctly populated
 */
 // don't mark noexcept
 template <typename T__, uint D__, uint R__>
-[[nodiscard]] inline std::unique_ptr<Graph_t<T__, D__, R__>> initGraph(
+[[nodiscard]] inline std::unique_ptr<GraphT<T__, D__, R__>> initGraph(
     const std::filesystem::path& graph_bin_path) {
-    using GraphType = Graph_t<T__, D__, R__>;
+    using GraphType = GraphT<T__, D__, R__>;
 
     auto graph = std::make_unique<GraphType>();
 
@@ -128,7 +128,7 @@ template <typename T__, uint D__, uint R__>
     free(h_graph);
     std::cout << "[initGraph] Graph initialized: "
               << "N=" << N_g << ", D=" << D__ << ", R=" << R__
-              << ", EntrySize=" << GraphType::get_graph_entry_size() << " bytes.\n";
+              << ", EntrySize=" << GraphType::getGraphEntrySize() << " bytes.\n";
 
     return graph;
 }

@@ -6,7 +6,7 @@
 #include <cstdint>
 
 template <typename T__, uint D__, uint R__>
-struct Graph_t {
+struct GraphT {
     uint8_t* d_graph          = nullptr;
     uint     d_graph_size     = 0;
     uint     d_graph_capacity = 0;
@@ -16,7 +16,7 @@ struct Graph_t {
 
     using value_type = T__;
 
-    [[nodiscard]] static constexpr size_t get_graph_entry_size() noexcept {
+    [[nodiscard]] static constexpr size_t getGraphEntrySize() noexcept {
         return D__ * sizeof(T__) + sizeof(unsigned) + R__ * sizeof(unsigned);
     }
 };

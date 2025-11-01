@@ -34,7 +34,7 @@ class DeleteList {
         : growth_factor_(1.3f), capacity_(initial_capacity), size_(0), d_delete_list_(nullptr) {
         if (capacity_ == 0)
             capacity_ = 1;
-        gpuErrchk(cudaMalloc(&d_delete_list_, capacity_ * get_point_size()));
+        gpuErrchk(cudaMalloc(&d_delete_list_, capacity_ * getPointSize()));
     }
 
     ~DeleteList() {
@@ -49,15 +49,15 @@ class DeleteList {
         if (size_ >= capacity_)
             expandDeleteList();
 
-        const size_t offset_bytes = static_cast<size_t>(size_) * get_point_size();
+        const size_t offset_bytes = static_cast<size_t>(size_) * getPointSize();
         uint8_t*     dst          = d_delete_list_ + offset_bytes;
-        gpuErrchk(cudaMemcpy(dst, reinterpret_cast<const uint8_t*>(d_point), get_point_size(),
+        gpuErrchk(cudaMemcpy(dst, reinterpret_cast<const uint8_t*>(d_point), getPointSize(),
                              cudaMemcpyDeviceToDevice));
         ++size_;
     }
 
    private:
-    [[nodiscard]] static constexpr size_t get_point_size() noexcept {
+    [[nodiscard]] static constexpr size_t getPointSize() noexcept {
         return static_cast<size_t>(D__) * sizeof(ValueType);
     }
 
@@ -65,11 +65,11 @@ class DeleteList {
         const unsigned new_capacity = static_cast<unsigned>(
             std::max<unsigned>(1u, static_cast<unsigned>(capacity_ * growth_factor_)));
         uint8_t* new_buffer = nullptr;
-        gpuErrchk(cudaMalloc(&new_buffer, static_cast<size_t>(new_capacity) * get_point_size()));
+        gpuErrchk(cudaMalloc(&new_buffer, static_cast<size_t>(new_capacity) * getPointSize()));
 
         if (d_delete_list_ && capacity_ > 0) {
             gpuErrchk(cudaMemcpy(new_buffer, d_delete_list_,
-                                 static_cast<size_t>(capacity_) * get_point_size(),
+                                 static_cast<size_t>(capacity_) * getPointSize(),
                                  cudaMemcpyDeviceToDevice));
             cudaFree(d_delete_list_);
         }
@@ -95,7 +95,7 @@ class DeleteList {
 template <typename T__, uint D__, uint R__>
 class Vamana {
    public:
-    using GraphType = Graph_t<T__, D__, R__>;
+    using GraphType = GraphT<T__, D__, R__>;
     Vamana(std::unique_ptr<GraphType> graph) : graph_(std::move(graph)) {};
 
     void insertPoint(/*something*/);
