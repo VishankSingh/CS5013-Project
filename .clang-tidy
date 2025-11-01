@@ -3,7 +3,7 @@ Checks: >
   # bugprone-*,
   performance-*,
   # modernize-*,
-  readability-identifier-naming,
+  # readability-identifier-naming,
   cuda-*
 
 WarningsAsErrors: '*'

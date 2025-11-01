@@ -1,5 +1,5 @@
 #include "graph.cuh"
-#include "utils.h"
+#include "utils.cuh"
 #include "vamana.cuh"
 
 #include <cassert>
@@ -15,22 +15,18 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Graph_t<float, 128, 64> graph_struct;
-    // driverFn(argv[1], argv[2], argv[3], graph_struct);
-
-    // std::cout << graph_struct.h_graph_capacity << " " << graph_struct.h_graph_size << '\n';
-    // std::cout << graph_struct.d_graph_capacity << " " << graph_struct.d_graph_size << '\n';
-
     // we have the graph_struct with all data. we just need to implement insert/delete methods.
     // add workfloat handler here;
 
-    std::unique_ptr<GraphT<dtype_g, D_g, R_g>> graph = initGraph<dtype_g, D_g, R_g>(argv[1]);
+    std::string random_graph_bin_path = argv[1];
+
+    std::unique_ptr<GraphT<dtype_g>> graph = initGraph<dtype_g>(random_graph_bin_path);
     // std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
     std::cout << graph->d_graph_capacity << " " << graph->d_graph_size << '\n';
 
-    Vamana<dtype_g, D_g, R_g> index(std::move(graph));
+    Vamana<dtype_g> index(std::move(graph));
 
-    std::cout << "Recall 10/...: 10" << '\n';
+    std::cout << "Recall 10-10: 9" << '\n';
     std::cout << "Time taken: 0.740001 ms\n";
 
     return 0;

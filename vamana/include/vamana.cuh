@@ -1,6 +1,6 @@
 #pragma once
 #include "graph.cuh"
-#include "utils.h"
+#include "utils.cuh"
 
 #include <memory>
 
@@ -24,7 +24,7 @@ float basepoinst[N][128];
 
 using namespace FreshVamana::Consts;
 
-template <typename T__, uint D__, uint R__>
+template <typename T__>
 class DeleteList {
    public:
     static_assert(!std::is_void<T__>::value, "DeleteList requires a concrete value type.");
@@ -58,7 +58,7 @@ class DeleteList {
 
    private:
     [[nodiscard]] static constexpr size_t getPointSize() noexcept {
-        return static_cast<size_t>(D__) * sizeof(ValueType);
+        return static_cast<size_t>(FreshVamana::Consts::D_g) * sizeof(ValueType);
     }
 
     void expandDeleteList() {
@@ -92,10 +92,10 @@ class DeleteList {
     uint     size_          = 0;
 };
 
-template <typename T__, uint D__, uint R__>
+template <typename T__>
 class Vamana {
    public:
-    using GraphType = GraphT<T__, D__, R__>;
+    using GraphType = GraphT<T__>;
     Vamana(std::unique_ptr<GraphType> graph) : graph_(std::move(graph)) {};
 
     void insertPoint(/*something*/);
