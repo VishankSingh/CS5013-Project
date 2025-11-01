@@ -59,9 +59,13 @@ __global__ void initializeWorklist(uint8_t* d_graph, float* d_queryVecs, unsigne
  * d_visitedSet      - Array of visited points for each query
  * d_visitedSetCount - No. of visited points for each query
  */
-__global__ void filterNeighbors(uint8_t* d_graph, bool* d_hasParent, unsigned* d_parents,
-                                bool* d_bloomFilters, unsigned* d_neighbors,
-                                unsigned* d_neighborsCount, unsigned* d_visitedSet,
+__global__ void filterNeighbors(uint8_t* d_graph, 
+                                bool* d_hasParent, 
+                                unsigned* d_parents,
+                                bool* d_bloomFilters, 
+                                unsigned* d_neighbors,
+                                unsigned* d_neighborsCount, 
+                                unsigned* d_visitedSet,
                                 unsigned* d_visitedSetCount) {
     unsigned queryID = blockIdx.x;
     unsigned tid     = threadIdx.x;
@@ -115,13 +119,16 @@ __global__ void filterNeighbors(uint8_t* d_graph, bool* d_hasParent, unsigned* d
     }
 }
 
-__global__ void mergeIntoWorklist(unsigned* d_worklistCount, unsigned* d_worklist,
-                                  float* d_worklistDist, bool* d_worklistVisited,
-
-                                  unsigned* d_neighborsCount, unsigned* d_neighbors,
-                                  float* d_neighborsDist,
-
-                                  bool* d_hasParent, unsigned* d_parents, bool* d_nextIter) {
+__global__ void mergeIntoWorklist(  unsigned* d_worklistCount, 
+                                    unsigned* d_worklist,
+                                    float* d_worklistDist, 
+                                    bool* d_worklistVisited,
+                                    unsigned* d_neighborsCount, 
+                                    unsigned* d_neighbors,
+                                    float* d_neighborsDist,
+                                    bool* d_hasParent, 
+                                    unsigned* d_parents, 
+                                    bool* d_nextIter) {
     unsigned queryID = blockIdx.x;
     unsigned tid     = threadIdx.x;
 
@@ -191,8 +198,12 @@ __global__ void mergeIntoWorklist(unsigned* d_worklistCount, unsigned* d_worklis
 }
 
 // Performs greedy search and returns the visited sets
-void greedySearch(uint8_t* d_graph, float* d_queryVecs, unsigned* d_visitedSet /*empty*/,
-                  unsigned* d_visitedSetCount /*0*/, unsigned batchStart, unsigned batchSize) {
+void greedySearch(  uint8_t* d_graph,
+                    float* d_queryVecs, 
+                    unsigned* d_visitedSet /*empty*/,
+                    unsigned* d_visitedSetCount /*0*/, 
+                    unsigned batchStart, 
+                    unsigned batchSize) {
     bool*     d_hasParent;  // 10k
     unsigned* d_parents;    // 10k unsigned
     bool*     d_bloomFilters;
