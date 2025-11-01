@@ -1,2 +1,10 @@
 test.ipynb
 vamana/build/
+
+#Ignore ctags output
+tags
+# To keep git status clean in the event of regeneration of tags 
+tags.lock
+
+# Ignore macOSX file system artifacts
+.DS_Store
