@@ -21,6 +21,9 @@ constexpr uint graph_entry_size_g =
 constexpr uint max_reverse_index_entries = 500;
 constexpr uint reverse_index_entry_size  = (max_reverse_index_entries + 1) * sizeof(unsigned);
 
+// BINARY_LAYOUT_OF_AN_ENTRY_IN_THE_GRAPH_INDEX: <vector_of_D_g_dimension><out_degree><indices_of_the_out_neighbors_in_the_graph_index>
+constexpr size_t node_size_in_bytes = D_g * sizeof(float) + 1 * sizeof(unsigned int) + R_g * sizeof(unsigned int);
+
 }  // namespace FreshVamana::Consts
 
 /*
