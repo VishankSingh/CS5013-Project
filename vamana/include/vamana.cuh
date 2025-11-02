@@ -143,30 +143,30 @@ class Vamana {
         printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
 
         cputimer.Start();
-        greedySearch(graph_->d_graph,
-                     d_queryVecs,
-                     d_visitedSets,
-                     d_visitedSetCount,
-                     0,
-                     FreshVamana::Consts::N_g);
+        greedySearch<T__>(graph_->d_graph,
+                          d_queryVecs,
+                          d_visitedSets,
+                          d_visitedSetCount,
+                          0,
+                          FreshVamana::Consts::N_g);
         cputimer.Stop();
         printf("greedySearch: %f sec\n", cputimer.Elapsed());
 
         cputimer.Start();
 
-        computeOutNeighbors(graph_->d_graph,
-                            d_queryVecs,
-                            d_visitedSets,
-                            d_visitedSetCount,
-                            alpha,
-                            d_reverseEdgeIndex,
-                            0,
-                            FreshVamana::Consts::N_g);
+        computeOutNeighbors<T__>(graph_->d_graph,
+                                 d_queryVecs,
+                                 d_visitedSets,
+                                 d_visitedSetCount,
+                                 alpha,
+                                 d_reverseEdgeIndex,
+                                 0,
+                                 FreshVamana::Consts::N_g);
         cputimer.Stop();
         printf("computeOutNeighbors: %f sec\n", cputimer.Elapsed());
 
         cputimer.Start();
-        computeReverseEdges(graph_->d_graph, d_reverseEdgeIndex, alpha);
+        computeReverseEdges<T__>(graph_->d_graph, d_reverseEdgeIndex, alpha);
         cputimer.Stop();
         printf("computeReverseEdges: %f sec\n", cputimer.Elapsed());
 

@@ -4,25 +4,30 @@
 #include "timer.h"
 #include "utils.cuh"
 
+// #include <cublas.h>
 #include <cuda/std/limits>
 
 typedef enum : uint8_t { INIT, PRUNED, NEIGHBOR } NodeState;
 
-__global__ void computeDists(uint8_t*  d_graph,
-                             unsigned* d_nodes,
-                             unsigned* d_nodeCount,
-                             float*    d_queryVecs,
-                             float*    d_dists,
-                             unsigned  rowSize) {
-    unsigned queryID = blockIdx.x;
-    unsigned tid     = threadIdx.x;
+// TODO: optimize this
+template <typename T__>
+__global__ void computeDists(uint8_t* d_graph,
+                             uint*    d_nodes,
+                             uint*    d_node_count,
+                             T__*     d_query_vecs,
+                             float*   d_dists,
+                             uint     row_size) {
+    using namespace FreshVamana;
 
-    float* queryVec = d_queryVecs + FreshVamana::Consts::D_g * queryID;  // Pointer to query vector
-    unsigned offset = rowSize * queryID;
-    unsigned numNodes = d_nodeCount[queryID];
+    uint query_id = blockIdx.x;
+    uint tid      = threadIdx.x;
+
+    T__* query_vec = d_query_vecs + Consts::D_g * query_id;  // Pointer to query vector
+    uint offset    = row_size * query_id;
+    uint num_nodes = d_node_count[query_id];
 
     // Initialize distances to zero
-    for (unsigned i = tid; i < numNodes; i += blockDim.x) {
+    for (uint i = tid; i < num_nodes; i += blockDim.x) {
         d_dists[offset + i] = 0;
     }
 
@@ -31,37 +36,25 @@ __global__ void computeDists(uint8_t*  d_graph,
     // if (queryID == 0 & tid == 0) printf("NumNodes: %d\n", numNodes);
 
     // Assign 8 threads to each node
-    for (unsigned j = tid / 8; j < numNodes; j += (blockDim.x + 7) / 8) {
-        unsigned node    = d_nodes[offset + j];
-        float*   nodeVec = (float*)(d_graph + FreshVamana::Consts::graph_entry_size_g *
-                                                node);  // Pointer to node vector
-        float    sum     = 0;
+    for (uint j = tid / 8; j < num_nodes; j += (blockDim.x + 7) / 8) {
+        uint node = d_nodes[offset + j];
+        T__* node_vec =
+            (T__*)(d_graph + Consts::graph_entry_size_g * node);  // Pointer to node vector
+        float sum = 0;
 
         // Sum up 8 dimensions in parallel
-        for (unsigned i = tid % 8; i < FreshVamana::Consts::D_g; i += 8) {
-            float diff = nodeVec[i] - queryVec[i];
+        for (uint i = tid % 8; i < Consts::D_g; i += 8) {
+            T__ diff = node_vec[i] - query_vec[i];
             sum += diff * diff;
         }
         atomicAdd(&d_dists[offset + j], sum);
     }
-
-    /*
-    for (unsigned j = tid; j < numNodes; j += blockDim.x) {
-        unsigned node = d_nodes[offset + j];
-        float *nodeVec = (float*)(d_graph + graphEntrySize*node); // Pointer to node vector
-        float sum = 0;
-        for (int i = 0; i < D; i++) {
-            float diff = nodeVec[i] - queryVec[i];
-            sum += diff * diff;
-        }
-        atomicAdd(&d_dists[offset + j], sum);
-    }
-    */
 }
 
-__device__ unsigned lowerBound(float arr[], unsigned lo, unsigned hi, float target) {
+template <typename T__>
+__device__ uint lowerBound(T__ arr[], uint lo, uint hi, T__ target) {
     while (lo < hi) {
-        unsigned mid = (lo + hi) / 2;
+        uint mid = (lo + hi) / 2;
         if (target > arr[mid]) {
             lo = mid + 1;
         } else {
@@ -71,9 +64,10 @@ __device__ unsigned lowerBound(float arr[], unsigned lo, unsigned hi, float targ
     return lo;
 }
 
-__device__ unsigned upperBound(float arr[], unsigned lo, unsigned hi, float target) {
+template <typename T__>
+__device__ uint upperBound(T__ arr[], uint lo, uint hi, T__ target) {
     while (lo < hi) {
-        unsigned mid = (lo + hi) / 2;
+        uint mid = (lo + hi) / 2;
         if (target >= arr[mid]) {
             lo = mid + 1;
         } else {
@@ -83,38 +77,38 @@ __device__ unsigned upperBound(float arr[], unsigned lo, unsigned hi, float targ
     return lo;
 }
 
-__global__ void sortByDistance(unsigned* d_items,
-                               unsigned* d_itemCount,
-                               float*    d_dists,
-                               unsigned* d_itemsAux,
-                               float*    d_distsAux,
-                               unsigned  rowSize) {
-    unsigned queryID = blockIdx.x;
-    unsigned tid     = threadIdx.x;
+__global__ void sortByDistance(uint*  d_items,
+                               uint*  d_item_count,
+                               float* d_dists,
+                               uint*  d_items_aux,
+                               float* d_dists_aux,
+                               uint   row_size) {
+    uint query_id = blockIdx.x;
+    uint tid      = threadIdx.x;
 
-    unsigned numItems = d_itemCount[queryID];
-    unsigned offset   = queryID * rowSize;
+    uint numItems = d_item_count[query_id];
+    uint offset   = query_id * row_size;
 
-    extern __shared__ unsigned sortedPositions[];
+    extern __shared__ uint sorted_positions[];
 
-    for (unsigned subarraySize = 2; subarraySize < 2 * numItems; subarraySize *= 2) {
-        unsigned subarrayID = tid / subarraySize;
-        unsigned start      = subarrayID * subarraySize;
-        unsigned mid        = min(start + subarraySize / 2, numItems);
-        unsigned end        = min(start + subarraySize, numItems);
+    for (uint subarray_size = 2; subarray_size < 2 * numItems; subarray_size *= 2) {
+        uint subarray_id = tid / subarray_size;
+        uint start       = subarray_id * subarray_size;
+        uint mid         = min(start + subarray_size / 2, numItems);
+        uint end         = min(start + subarray_size, numItems);
 
-        unsigned before;
+        uint before;
 
         if (tid >= start && tid < mid) {
             // If current thread corresponds to lower half, find the no. of elements before this
             // element from the upper half
             before = lowerBound(&d_dists[offset + mid], 0, end - mid, d_dists[offset + tid]);
-            sortedPositions[tid] = tid + before;
+            sorted_positions[tid] = tid + before;
         } else if (tid >= mid && tid < end) {
             // If current thread corresponds to upper half, find the no. of elements before this
             // element from the lower half
             before = upperBound(&d_dists[offset + start], 0, mid - start, d_dists[offset + tid]);
-            sortedPositions[tid] = before + (tid - mid + start);
+            sorted_positions[tid] = before + (tid - mid + start);
         }
 
         __syncthreads();
@@ -122,8 +116,8 @@ __global__ void sortByDistance(unsigned* d_items,
 
         // Copy the neigbors to correct positions in auxiliary array
         for (uint i = tid; i < numItems; i += blockDim.x) {
-            d_itemsAux[offset + sortedPositions[i]] = d_items[offset + i];
-            d_distsAux[offset + sortedPositions[i]] = d_dists[offset + i];
+            d_items_aux[offset + sorted_positions[i]] = d_items[offset + i];
+            d_dists_aux[offset + sorted_positions[i]] = d_dists[offset + i];
         }
 
         __syncthreads();
@@ -131,8 +125,8 @@ __global__ void sortByDistance(unsigned* d_items,
 
         // Copy from auxiliary array back into original array
         for (uint i = tid; i < numItems; i += blockDim.x) {
-            d_items[offset + i] = d_itemsAux[offset + i];
-            d_dists[offset + i] = d_distsAux[offset + i];
+            d_items[offset + i] = d_items_aux[offset + i];
+            d_dists[offset + i] = d_dists_aux[offset + i];
         }
 
         __syncthreads();
@@ -140,23 +134,25 @@ __global__ void sortByDistance(unsigned* d_items,
     }
 }
 
-__global__ void getNeighbors(uint8_t*  d_graph,
-                             unsigned  batchStart,
-                             unsigned* d_neighbors,
-                             unsigned* d_neighborsCount) {
-    unsigned queryID         = blockIdx.x;
-    unsigned extendedQueryID = batchStart + queryID;
-    unsigned tid             = threadIdx.x;
+template <typename T__>
+__global__ void getNeighbors(uint8_t* d_graph,
+                             uint     batch_start,
+                             uint*    d_neighbors,
+                             uint*    d_neighbors_count) {
+    using namespace FreshVamana;
 
-    unsigned* degreePtr =
-        (unsigned*)(d_graph + extendedQueryID * FreshVamana::Consts::graph_entry_size_g +
-                    FreshVamana::Consts::D_g * sizeof(float));
-    unsigned* neighborPtr = degreePtr + 1;
+    uint queryID         = blockIdx.x;
+    uint extendedQueryID = batch_start + queryID;
+    uint tid             = threadIdx.x;
 
-    unsigned degree = *degreePtr;
+    uint* degreePtr =
+        (uint*)(d_graph + extendedQueryID * Consts::graph_entry_size_g + Consts::D_g * sizeof(T__));
+    uint* neighborPtr = degreePtr + 1;
+
+    uint degree = *degreePtr;
 
     if (tid == 0) {
-        d_neighborsCount[queryID] = degree;
+        d_neighbors_count[queryID] = degree;
     }
 
     // TODO: Test necessity
@@ -164,134 +160,135 @@ __global__ void getNeighbors(uint8_t*  d_graph,
 
     // Loop over each neighbor
     for (uint ii = tid; ii < degree; ii += blockDim.x) {
-        d_neighbors[(FreshVamana::Consts::R_g + 1) * queryID + ii] = neighborPtr[ii];
+        d_neighbors[(Consts::R_g + 1) * queryID + ii] = neighborPtr[ii];
     }
 }
 
 // Could be merged with mergeIntoWorklist (with a dummy array for d_visited))
-__global__ void mergeIntoVisitedSet(unsigned* d_visitedSetCount,
-                                    unsigned* d_visitedSet,
-                                    float*    d_visitedSetDists,
-                                    unsigned* d_neighborsCount,
-                                    unsigned* d_neighbors,
-                                    float*    d_neighborsDist) {
-    unsigned queryID = blockIdx.x;
-    unsigned tid     = threadIdx.x;
+__global__ void mergeIntoVisitedSet(uint*  d_visited_set_count,
+                                    uint*  d_visited_set,
+                                    float* d_visited_set_dists,
+                                    uint*  d_neighbors_count,
+                                    uint*  d_neighbors,
+                                    float* d_neighbors_dist) {
+    using namespace FreshVamana;
 
-    unsigned visitedSetOffset = queryID * FreshVamana::Consts::max_paren_per_query;
-    unsigned neighborsOffset  = queryID * (FreshVamana::Consts::R_g + 1);
+    uint query_id = blockIdx.x;
+    uint tid      = threadIdx.x;
 
-    unsigned numNeighbors   = d_neighborsCount[queryID];
-    unsigned visitedSetSize = d_visitedSetCount[queryID];
+    uint visited_set_offset = query_id * Consts::max_paren_per_query;
+    uint neighbors_offset   = query_id * (Consts::R_g + 1);
 
-    unsigned newVisitedSetSize =
-        min(numNeighbors + visitedSetSize, FreshVamana::Consts::max_paren_per_query);
+    uint num_neighbors    = d_neighbors_count[query_id];
+    uint visited_set_size = d_visited_set_count[query_id];
 
-    unsigned id;
-    float    dist;
-    unsigned newPos = FreshVamana::Consts::max_paren_per_query;
+    uint new_visited_set_size = min(num_neighbors + visited_set_size, Consts::max_paren_per_query);
 
-    if (tid < visitedSetSize) {
-        unsigned before = lowerBound(&d_neighborsDist[neighborsOffset],
+    uint  id;
+    float dist;
+    uint  new_pos = Consts::max_paren_per_query;
+
+    if (tid < visited_set_size) {
+        unsigned before = lowerBound(&d_neighbors_dist[neighbors_offset],
                                      0,
-                                     numNeighbors,
-                                     d_visitedSetDists[visitedSetOffset + tid]);
-        id              = d_visitedSet[visitedSetOffset + tid];
-        dist            = d_visitedSetDists[visitedSetOffset + tid];
-        newPos          = before + tid;
-    } else if (tid >= FreshVamana::Consts::max_paren_per_query &&
-               tid < FreshVamana::Consts::max_paren_per_query + numNeighbors) {
-        unsigned idx    = tid - FreshVamana::Consts::max_paren_per_query;
-        unsigned before = upperBound(&d_visitedSetDists[visitedSetOffset],
+                                     num_neighbors,
+                                     d_visited_set_dists[visited_set_offset + tid]);
+        id              = d_visited_set[visited_set_offset + tid];
+        dist            = d_visited_set_dists[visited_set_offset + tid];
+        new_pos         = before + tid;
+    } else if (tid >= Consts::max_paren_per_query &&
+               tid < Consts::max_paren_per_query + num_neighbors) {
+        unsigned idx    = tid - Consts::max_paren_per_query;
+        unsigned before = upperBound(&d_visited_set_dists[visited_set_offset],
                                      0,
-                                     visitedSetSize,
-                                     d_neighborsDist[neighborsOffset + idx]);
-        id              = d_neighbors[neighborsOffset + idx];
-        dist            = d_neighborsDist[neighborsOffset + idx];
-        newPos          = before + idx;
+                                     visited_set_size,
+                                     d_neighbors_dist[neighbors_offset + idx]);
+        id              = d_neighbors[neighbors_offset + idx];
+        dist            = d_neighbors_dist[neighbors_offset + idx];
+        new_pos         = before + idx;
     }
 
     __syncthreads();
 
-    if (newPos < newVisitedSetSize) {
-        d_visitedSet[visitedSetOffset + newPos]      = id;
-        d_visitedSetDists[visitedSetOffset + newPos] = dist;
+    if (new_pos < new_visited_set_size) {
+        d_visited_set[visited_set_offset + new_pos]       = id;
+        d_visited_set_dists[visited_set_offset + new_pos] = dist;
     }
 
     __syncthreads();
 
     if (tid == 0) {
-        d_visitedSetCount[queryID] = newVisitedSetSize;
+        d_visited_set_count[query_id] = new_visited_set_size;
     }
 }
 
 // Robust Prune
+template <typename T__>
 __global__ void pruneOutNeighbors(uint8_t*   d_graph,
-                                  unsigned   batchStart,
-                                  unsigned*  d_visitedSet,
-                                  unsigned*  d_visitedSetCount,
-                                  float*     d_visitedSetDists,
-                                  NodeState* d_visitedSetStatus,
+                                  unsigned   batch_start,
+                                  unsigned*  d_visited_set,
+                                  unsigned*  d_visited_set_count,
+                                  float*     d_visited_set_dists,
+                                  NodeState* d_visited_set_status,
+                                  T__*       d_query_vecs,
+                                  uint8_t*   d_reverse_edge_index,
+                                  float      alpha) {
+    using namespace FreshVamana;
 
-                                  float*   d_queryVecs,
-                                  uint8_t* d_reverseEdgeIndex,
-                                  float    alpha) {
-    for (unsigned iter = 1;; iter++) {
-        unsigned queryID         = blockIdx.x;
-        unsigned extendedQueryID = batchStart + queryID;
-        unsigned tid             = threadIdx.x;
+    for (uint iter = 1;; iter++) {
+        uint query_id          = blockIdx.x;
+        uint extended_query_id = batch_start + query_id;
+        uint tid               = threadIdx.x;
 
-        unsigned numNodes         = d_visitedSetCount[queryID];
-        unsigned visitedSetOffset = queryID * FreshVamana::Consts::max_paren_per_query;
+        uint num_nodes          = d_visited_set_count[query_id];
+        uint visited_set_offset = query_id * Consts::max_paren_per_query;
 
-        unsigned* degreePtr =
-            (unsigned*)(d_graph + extendedQueryID * FreshVamana::Consts::graph_entry_size_g +
-                        FreshVamana::Consts::D_g * sizeof(float));
-        unsigned* neighborPtr = degreePtr + 1;
+        uint* degree_ptr   = (uint*)(d_graph + extended_query_id * Consts::graph_entry_size_g +
+                                   Consts::D_g * sizeof(T__));
+        uint* neighbor_ptr = degree_ptr + 1;
 
         // Initialization
         if (tid == 0 && iter == 1) {
             // Mark all candidate nodes as INIT
-            for (unsigned i = 0; i < numNodes; i++) {
-                d_visitedSetStatus[visitedSetOffset + i] = INIT;
+            for (uint i = 0; i < num_nodes; i++) {
+                d_visited_set_status[visited_set_offset + i] = INIT;
             }
 
             // Set degree to zero
-            *degreePtr = 0;
+            *degree_ptr = 0;
         }
 
         __syncthreads();
 
         // Don't add more neighbors if we already have R neighbors
-        if (*degreePtr >= FreshVamana::Consts::R_g)
+        if (*degree_ptr >= Consts::R_g)
             return;
 
-        __shared__ unsigned pStarShared[1];
-        *pStarShared = cuda::std::numeric_limits<unsigned>::max();
+        __shared__ uint p_star_shared[1];
+        *p_star_shared = cuda::std::numeric_limits<uint>::max();
 
         // Find p_star
         if (tid == 0) {
-            for (unsigned i = 0; i < numNodes; i++) {
+            for (uint i = 0; i < num_nodes; i++) {
                 // Find the closest 'INIT' node (p_star)
-                if (d_visitedSetStatus[visitedSetOffset + i] != INIT)
+                if (d_visited_set_status[visited_set_offset + i] != INIT)
                     continue;
 
-                *pStarShared = d_visitedSet[visitedSetOffset + i];
+                *p_star_shared = d_visited_set[visited_set_offset + i];
 
                 // Add an edge from the query to p_star
-                unsigned oldDegree     = atomicAdd(degreePtr, 1);
-                neighborPtr[oldDegree] = *pStarShared;
+                uint old_degree          = atomicAdd(degree_ptr, 1);
+                neighbor_ptr[old_degree] = *p_star_shared;
 
                 // Set it to neighbor
-                d_visitedSetStatus[visitedSetOffset + i] = NEIGHBOR;
+                d_visited_set_status[visited_set_offset + i] = NEIGHBOR;
 
                 // We need to add a reverse edge from p_star to query
-                unsigned* entryPtr =
-                    (unsigned*)&d_reverseEdgeIndex[*pStarShared *
-                                                   FreshVamana::Consts::reverse_index_entry_size];
-                unsigned oldLen = atomicAdd(entryPtr, 1);
-                if (oldLen < FreshVamana::Consts::max_reverse_index_entries) {
-                    entryPtr[1 + oldLen] = extendedQueryID;
+                uint* entryPtr =
+                    (uint*)&d_reverse_edge_index[*p_star_shared * Consts::reverse_index_entry_size];
+                uint oldLen = atomicAdd(entryPtr, 1);
+                if (oldLen < Consts::max_reverse_index_entries) {
+                    entryPtr[1 + oldLen] = extended_query_id;
                 } else {
                     // printf("Reverse index limit hit: %d\n", queryID);
                     atomicSub(entryPtr, 1);
@@ -304,39 +301,38 @@ __global__ void pruneOutNeighbors(uint8_t*   d_graph,
 
         __syncthreads();
 
-        uint pStar = *pStarShared;
-        if (pStar == cuda::std::numeric_limits<unsigned>::max()) {
+        uint pStar = *p_star_shared;
+        if (pStar == cuda::std::numeric_limits<uint>::max()) {
             return;
         }
 
         // Copy p_star into shared memory
-        __shared__ float pStarVec[FreshVamana::Consts::D_g];
-        float*           vecPtr =
-            (float*)(d_graph +
-                     pStar * FreshVamana::Consts::graph_entry_size_g);  // Pointer to query vector
-        for (uint ii = tid; ii < FreshVamana::Consts::D_g; ii += blockDim.x) {
+        __shared__ T__ pStarVec[Consts::D_g];
+        T__*           vecPtr =
+            (T__*)(d_graph + pStar * Consts::graph_entry_size_g);  // Pointer to query vector
+        for (uint ii = tid; ii < Consts::D_g; ii += blockDim.x) {
             pStarVec[ii] = vecPtr[ii];
         }
 
         __syncthreads();
 
-        unsigned laneId        = threadIdx.x & 31;
-        unsigned warpId        = threadIdx.x >> 5;  // warp index within block
-        unsigned warpsPerBlock = blockDim.x >> 5;
+        uint laneId        = threadIdx.x & 31;
+        uint warpId        = threadIdx.x >> 5;  // warp index within block
+        uint warpsPerBlock = blockDim.x >> 5;
 
-        for (unsigned ii = warpId; ii < numNodes; ii += warpsPerBlock) {
-            if (d_visitedSetStatus[visitedSetOffset + ii] != INIT)
+        for (uint ii = warpId; ii < num_nodes; ii += warpsPerBlock) {
+            if (d_visited_set_status[visited_set_offset + ii] != INIT)
                 continue;
 
-            unsigned     p    = d_visitedSet[visitedSetOffset + ii];
-            const float* pVec = reinterpret_cast<const float*>(
-                d_graph + p * FreshVamana::Consts::graph_entry_size_g);
+            uint       p = d_visited_set[visited_set_offset + ii];
+            const T__* pVec =
+                reinterpret_cast<const T__*>(d_graph + p * Consts::graph_entry_size_g);
 
             // cooperative distance computation
             float partial = 0.0f;
-            for (uint j = laneId; j < FreshVamana::Consts::D_g; j += 32) {
-                float diff = pVec[j] - pStarVec[j];
-                partial    = fmaf(diff, diff, partial);
+            for (uint j = laneId; j < Consts::D_g; j += 32) {
+                T__ diff = pVec[j] - pStarVec[j];
+                partial  = fmaf(diff, diff, partial);
             }
 
             // warp reduce sum
@@ -344,23 +340,26 @@ __global__ void pruneOutNeighbors(uint8_t*   d_graph,
                 partial += __shfl_down_sync(0xffffffff, partial, offset);
 
             if (laneId == 0) {
-                float queryDist = d_visitedSetDists[visitedSetOffset + ii];
+                float queryDist = d_visited_set_dists[visited_set_offset + ii];
                 if (partial * alpha <= queryDist) {
-                    d_visitedSetStatus[visitedSetOffset + ii] = PRUNED;
+                    d_visited_set_status[visited_set_offset + ii] = PRUNED;
                 }
             }
         }
     }
 }
 
-void computeOutNeighbors(uint8_t*  d_graph,
-                         float*    d_queryVecs,
-                         unsigned* d_visitedSets,
-                         unsigned* d_visitedSetCount,
-                         float     alpha,
-                         uint8_t*  d_reverseEdgeIndex,
-                         unsigned  batchStart,
-                         unsigned  batchSize) {
+template <typename T__>
+void computeOutNeighbors(uint8_t* d_graph,
+                         T__*     d_query_vecs,
+                         uint*    d_visited_sets,
+                         uint*    d_visited_set_count,
+                         float    alpha,
+                         uint8_t* d_reverse_edge_index,
+                         uint     batch_start,
+                         uint     batch_size) {
+    using namespace FreshVamana;
+
     bool log = false;
 
     cudaStream_t stream = 0;  // default stream
@@ -372,14 +371,14 @@ void computeOutNeighbors(uint8_t*  d_graph,
     float*     d_visitedSetDistsAux;
     NodeState* d_visitedSetStatus;
 
-    gpuErrchk(cudaMalloc(&d_visitedSetDists,
-                         batchSize * FreshVamana::Consts::max_paren_per_query * sizeof(float)));
-    gpuErrchk(cudaMalloc(&d_visitedSetAux,
-                         batchSize * FreshVamana::Consts::max_paren_per_query * sizeof(unsigned)));
+    gpuErrchk(
+        cudaMalloc(&d_visitedSetDists, batch_size * Consts::max_paren_per_query * sizeof(float)));
+    gpuErrchk(
+        cudaMalloc(&d_visitedSetAux, batch_size * Consts::max_paren_per_query * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_visitedSetDistsAux,
-                         batchSize * FreshVamana::Consts::max_paren_per_query * sizeof(float)));
+                         batch_size * Consts::max_paren_per_query * sizeof(float)));
     gpuErrchk(cudaMalloc(&d_visitedSetStatus,
-                         batchSize * FreshVamana::Consts::max_paren_per_query * sizeof(NodeState)));
+                         batch_size * Consts::max_paren_per_query * sizeof(NodeState)));
 
     unsigned* d_neighbors;
     unsigned* d_neighborsCount;
@@ -387,82 +386,74 @@ void computeOutNeighbors(uint8_t*  d_graph,
     unsigned* d_neighborsAux;
     float*    d_neighborsDistsAux;
 
-    gpuErrchk(
-        cudaMalloc(&d_neighbors, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(unsigned)));
-    gpuErrchk(cudaMalloc(&d_neighborsCount, batchSize * sizeof(unsigned)));
-    gpuErrchk(
-        cudaMalloc(&d_neighborsDists, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(float)));
-    gpuErrchk(
-        cudaMalloc(&d_neighborsAux, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(unsigned)));
-    gpuErrchk(cudaMalloc(&d_neighborsDistsAux,
-                         batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(float)));
+    gpuErrchk(cudaMalloc(&d_neighbors, batch_size * (Consts::R_g + 1) * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_neighborsCount, batch_size * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_neighborsDists, batch_size * (Consts::R_g + 1) * sizeof(float)));
+    gpuErrchk(cudaMalloc(&d_neighborsAux, batch_size * (Consts::R_g + 1) * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_neighborsDistsAux, batch_size * (Consts::R_g + 1) * sizeof(float)));
 
     // bool nextIter;
     // bool *d_nextIter;
     // gpuErrchk(cudaMalloc(&d_nextIter, sizeof(bool)));
 
     gputimer.Start();
-    getNeighbors<<<batchSize, FreshVamana::Consts::R_g>>>(
-        d_graph, batchStart, d_neighbors, d_neighborsCount);
+    getNeighbors<T__>
+        <<<batch_size, Consts::R_g>>>(d_graph, batch_start, d_neighbors, d_neighborsCount);
     gputimer.Stop();
     gpuErrchk(cudaDeviceSynchronize());
     // printf("getNeighbors GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
-    computeDists<<<batchSize, FreshVamana::Consts::R_g * 8>>>(d_graph,
-                                                              d_neighbors,
-                                                              d_neighborsCount,
-                                                              d_queryVecs,
-                                                              d_neighborsDists,
-                                                              (FreshVamana::Consts::R_g + 1));
+    computeDists<T__><<<batch_size, Consts::R_g * 8>>>(d_graph,
+                                                       d_neighbors,
+                                                       d_neighborsCount,
+                                                       d_query_vecs,
+                                                       d_neighborsDists,
+                                                       (FreshVamana::Consts::R_g + 1));
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("computeDists GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
-    sortByDistance<<<batchSize,
-                     FreshVamana::Consts::R_g + 1,
-                     (FreshVamana::Consts::R_g + 1) * sizeof(unsigned)>>>(
+    sortByDistance<<<batch_size, Consts::R_g + 1, (Consts::R_g + 1) * sizeof(unsigned)>>>(
         d_neighbors,
         d_neighborsCount,
         d_neighborsDists,
         d_neighborsAux,
         d_neighborsDistsAux,
-        FreshVamana::Consts::R_g + 1);
+        Consts::R_g + 1);
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("sortByDistance GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
-    computeDists<<<batchSize, 1024>>>(d_graph,
-                                      d_visitedSets,
-                                      d_visitedSetCount,
-                                      d_queryVecs,
-                                      d_visitedSetDists,
-                                      FreshVamana::Consts::max_paren_per_query);
+    computeDists<T__><<<batch_size, 1024>>>(d_graph,
+                                            d_visited_sets,
+                                            d_visited_set_count,
+                                            d_query_vecs,
+                                            d_visitedSetDists,
+                                            Consts::max_paren_per_query);
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("computeDists GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
-    sortByDistance<<<batchSize,
-                     FreshVamana::Consts::max_paren_per_query,
-                     FreshVamana::Consts::max_paren_per_query * sizeof(unsigned)>>>(
-        d_visitedSets,
-        d_visitedSetCount,
-        d_visitedSetDists,
-        d_visitedSetAux,
-        d_visitedSetDistsAux,
-        FreshVamana::Consts::max_paren_per_query);
+    sortByDistance<<<batch_size,
+                     Consts::max_paren_per_query,
+                     Consts::max_paren_per_query * sizeof(uint)>>>(d_visited_sets,
+                                                                   d_visited_set_count,
+                                                                   d_visitedSetDists,
+                                                                   d_visitedSetAux,
+                                                                   d_visitedSetDistsAux,
+                                                                   Consts::max_paren_per_query);
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("sortByDistance GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
-    mergeIntoVisitedSet<<<batchSize,
-                          FreshVamana::Consts::max_paren_per_query + FreshVamana::Consts::R_g>>>(
-        d_visitedSetCount,
-        d_visitedSets,
+    mergeIntoVisitedSet<<<batch_size, Consts::max_paren_per_query + Consts::R_g>>>(
+        d_visited_set_count,
+        d_visited_sets,
         d_visitedSetDists,
         d_neighborsCount,
         d_neighbors,
@@ -472,16 +463,16 @@ void computeOutNeighbors(uint8_t*  d_graph,
     // printf("mergeIntoVisitedSet GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
-    pruneOutNeighbors<<<batchSize, 32>>>(d_graph,
-                                         batchStart,
-                                         d_visitedSets,
-                                         d_visitedSetCount,
-                                         d_visitedSetDists,
-                                         d_visitedSetStatus,
+    pruneOutNeighbors<T__><<<batch_size, 32>>>(d_graph,
+                                               batch_start,
+                                               d_visited_sets,
+                                               d_visited_set_count,
+                                               d_visitedSetDists,
+                                               d_visitedSetStatus,
 
-                                         d_queryVecs,
-                                         d_reverseEdgeIndex,
-                                         alpha);
+                                               d_query_vecs,
+                                               d_reverse_edge_index,
+                                               alpha);
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("pruneOutNeighbors GPU time: %f ms\n", gputimer.Elapsed());
@@ -501,55 +492,60 @@ void computeOutNeighbors(uint8_t*  d_graph,
     // printf("Out neighbor pruning finished in %d iterations.\n", iter);
 }
 
-__global__ void loadQueryVecs(uint8_t* d_graph, float* d_queryVecs) {
-    unsigned queryID = blockIdx.x;
-    unsigned tid     = threadIdx.x;
+template <typename T__>
+__global__ void loadQueryVecs(uint8_t* d_graph, T__* d_queryVecs) {
+    using namespace FreshVamana;
 
-    float* queryVec = (float*)(d_graph + queryID * FreshVamana::Consts::graph_entry_size_g);
+    unsigned query_id = blockIdx.x;
+    unsigned tid      = threadIdx.x;
 
-    for (uint i = tid; i < FreshVamana::Consts::D_g; i += blockDim.x) {
-        d_queryVecs[queryID * FreshVamana::Consts::D_g + i] = queryVec[i];
+    T__* query_vec = (T__*)(d_graph + query_id * Consts::graph_entry_size_g);
+
+    for (uint i = tid; i < Consts::D_g; i += blockDim.x) {
+        d_queryVecs[query_id * Consts::D_g + i] = query_vec[i];
     }
 }
 
 // Convert from the byte-array representation into the usual array-and-length representation
-__global__ void parseReverseIndex(uint8_t*  d_reverseEdgeIndex,
-                                  unsigned* d_reverseEdges,
-                                  unsigned* d_reverseEdgeCount,
-                                  unsigned* degreeCounts) {
-    unsigned queryID = blockIdx.x;
-    unsigned tid     = threadIdx.x;
+__global__ void parseReverseIndex(uint8_t* d_reverseEdgeIndex,
+                                  uint*    d_reverseEdges,
+                                  uint*    d_reverseEdgeCount,
+                                  uint*    degreeCounts) {
+    using namespace FreshVamana;
 
-    unsigned* entryPtr =
-        (unsigned*)(d_reverseEdgeIndex + queryID * FreshVamana::Consts::reverse_index_entry_size);
-    unsigned numReverseEdges = *entryPtr;
+    uint queryID = blockIdx.x;
+    uint tid     = threadIdx.x;
+
+    uint* entryPtr = (uint*)(d_reverseEdgeIndex + queryID * Consts::reverse_index_entry_size);
+    uint  numReverseEdges = *entryPtr;
 
     if (tid == 0) {
         d_reverseEdgeCount[queryID] = numReverseEdges;
         atomicAdd(&degreeCounts[numReverseEdges], 1);
     }
 
-    for (unsigned ii = tid; ii < numReverseEdges; ii += blockDim.x) {
-        d_reverseEdges[queryID * FreshVamana::Consts::max_reverse_index_entries + ii] =
-            entryPtr[1 + ii];
+    for (uint ii = tid; ii < numReverseEdges; ii += blockDim.x) {
+        d_reverseEdges[queryID * Consts::max_reverse_index_entries + ii] = entryPtr[1 + ii];
     }
 }
 
-__global__ void getPrunableQueryIDs(unsigned* d_reverseEdgeCount,
-                                    unsigned* d_queryIDs,
-                                    unsigned* d_queryCount) {
-    int      tid  = threadIdx.x;
-    int      lane = tid % 32;
-    uint     i    = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned flag = (i < FreshVamana::Consts::N_g) && (d_reverseEdgeCount[i] != 0);
-    if (i >= FreshVamana::Consts::N_g)
+__global__ void getPrunableQueryIDs(uint* d_reverseEdgeCount,
+                                    uint* d_queryIDs,
+                                    uint* d_queryCount) {
+    using namespace FreshVamana;
+
+    int  tid  = threadIdx.x;
+    int  lane = tid % 32;
+    uint i    = blockIdx.x * blockDim.x + threadIdx.x;
+    uint flag = (i < Consts::N_g) && (d_reverseEdgeCount[i] != 0);
+    if (i >= Consts::N_g)
         return;
 
     // unsigned flag = (d_reverseEdgeCount[i] != 0);
-    unsigned mask       = __ballot_sync(0xffffffff, flag);
-    int      warpActive = __popc(mask);
+    uint mask       = __ballot_sync(0xffffffff, flag);
+    int  warpActive = __popc(mask);
 
-    unsigned warpBase = 0;
+    uint warpBase = 0;
     if (lane == 0) {
         warpBase = atomicAdd(d_queryCount, warpActive);
     }
@@ -561,27 +557,29 @@ __global__ void getPrunableQueryIDs(unsigned* d_reverseEdgeCount,
 }
 
 // Could be merged with mergeIntoVisitedSets
-__global__ void mergeIntoReverseEdges(unsigned* d_reverseEdgeCount,
-                                      unsigned* d_reverseEdges,
-                                      float*    d_reverseEdgeDists,
-                                      unsigned* d_neighborsCount,
-                                      unsigned* d_neighbors,
-                                      float*    d_neighborsDist) {
+__global__ void mergeIntoReverseEdges(uint*  d_reverseEdgeCount,
+                                      uint*  d_reverseEdges,
+                                      float* d_reverseEdgeDists,
+                                      uint*  d_neighborsCount,
+                                      uint*  d_neighbors,
+                                      float* d_neighborsDist) {
+    using namespace FreshVamana;
+
     unsigned queryID = blockIdx.x;
     unsigned tid     = threadIdx.x;
 
-    unsigned reverseEdgeOffset = queryID * FreshVamana::Consts::max_reverse_index_entries;
-    unsigned neighborsOffset   = queryID * (FreshVamana::Consts::R_g + 1);
+    unsigned reverseEdgeOffset = queryID * Consts::max_reverse_index_entries;
+    unsigned neighborsOffset   = queryID * (Consts::R_g + 1);
 
     unsigned numNeighbors     = d_neighborsCount[queryID];
     unsigned reverseEdgeCount = d_reverseEdgeCount[queryID];
 
     unsigned newReverseEdgeCount =
-        min(numNeighbors + reverseEdgeCount, FreshVamana::Consts::max_reverse_index_entries);
+        min(numNeighbors + reverseEdgeCount, Consts::max_reverse_index_entries);
 
     unsigned id;
     float    dist;
-    unsigned newPos = FreshVamana::Consts::max_reverse_index_entries;
+    unsigned newPos = Consts::max_reverse_index_entries;
 
     if (tid < reverseEdgeCount) {
         unsigned before = lowerBound(&d_neighborsDist[neighborsOffset],
@@ -591,9 +589,9 @@ __global__ void mergeIntoReverseEdges(unsigned* d_reverseEdgeCount,
         id              = d_reverseEdges[reverseEdgeOffset + tid];
         dist            = d_reverseEdgeDists[reverseEdgeOffset + tid];
         newPos          = before + tid;
-    } else if (tid >= FreshVamana::Consts::max_reverse_index_entries &&
-               tid < FreshVamana::Consts::max_reverse_index_entries + numNeighbors) {
-        unsigned idx    = tid - FreshVamana::Consts::max_reverse_index_entries;
+    } else if (tid >= Consts::max_reverse_index_entries &&
+               tid < Consts::max_reverse_index_entries + numNeighbors) {
+        unsigned idx    = tid - Consts::max_reverse_index_entries;
         unsigned before = upperBound(&d_reverseEdgeDists[reverseEdgeOffset],
                                      0,
                                      reverseEdgeCount,
@@ -617,15 +615,17 @@ __global__ void mergeIntoReverseEdges(unsigned* d_reverseEdgeCount,
     }
 }
 
+template <typename T__>
 __global__ void pruneReverseEdges(uint8_t*   d_graph,
                                   unsigned*  d_queryIDs,
                                   unsigned*  d_reverseEdges,
                                   unsigned*  d_reverseEdgeCount,
                                   float*     d_reverseEdgeDists,
                                   NodeState* d_reverseEdgeStatus,
+                                  T__*       d_queryVecs,
+                                  float      alpha) {
+    using namespace FreshVamana;
 
-                                  float* d_queryVecs,
-                                  float  alpha) {
     for (unsigned iter = 1;; iter++) {
         // unsigned bid = blockIdx.x;
         // unsigned queryID = d_queryIDs[bid];
@@ -633,11 +633,10 @@ __global__ void pruneReverseEdges(uint8_t*   d_graph,
         unsigned tid     = threadIdx.x;
 
         unsigned numNodes          = d_reverseEdgeCount[queryID];
-        unsigned reverseEdgeOffset = queryID * FreshVamana::Consts::max_reverse_index_entries;
+        unsigned reverseEdgeOffset = queryID * Consts::max_reverse_index_entries;
 
         unsigned* degreePtr =
-            (unsigned*)(d_graph + queryID * FreshVamana::Consts::graph_entry_size_g +
-                        FreshVamana::Consts::D_g * sizeof(float));
+            (unsigned*)(d_graph + queryID * Consts::graph_entry_size_g + Consts::D_g * sizeof(T__));
         unsigned* neighborPtr = degreePtr + 1;
 
         // printf("%d\n", queryID);
@@ -655,7 +654,7 @@ __global__ void pruneReverseEdges(uint8_t*   d_graph,
         __syncthreads();
 
         // Don't add more neighbors if we already have R neighbors
-        if (*degreePtr >= FreshVamana::Consts::R_g)
+        if (*degreePtr >= Consts::R_g)
             return;
 
         __shared__ unsigned pStarShared[1];
@@ -675,7 +674,7 @@ __global__ void pruneReverseEdges(uint8_t*   d_graph,
                 unsigned oldDegree     = atomicAdd(degreePtr, 1);
                 neighborPtr[oldDegree] = *pStarShared;
 
-                if (oldDegree > FreshVamana::Consts::R_g)
+                if (oldDegree > Consts::R_g)
                     printf("Backward degree exceeded R: %d\n", queryID);
 
                 // Set it to neighbor
@@ -692,11 +691,10 @@ __global__ void pruneReverseEdges(uint8_t*   d_graph,
             return;
 
         // Copy p_star into shared memory
-        __shared__ float pStarVec[FreshVamana::Consts::D_g];
-        float*           vecPtr =
-            (float*)(d_graph +
-                     pStar * FreshVamana::Consts::graph_entry_size_g);  // Pointer to query vector
-        for (unsigned ii = tid; ii < FreshVamana::Consts::D_g; ii += blockDim.x) {
+        __shared__ T__ pStarVec[Consts::D_g];
+        T__*           vecPtr =
+            (T__*)(d_graph + pStar * Consts::graph_entry_size_g);  // Pointer to query vector
+        for (unsigned ii = tid; ii < Consts::D_g; ii += blockDim.x) {
             pStarVec[ii] = vecPtr[ii];
         }
 
@@ -710,15 +708,15 @@ __global__ void pruneReverseEdges(uint8_t*   d_graph,
             if (d_reverseEdgeStatus[reverseEdgeOffset + ii] != INIT)
                 continue;
 
-            unsigned     p    = d_reverseEdges[reverseEdgeOffset + ii];
-            const float* pVec = reinterpret_cast<const float*>(
-                d_graph + p * FreshVamana::Consts::graph_entry_size_g);
+            unsigned   p = d_reverseEdges[reverseEdgeOffset + ii];
+            const T__* pVec =
+                reinterpret_cast<const T__*>(d_graph + p * Consts::graph_entry_size_g);
 
             // cooperative distance computation
             float partial = 0.0f;
-            for (unsigned j = laneId; j < FreshVamana::Consts::D_g; j += 32) {
-                float diff = pVec[j] - pStarVec[j];
-                partial    = fmaf(diff, diff, partial);
+            for (unsigned j = laneId; j < Consts::D_g; j += 32) {
+                T__ diff = pVec[j] - pStarVec[j];
+                partial  = fmaf(diff, diff, partial);
             }
 
             // warp reduce sum
@@ -735,13 +733,15 @@ __global__ void pruneReverseEdges(uint8_t*   d_graph,
     }
 }
 
+template <typename T__>
 void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float alpha) {
     // TODO: Replace queryVecs with something better. It seems like a good idea to do this pruning
     // in batches
-    float* d_queryVecs;
+    using namespace FreshVamana;
 
-    gpuErrchk(cudaMalloc(&d_queryVecs,
-                         FreshVamana::Consts::N_g * FreshVamana::Consts::D_g * sizeof(float)));
+    T__* d_queryVecs;
+
+    gpuErrchk(cudaMalloc(&d_queryVecs, Consts::N_g * Consts::D_g * sizeof(T__)));
 
     unsigned*  d_reverseEdges;
     unsigned*  d_reverseEdgeCount;
@@ -751,21 +751,16 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
     NodeState* d_reverseEdgeStatus;
 
     gpuErrchk(cudaMalloc(&d_reverseEdges,
-                         FreshVamana::Consts::N_g * FreshVamana::Consts::max_reverse_index_entries *
-                             sizeof(unsigned)));
-    gpuErrchk(cudaMalloc(&d_reverseEdgeCount, FreshVamana::Consts::N_g * sizeof(unsigned)));
-    gpuErrchk(cudaMalloc(
-        &d_reverseEdgeDists,
-        FreshVamana::Consts::N_g * FreshVamana::Consts::max_reverse_index_entries * sizeof(float)));
+                         Consts::N_g * Consts::max_reverse_index_entries * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&d_reverseEdgeCount, Consts::N_g * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&d_reverseEdgeDists,
+                         Consts::N_g * Consts::max_reverse_index_entries * sizeof(float)));
     gpuErrchk(cudaMalloc(&d_reverseEdgesAux,
-                         FreshVamana::Consts::N_g * FreshVamana::Consts::max_reverse_index_entries *
-                             sizeof(unsigned)));
-    gpuErrchk(cudaMalloc(
-        &d_reverseEdgeDistsAux,
-        FreshVamana::Consts::N_g * FreshVamana::Consts::max_reverse_index_entries * sizeof(float)));
+                         Consts::N_g * Consts::max_reverse_index_entries * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&d_reverseEdgeDistsAux,
+                         Consts::N_g * Consts::max_reverse_index_entries * sizeof(float)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeStatus,
-                         FreshVamana::Consts::N_g * FreshVamana::Consts::max_reverse_index_entries *
-                             sizeof(NodeState)));
+                         Consts::N_g * Consts::max_reverse_index_entries * sizeof(NodeState)));
 
     unsigned* d_neighbors;
     unsigned* d_neighborsCount;
@@ -773,34 +768,24 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
     unsigned* d_neighborsAux;
     float*    d_neighborDistsAux;
 
-    gpuErrchk(
-        cudaMalloc(&d_neighbors,
-                   FreshVamana::Consts::N_g * (FreshVamana::Consts::R_g + 1) * sizeof(unsigned)));
-    gpuErrchk(cudaMalloc(&d_neighborsCount, FreshVamana::Consts::N_g * sizeof(unsigned)));
-    gpuErrchk(
-        cudaMalloc(&d_neighborDists,
-                   FreshVamana::Consts::N_g * (FreshVamana::Consts::R_g + 1) * sizeof(float)));
-    gpuErrchk(
-        cudaMalloc(&d_neighborsAux,
-                   FreshVamana::Consts::N_g * (FreshVamana::Consts::R_g + 1) * sizeof(unsigned)));
-    gpuErrchk(
-        cudaMalloc(&d_neighborDistsAux,
-                   FreshVamana::Consts::N_g * (FreshVamana::Consts::R_g + 1) * sizeof(float)));
+    gpuErrchk(cudaMalloc(&d_neighbors, Consts::N_g * (Consts::R_g + 1) * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&d_neighborsCount, Consts::N_g * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&d_neighborDists, Consts::N_g * (Consts::R_g + 1) * sizeof(float)));
+    gpuErrchk(cudaMalloc(&d_neighborsAux, Consts::N_g * (Consts::R_g + 1) * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&d_neighborDistsAux, Consts::N_g * (Consts::R_g + 1) * sizeof(float)));
 
     // bool nextIter;
     // bool *d_nextIter;
 
     // gpuErrchk(cudaMalloc(&d_nextIter, sizeof(bool)));
 
-    loadQueryVecs<<<FreshVamana::Consts::N_g, FreshVamana::Consts::D_g>>>(d_graph, d_queryVecs);
+    loadQueryVecs<<<Consts::N_g, Consts::D_g>>>(d_graph, d_queryVecs);
 
     unsigned* degreeSum;
-    gpuErrchk(cudaMalloc(&degreeSum,
-                         (FreshVamana::Consts::max_reverse_index_entries + 1) * sizeof(unsigned)));
-    gpuErrchk(cudaMemset(
-        degreeSum, 0, (FreshVamana::Consts::max_reverse_index_entries + 1) * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&degreeSum, (Consts::max_reverse_index_entries + 1) * sizeof(unsigned)));
+    gpuErrchk(cudaMemset(degreeSum, 0, (Consts::max_reverse_index_entries + 1) * sizeof(unsigned)));
 
-    parseReverseIndex<<<FreshVamana::Consts::N_g, 1024>>>(
+    parseReverseIndex<<<Consts::N_g, 1024>>>(
         d_reverseEdgeIndex, d_reverseEdges, d_reverseEdgeCount, degreeSum);
 
     // unsigned h_degreeCounts[MAX_REVERSE_INDEX_ENTRIES + 1];
@@ -815,57 +800,46 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
 
     unsigned  h_queryCount;
     unsigned *d_queryIDs, *d_queryCount;
-    gpuErrchk(cudaMalloc(&d_queryIDs, FreshVamana::Consts::N_g * sizeof(unsigned)));
+    gpuErrchk(cudaMalloc(&d_queryIDs, Consts::N_g * sizeof(unsigned)));
     gpuErrchk(cudaMalloc(&d_queryCount, sizeof(unsigned)));
     const int numThreads = 32;
-    getPrunableQueryIDs<<<(FreshVamana::Consts::N_g + numThreads - 1) / numThreads, numThreads>>>(
+    getPrunableQueryIDs<<<(Consts::N_g + numThreads - 1) / numThreads, numThreads>>>(
         d_reverseEdgeCount, d_queryIDs, d_queryCount);
     cudaMemcpy(&h_queryCount, d_queryCount, sizeof(unsigned), cudaMemcpyDeviceToHost);
 
     // printf("%d\n", h_queryCount)
 
     // Can't use 8*MAX_REVERSE_INDEX_ENTRIES because it exceeds block size limit
-    computeDists<<<FreshVamana::Consts::N_g, 1024>>>(
-        d_graph,
-        d_reverseEdges,
-        d_reverseEdgeCount,
-        d_queryVecs,
-        d_reverseEdgeDists,
-        FreshVamana::Consts::max_reverse_index_entries);
+    computeDists<T__><<<Consts::N_g, 1024>>>(d_graph,
+                                             d_reverseEdges,
+                                             d_reverseEdgeCount,
+                                             d_queryVecs,
+                                             d_reverseEdgeDists,
+                                             Consts::max_reverse_index_entries);
 
     // sortByDistance<<<N, MAX_REVERSE_INDEX_ENTRIES,
-    sortByDistance<<<FreshVamana::Consts::N_g,
-                     1024,
-                     FreshVamana::Consts::max_reverse_index_entries * sizeof(unsigned)>>>(
+    sortByDistance<<<Consts::N_g, 1024, Consts::max_reverse_index_entries * sizeof(unsigned)>>>(
         d_reverseEdges,
         d_reverseEdgeCount,
         d_reverseEdgeDists,
         d_reverseEdgesAux,
         d_reverseEdgeDistsAux,
-        FreshVamana::Consts::max_reverse_index_entries);
+        Consts::max_reverse_index_entries);
 
-    getNeighbors<<<FreshVamana::Consts::N_g, FreshVamana::Consts::R_g>>>(
-        d_graph, 0, d_neighbors, d_neighborsCount);
+    getNeighbors<T__><<<Consts::N_g, Consts::R_g>>>(d_graph, 0, d_neighbors, d_neighborsCount);
 
-    computeDists<<<FreshVamana::Consts::N_g, FreshVamana::Consts::R_g * 8>>>(
-        d_graph,
-        d_neighbors,
-        d_neighborsCount,
-        d_queryVecs,
-        d_neighborDists,
-        (FreshVamana::Consts::R_g + 1));
+    computeDists<T__><<<Consts::N_g, Consts::R_g * 8>>>(
+        d_graph, d_neighbors, d_neighborsCount, d_queryVecs, d_neighborDists, (Consts::R_g + 1));
 
-    sortByDistance<<<FreshVamana::Consts::N_g,
-                     FreshVamana::Consts::R_g + 1,
-                     (FreshVamana::Consts::R_g + 1) * sizeof(unsigned)>>>(
+    sortByDistance<<<Consts::N_g, Consts::R_g + 1, (Consts::R_g + 1) * sizeof(unsigned)>>>(
         d_neighbors,
         d_neighborsCount,
         d_neighborDists,
         d_neighborsAux,
         d_neighborDistsAux,
-        FreshVamana::Consts::R_g + 1);
+        Consts::R_g + 1);
 
-    mergeIntoReverseEdges<<<FreshVamana::Consts::N_g, 1024>>>(
+    mergeIntoReverseEdges<<<Consts::N_g, 1024>>>(
         d_reverseEdgeCount,
         // mergeIntoReverseEdges<<<N, R+MAX_REVERSE_INDEX_ENTRIES>>>(d_reverseEdgeCount,
         d_reverseEdges,
@@ -876,15 +850,15 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
 
     // unsigned iter = 0;
 
-    h_queryCount = FreshVamana::Consts::N_g;
-    pruneReverseEdges<<<h_queryCount, 32>>>(d_graph,
-                                            d_queryIDs,
-                                            d_reverseEdges,
-                                            d_reverseEdgeCount,
-                                            d_reverseEdgeDists,
-                                            d_reverseEdgeStatus,
-                                            d_queryVecs,
-                                            alpha);
+    h_queryCount = Consts::N_g;
+    pruneReverseEdges<T__><<<h_queryCount, 32>>>(d_graph,
+                                                 d_queryIDs,
+                                                 d_reverseEdges,
+                                                 d_reverseEdgeCount,
+                                                 d_reverseEdgeDists,
+                                                 d_reverseEdgeStatus,
+                                                 d_queryVecs,
+                                                 alpha);
 
     gpuErrchk(cudaFree(d_queryVecs));
 

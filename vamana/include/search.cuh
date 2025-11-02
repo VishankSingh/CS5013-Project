@@ -27,8 +27,9 @@ __global__ void initializeParents(bool* d_hasParent, unsigned* d_parents) {
     }
 }
 
+template <typename T__>
 __global__ void initializeWorklist(uint8_t*  d_graph,
-                                   float*    d_queryVecs,
+                                   T__*      d_queryVecs,
                                    unsigned* d_worklist,
                                    unsigned* d_worklistCount,
                                    float*    d_worklistDist,
@@ -38,9 +39,9 @@ __global__ void initializeWorklist(uint8_t*  d_graph,
 
     unsigned worklistOffset = FreshVamana::Consts::L_g * queryID;
 
-    float* queryVec = d_queryVecs + FreshVamana::Consts::D_g * queryID;
-    float* medoidVec =
-        (float*)(d_graph + FreshVamana::Consts::graph_entry_size_g * FreshVamana::Consts::medoid_g);
+    T__* queryVec = d_queryVecs + FreshVamana::Consts::D_g * queryID;
+    T__* medoidVec =
+        (T__*)(d_graph + FreshVamana::Consts::graph_entry_size_g * FreshVamana::Consts::medoid_g);
 
     if (tid == 0) {
         d_worklist[worklistOffset]        = FreshVamana::Consts::medoid_g;
@@ -49,7 +50,7 @@ __global__ void initializeWorklist(uint8_t*  d_graph,
 
         float dist = 0;
         for (uint i = 0; i < FreshVamana::Consts::D_g; i++) {
-            float diff = queryVec[i] - medoidVec[i];
+            T__ diff = queryVec[i] - medoidVec[i];
             dist += diff * diff;
         }
         d_worklistDist[worklistOffset] = dist;
@@ -275,13 +276,9 @@ void greedySearch(uint8_t*  d_graph,
     gpuErrchk(cudaMalloc(&d_nextIter, sizeof(bool)));
 
     initializeParents<<<batchSize, 1>>>(d_hasParent, d_parents);
-    initializeWorklist<<<batchSize, 1>>>(
+    initializeWorklist<T__><<<batchSize, 1>>>(
         d_graph, d_queryVecs, d_worklist, d_worklistCount, d_worklistDist, d_worklistVisited);
     // cudaDeviceSynchronize();
-
-    // unsigned* neighbors     = (unsigned*)malloc((R + 1) * sizeof(unsigned));
-    // float*    neighborsDist = (float*)malloc((R + 1) * sizeof(float));
-    // unsigned* worklist      = (unsigned*)malloc(L * sizeof(unsigned));
 
     int iter = 0;
     do {

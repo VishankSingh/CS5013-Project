@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+using uint = unsigned int;
+
 namespace FreshVamana::Consts {
 constexpr uint D_g           = 128;
 constexpr uint R_g           = 64;
