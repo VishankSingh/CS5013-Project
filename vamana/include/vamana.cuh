@@ -35,7 +35,7 @@ class DeleteList {
     static_assert(!std::is_void<T__>::value, "DeleteList requires a concrete value type.");
     using ValueType = T__;
 
-    DeleteList(unsigned initial_capacity = 1000u)
+    DeleteList(uint initial_capacity = 1000u)
         : growth_factor_(1.3f), capacity_(initial_capacity), size_(0), d_delete_list_(nullptr) {
         if (capacity_ == 0)
             capacity_ = 1;
@@ -47,8 +47,8 @@ class DeleteList {
         d_delete_list_ = nullptr;
     }
 
-    unsigned size() const noexcept { return size_; }
-    unsigned capacity() const noexcept { return capacity_; }
+    uint size() const noexcept { return size_; }
+    uint capacity() const noexcept { return capacity_; }
 
     void addPoint(const ValueType* d_point) {
         if (size_ >= capacity_)
@@ -69,8 +69,8 @@ class DeleteList {
     }
 
     void expandDeleteList() {
-        const unsigned new_capacity = static_cast<unsigned>(
-            std::max<unsigned>(1u, static_cast<unsigned>(capacity_ * growth_factor_)));
+        const uint new_capacity =
+            static_cast<uint>(std::max<uint>(1u, static_cast<uint>(capacity_ * growth_factor_)));
         uint8_t* new_buffer = nullptr;
         gpuErrchk(cudaMalloc(&new_buffer, static_cast<size_t>(new_capacity) * getPointSize()));
 

@@ -13,11 +13,4 @@ struct GraphT {
 
     static constexpr uint dim    = FreshVamana::Consts::D_g;
     static constexpr uint degree = FreshVamana::Consts::R_g;
-
-    // using value_type = T__;
-
-    // [[nodiscard]] static constexpr size_t getGraphEntrySize() noexcept {
-    //     return FreshVamana::Consts::D_g * sizeof(T__) + sizeof(unsigned) +
-    //            FreshVamana::Consts::R_g * sizeof(unsigned);
-    // }
 };

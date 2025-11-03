@@ -18,9 +18,9 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
     //     printf("[%3zu] %f\n", i, h_data[i]);
     // }
 
-    unsigned* d_visitedSets;
-    unsigned* d_visitedSetCount;
-    uint8_t*  d_reverseEdgeIndex;
+    uint*    d_visitedSets;
+    uint*    d_visitedSetCount;
+    uint8_t* d_reverseEdgeIndex;
 
     float alpha = 1.5;
     T__*  d_queryVecs;
@@ -38,12 +38,12 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
     cputimer.Start();
     gpuErrchk(cudaMalloc(
         &d_visitedSets,
-        FreshVamana::Consts::N_g * FreshVamana::Consts::max_paren_per_query * sizeof(unsigned)));
-    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Consts::N_g * sizeof(unsigned)));
+        FreshVamana::Consts::N_g * FreshVamana::Consts::max_paren_per_query * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Consts::N_g * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
-                         FreshVamana::Consts::N_g * FreshVamana::Consts::reverse_index_entry_size *
-                             sizeof(uint8_t)));
-    gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Consts::N_g * sizeof(unsigned)));
+                         FreshVamana::Consts::N_g *
+                             FreshVamana::Consts::reverse_index_entry_size_g * sizeof(uint8_t)));
+    gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Consts::N_g * sizeof(uint)));
     cputimer.Stop();
     printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
 

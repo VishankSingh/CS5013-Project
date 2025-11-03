@@ -1,12 +1,14 @@
 #pragma once
 #include <cstdint>
 
+using uint = unsigned int;
+
 // Vishank: reduced the size of bloom filter to fit in gpu
 #define BF_ENTRIES 39988U  // per query, max entries in BF, (prime number)
-constexpr unsigned BF_MEMORY =
-    (BF_ENTRIES & 0xFFFFFFFC) + sizeof(unsigned);  // 4-byte mem aligned size for actual allocation
+constexpr uint BF_MEMORY =
+    (BF_ENTRIES & 0xFFFFFFFC) + sizeof(uint);  // 4-byte mem aligned size for actual allocation
 
-__device__ unsigned bf_hashFn1(unsigned x) {
+__device__ uint bf_hashFn1(uint x) {
     // FNV-1a hash
     uint64_t hash = 0xcbf29ce4;
     hash          = (hash ^ (x & 0xff)) * 0x01000193;
@@ -17,7 +19,7 @@ __device__ unsigned bf_hashFn1(unsigned x) {
     return hash % BF_ENTRIES;
 }
 
-__device__ unsigned bf_hashFn2(unsigned x) {
+__device__ uint bf_hashFn2(uint x) {
     // FNV-1a hash
     uint64_t hash = 0x84222325;
     hash          = (hash ^ (x & 0xff)) * 0x1B3;
@@ -27,11 +29,11 @@ __device__ unsigned bf_hashFn2(unsigned x) {
     return hash % BF_ENTRIES;
 }
 
-__device__ bool bf_check(bool* bf, unsigned x) {
+__device__ bool bf_check(bool* bf, uint x) {
     return bf[bf_hashFn1(x)] && bf[bf_hashFn2(x)];
 }
 
-__device__ void bf_set(bool* bf, unsigned x) {
+__device__ void bf_set(bool* bf, uint x) {
     bf[bf_hashFn1(x)] = true;
     bf[bf_hashFn2(x)] = true;
 }
