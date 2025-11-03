@@ -218,7 +218,6 @@ void greedySearch(uint8_t*  d_graph,
                   T__*      d_queryVecs,
                   unsigned* d_visitedSet /*empty*/,
                   unsigned* d_visitedSetCount /*0*/,
-                  unsigned  batchStart,
                   unsigned  batchSize) {
     bool*     d_hasParent;  // 10k
     unsigned* d_parents;    // 10k unsigned
