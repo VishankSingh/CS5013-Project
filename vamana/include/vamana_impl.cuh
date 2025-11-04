@@ -10,26 +10,19 @@
 template <typename T__>
 Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
     graph_ = std::move(graph_arg);
-    // size_t num_to_print = 128;
-    // std::vector<float> h_data(num_to_print);
-    // gpuErrchk(cudaMemcpy(h_data.data(), graph_->d_graph, num_to_print * sizeof(float),
-    //                      cudaMemcpyDeviceToHost));
-    // for (size_t i = 0; i < num_to_print; ++i) {
-    //     printf("[%3zu] %f\n", i, h_data[i]);
-    // }
 
     uint*    d_visitedSets;
     uint*    d_visitedSetCount;
     uint8_t* d_reverseEdgeIndex;
 
     float alpha = 1.5;
-    T__*  d_queryVecs;
-    gpuErrchk(cudaMalloc(&d_queryVecs,
+    QueryT<T__> query;
+    gpuErrchk(cudaMalloc(&query.vec_elements,
                          FreshVamana::Consts::N_g * FreshVamana::Consts::D_g * sizeof(T__)));
 
     for (uint i = 0; i < FreshVamana::Consts::N_g; i++) {
         T__* src = (T__*)(graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_size_g);
-        T__* dst = (T__*)(d_queryVecs + i * FreshVamana::Consts::D_g);
+        T__* dst = (T__*)(query.vec_elements + i * FreshVamana::Consts::D_g);
         cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
     }
 

@@ -9,7 +9,8 @@
 #include <memory>
 #include <vector>
 
-// TODO: design this
+// DONE: design this
+// checkout 
 
 /*
 Binary file data layout

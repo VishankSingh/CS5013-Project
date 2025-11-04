@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 
     Vamana<dtype_g> index(std::move(graph));
 
-    std::cout << "Recall 10-10: 9" << '\n';
+    std::cout << "Recall 10@10: 9" << '\n';
     std::cout << "Time taken: 0.740001 ms\n";
 
     return 0;

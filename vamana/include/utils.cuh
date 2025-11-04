@@ -136,3 +136,6 @@ template <typename T__>
 
     return graph;
 }
+
+template <typename T__>
+[[no discard]] __global__ void generate_workload(const char* output_queries, const char* input_graph_bin_file_path)
