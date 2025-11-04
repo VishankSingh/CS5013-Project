@@ -16,7 +16,7 @@ set_target_properties(fresh_vamana PROPERTIES
     CUDA_STANDARD 20
     CUDA_STANDARD_REQUIRED ON
     CUDA_SEPARABLE_COMPILATION ON
-    CUDA_ARCHITECTURES "60;75;80;86;89;90;120"
+    CUDA_ARCHITECTURES "80;86;89"
     )
 
 target_include_directories(fresh_vamana PRIVATE
