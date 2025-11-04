@@ -1,6 +1,6 @@
 #pragma once
 #include "constants.cuh"
-#include "graph.cuh"
+#include "graphT.cuh"
 #include "kernels.cuh"
 #include "search.cuh"
 #include "timer.h"
@@ -77,28 +77,15 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
 };
 
 template <typename T__>
-void Vamana<T__>::search(T__* point) {
+[[nodiscard]] uint* Vamana<T__>::search(T__* d_queryVecs, size_t num) {
     uint*    d_visitedSets;
     uint*    d_visitedSetCount;
     uint8_t* d_reverseEdgeIndex;
     std::cout << "[ Searching ]\n";
 
-    // float alpha = 1.5;
-    T__* d_queryVecs;
-    gpuErrchk(cudaMalloc(&d_queryVecs, 1 * FreshVamana::Consts::D_g * sizeof(T__)));
-
-    // for (uint i = 0; i < 1; i++) {
-    //     T__* src = (T__*)(point);
-    //     T__* dst = (T__*)(d_queryVecs + i * FreshVamana::Consts::D_g);
-    //     cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
-    // }
-
-    gpuErrchk(cudaMemcpy(d_queryVecs,
-                         graph_->d_graph,
-                         FreshVamana::Consts::D_g * sizeof(T__),
-                         cudaMemcpyDeviceToDevice));
-
     CPUTimer cputimer;
+    CPUTimer cputimermain;
+    cputimermain.Start();
 
     cputimer.Start();
     gpuErrchk(cudaMalloc(&d_visitedSets,
@@ -114,29 +101,13 @@ void Vamana<T__>::search(T__* point) {
 
     cputimer.Start();
     uint* d_worklist =
-        greedySearch<T__>(graph_->d_graph, d_queryVecs, d_visitedSets, d_visitedSetCount, 1);
+        greedySearch<T__>(graph_->d_graph, d_queryVecs, d_visitedSets, d_visitedSetCount, num);
     cputimer.Stop();
     printf("greedySearch: %f sec\n", cputimer.Elapsed());
 
-    std::vector<uint> h_worklist(1 * FreshVamana::Consts::L_g);
-    cudaMemcpy(
-        h_worklist.data(), d_worklist, h_worklist.size() * sizeof(uint), cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < 1; ++i) {
-        printf("Worklist[%d] = %u\n", i, h_worklist[i]);
-
-        const size_t vecDim    = 128;
-        const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
-
-        std::vector<T__> h_vec(vecDim);
-
-        size_t offset = entrySize * h_worklist[i];
-        cudaMemcpy(
-            h_vec.data(), graph_->d_graph + offset, vecDim * sizeof(T__), cudaMemcpyDeviceToHost);
-
-        for (size_t j = 0; j < vecDim; ++j)
-            printf("[%3zu] %f\n", j, h_vec[j]);
-    }
-
-    cudaFree(d_worklist);
+    cputimermain.Stop();
+    printf("Vamana<T__>::search: %f sec\n", cputimermain.Elapsed());
+    return d_worklist;
 }
+
+// =======================================================================================================

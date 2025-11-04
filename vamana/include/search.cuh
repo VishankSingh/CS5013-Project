@@ -2,7 +2,7 @@
 
 #include "bloom_filter.cuh"
 #include "constants.cuh"
-#include "graph.cuh"
+#include "graphT.cuh"
 #include "utils.cuh"
 
 #include "kernels.cuh"
@@ -293,8 +293,6 @@ template <typename T__>
                                                                  d_visitedSetCount);
 
         // gpuErrchk(cudaDeviceSynchronize());
-        gpuErrchk(cudaPeekAtLastError());
-        gpuErrchk(cudaDeviceSynchronize());
 
         computeDists<<<batchSize, FreshVamana::Consts::R_g * 8>>>(d_graph,
                                                                   d_neighbors,
@@ -303,8 +301,6 @@ template <typename T__>
                                                                   d_neighborDists,
                                                                   (FreshVamana::Consts::R_g + 1));
         // gpuErrchk(cudaDeviceSynchronize());
-        gpuErrchk(cudaPeekAtLastError());
-        gpuErrchk(cudaDeviceSynchronize());
 
         sortByDistance<<<batchSize,
                          FreshVamana::Consts::R_g,
@@ -315,8 +311,6 @@ template <typename T__>
                                                                     d_neighborDistsAux,
                                                                     FreshVamana::Consts::R_g + 1);
         // gpuErrchk(cudaDeviceSynchronize());
-        gpuErrchk(cudaPeekAtLastError());
-        gpuErrchk(cudaDeviceSynchronize());
 
         mergeIntoWorklist<<<batchSize, FreshVamana::Consts::R_g + FreshVamana::Consts::L_g>>>(
             d_worklistCount,
@@ -331,8 +325,6 @@ template <typename T__>
             d_hasParent,
             d_parents,
             d_nextIter);
-        gpuErrchk(cudaPeekAtLastError());
-        gpuErrchk(cudaDeviceSynchronize());
 
         gpuErrchk(cudaMemcpy(&nextIter, d_nextIter, sizeof(bool), cudaMemcpyDeviceToHost));
     } while (nextIter);

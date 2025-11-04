@@ -1,4 +1,4 @@
-#include "graph.cuh"
+#include "graphT.cuh"
 #include "utils.cuh"
 #include "vamana.cuh"
 
@@ -31,7 +31,46 @@ int main(int argc, char** argv) {
 
     Vamana<dtype_g> index(std::move(graph));
 
-    index.search(0);
+    // ADDING TEST QUERIES
+    float* d_queryVecs;
+    uint   num_vecs = 1;
+    gpuErrchk(cudaMalloc(&d_queryVecs, num_vecs * FreshVamana::Consts::D_g * sizeof(float)));
+
+    for (uint i = 0; i < num_vecs; i++) {
+        float* src = (float*)(index.graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g);
+        float* dst = (float*)(d_queryVecs + i * FreshVamana::Consts::D_g);
+        cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(float), cudaMemcpyDeviceToDevice);
+    }
+
+    // SEARCH TEST
+    uint* d_worklist = index.search(d_queryVecs, num_vecs);
+
+    std::vector<uint> h_worklist(num_vecs * FreshVamana::Consts::L_g);
+    cudaMemcpy(
+        h_worklist.data(), d_worklist, h_worklist.size() * sizeof(uint), cudaMemcpyDeviceToHost);
+
+    // for (int i = 0; i < 0; ++i) {
+    //     printf("Worklist[%d] = %u\n", i, h_worklist[i]);
+
+    //     const size_t vecDim    = 128;
+    //     const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
+
+    //     std::vector<float> h_vec(vecDim);
+
+    //     size_t offset = entrySize * hcl_worklist[i];
+    //     cudaMemcpy(h_vec.data(),
+    //                index.graph_->d_graph + offset,
+    //                vecDim * sizeof(float),
+    //                cudaMemcpyDeviceToHost);
+
+    //     for (size_t j = 0; j < vecDim; ++j)
+    //         printf("[%3zu] %f\n", j, h_vec[j]);
+    // }
+
+    // DELETE TEST
+    index.deletePoint(d_queryVecs, num_vecs);
+
+    std::cout << index.delete_list_.isNodeInDeleteList(1) << "\n";
 
     // pp<<<1, 1>>>();
 

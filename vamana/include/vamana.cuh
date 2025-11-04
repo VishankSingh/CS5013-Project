@@ -1,16 +1,18 @@
 #pragma once
 #include "constants.cuh"
-#include "graph.cuh"
+#include "graphT.cuh"
 #include "kernels.cuh"
 #include "search.cuh"
 #include "timer.h"
 #include "utils.cuh"
 
+#include "delete_list.cuh"
+
 #include <memory>
 #include <vector>
 
 // DONE: design this
-// checkout 
+// checkout
 
 /*
 Binary file data layout
@@ -31,88 +33,65 @@ float basepoinst[N][128];
 using namespace FreshVamana::Consts;
 
 template <typename T__>
-class DeleteList {
-   public:
-    static_assert(!std::is_void<T__>::value, "DeleteList requires a concrete value type.");
-
-    DeleteList(uint initial_capacity = 1000u)
-        : growth_factor_(1.3f), capacity_(initial_capacity), size_(0), d_delete_list_(nullptr) {
-        if (capacity_ == 0)
-            capacity_ = 1;
-        gpuErrchk(cudaMalloc(&d_delete_list_, capacity_ * getPointSize()));
-    }
-
-    ~DeleteList() {
-        cudaFree(d_delete_list_);
-        d_delete_list_ = nullptr;
-    }
-
-    uint size() const noexcept { return size_; }
-    uint capacity() const noexcept { return capacity_; }
-
-    void addPoint(const T__* d_point) {
-        if (size_ >= capacity_)
-            expandDeleteList();
-
-        const size_t offset_bytes = static_cast<size_t>(size_) * getPointSize();
-        uint8_t*     dst          = d_delete_list_ + offset_bytes;
-        gpuErrchk(cudaMemcpy(dst,
-                             reinterpret_cast<const uint8_t*>(d_point),
-                             getPointSize(),
-                             cudaMemcpyDeviceToDevice));
-        ++size_;
-    }
-
-   private:
-    [[nodiscard]] static constexpr size_t getPointSize() noexcept {
-        return FreshVamana::Consts::D_g * sizeof(T__);
-    }
-
-    void expandDeleteList() {
-        const uint new_capacity =
-            static_cast<uint>(std::max<uint>(1u, static_cast<uint>(capacity_ * growth_factor_)));
-        uint8_t* new_buffer = nullptr;
-        gpuErrchk(cudaMalloc(&new_buffer, static_cast<size_t>(new_capacity) * getPointSize()));
-
-        if (d_delete_list_ && capacity_ > 0) {
-            gpuErrchk(cudaMemcpy(new_buffer,
-                                 d_delete_list_,
-                                 static_cast<size_t>(capacity_) * getPointSize(),
-                                 cudaMemcpyDeviceToDevice));
-            cudaFree(d_delete_list_);
-        }
-
-        d_delete_list_ = new_buffer;
-        capacity_      = new_capacity;
-    }
-
-    void clear() noexcept {
-        cudaFree(d_delete_list_);
-        d_delete_list_ = nullptr;
-        capacity_      = 0;
-        size_          = 0;
-    }
-
-   private:
-    uint8_t* d_delete_list_ = nullptr;
-    float    growth_factor_ = 1.3f;
-    uint     capacity_      = 0;
-    uint     size_          = 0;
-};
-
-template <typename T__>
 class Vamana {
    public:
     Vamana(std::unique_ptr<GraphT<T__>> graph_arg);
 
     void insertPoint(/*something*/);
-    void deletePoint(T__* d_point) { delete_list_.addPoint(d_point); }
-    void search(T__* point);
+    void deletePoint(T__* d_queryVecs, size_t num) {
+        std::vector<int> h_results(num);
+        CPUTimer         cputimer;
+
+        cputimer.Start();
+
+        findPointsInGraph(h_results.data(),
+                          graph_->d_graph,
+                          FreshVamana::Globals::d_graph_size,
+                          d_queryVecs,
+                          num);
+
+        cputimer.Stop();
+        printf("findPointsInGraph(%lu points): %f sec\n", num, cputimer.Elapsed());
+
+        // for (uint i = 0; i < num; ++i) {
+        //     printf("Query %u found at node index: %d\n", i, h_results[i]);
+        //     delete_list_.addNode(h_results[i]);
+        // }
+    }
+
+    // IMPORTANT: returns a pointer to gpu buffer of size num * FreshVamana::Consts::L_g *
+    // sizeof(uint)
+    // FREE IT LATER
+    [[nodiscard]] uint* search(T__* d_queryVecs, size_t num);
 
    private:
+    void findPointsInGraph(int*           h_results,
+                           const uint8_t* d_graph,
+                           uint           n_nodes,
+                           const dtype_g* d_query_vecs,
+                           uint           n_queries) {
+        int* d_results = nullptr;
+        cudaMalloc(&d_results, n_queries * sizeof(int));
+
+        // Initialize results to -1
+        cudaMemset(d_results, 0xFF, n_queries * sizeof(int));
+
+        dim3 threads(256);
+        dim3 blocks((n_nodes + threads.x - 1) / threads.x, n_queries);
+
+        findPointsKernel<<<blocks, threads>>>(d_graph, d_query_vecs, n_nodes, n_queries, d_results);
+        cudaDeviceSynchronize();
+
+        cudaMemcpy(h_results, d_results, n_queries * sizeof(int), cudaMemcpyDeviceToHost);
+        cudaFree(d_results);
+    }
+
+   public:
     std::unique_ptr<GraphT<T__>> graph_;
 
-    DeleteList<T__> delete_list_;
+    DeleteList delete_list_;
+
+   private:
     // Data structures
     //
 };

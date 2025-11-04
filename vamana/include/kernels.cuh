@@ -1,7 +1,7 @@
 #pragma once
 #include "constants.cuh"
 #include "globals.cuh"
-#include "graph.cuh"
+#include "graphT.cuh"
 #include "timer.h"
 #include "utils.cuh"
 
@@ -406,7 +406,7 @@ void computeOutNeighbors(uint8_t* d_graph,
     getNeighbors<T__>
         <<<batch_size, Consts::R_g>>>(d_graph, batch_start, d_neighbors, d_neighborsCount);
     gputimer.Stop();
-    gpuErrchk(cudaDeviceSynchronize());
+    // gpuErrchk(cudaDeviceSynchronize());
     // printf("getNeighbors GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
@@ -900,4 +900,34 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
     gpuErrchk(cudaFree(d_neighborDistsAux));
 
     // printf("Reverse edge pruning finished in %d iterations.\n", iter);
+}
+
+template <typename T__>
+__global__ void findPointsKernel(const uint8_t* __restrict__ d_graph,
+                                 const T__* __restrict__ d_query_vecs,
+                                 uint n_nodes,
+                                 uint n_queries,
+                                 int* __restrict__ d_results) {
+    const uint qid = blockIdx.y;  // query index
+    const uint tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid >= n_nodes || qid >= n_queries)
+        return;
+
+    const uint8_t* entry_ptr = d_graph + static_cast<size_t>(tid) * graph_entry_bytes_g;
+    const T__*     vec_ptr   = reinterpret_cast<const T__*>(entry_ptr);
+
+    const T__* query_vec = d_query_vecs + static_cast<size_t>(qid) * D_g;
+
+    bool match = true;
+#pragma unroll
+    for (uint i = 0; i < D_g; ++i) {
+        if (vec_ptr[i] != query_vec[i]) {
+            match = false;
+            break;
+        }
+    }
+
+    if (match) {
+        atomicCAS(&d_results[qid], -1, static_cast<int>(tid));
+    }
 }

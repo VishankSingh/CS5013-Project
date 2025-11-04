@@ -1,7 +1,7 @@
 #pragma once
 #include "constants.cuh"
 #include "globals.cuh"
-#include "graph.cuh"
+#include "graphT.cuh"
 
 #include <cstdint>
 #include <filesystem>
@@ -139,7 +139,7 @@ template <typename T__>
                          cudaMemcpyHostToDevice));
 
     free(h_graph);
-    std::cout << "[initGraph] Graph initialized: "
+    std::cout << "[ initGraph ] Graph initialized: "
               << "N=" << FreshVamana::Globals::d_graph_size << ", D=" << FreshVamana::Consts::D_g
               << ", R=" << FreshVamana::Consts::R_g
               << ", EntrySize=" << FreshVamana::Consts::graph_entry_bytes_g << " bytes.\n";
