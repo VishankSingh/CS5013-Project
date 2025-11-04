@@ -4,8 +4,8 @@
 using uint = unsigned int;
 
 namespace FreshVamana::Consts {
-constexpr uint D_g           = 128;
-constexpr uint R_g           = 64;
+constexpr uint D_g           = 128; // dimension of a vector in the actual input dataset
+constexpr uint R_g           = 64; // max out degree of a node in the graph
 constexpr uint rg_bin_size_g = 10000;  // size of binary file randomgraph.bin
 constexpr uint N_g           = 10000;  // total size of graph
 constexpr uint L_g           = 150;
@@ -25,7 +25,12 @@ constexpr uint reverse_index_entry_size_g  = (max_reverse_index_entries_g + 1) *
 constexpr size_t graph_entry_size_in_bytes =
     D_g * sizeof(float) + 1 * sizeof(uint) + R_g * sizeof(uint);
 
-}  // namespace FreshVamana::Consts
+enum class queryType {  undefined_q = -1,
+                        insert_q = 0,
+                        delete_q = 1, //WARNING: as delete is conflicting with the C++ `delete` keyword
+                        search_q = 2}; 
+
+}  // namespace FreshVamana::Consts END
 
 /*
 FreshVamana::Consts::D_g
