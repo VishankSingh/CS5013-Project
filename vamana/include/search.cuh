@@ -98,8 +98,8 @@ __global__ void filterNeighbors(uint8_t* d_graph,
         d_hasParent[queryID]      = false;
 
         uint visitedSetIdx = atomicAdd(&d_visitedSetCount[queryID], 1);
-        if (visitedSetIdx < FreshVamana::Consts::max_paren_per_query) {
-            d_visitedSet[FreshVamana::Consts::max_paren_per_query * queryID + visitedSetIdx] =
+        if (visitedSetIdx < FreshVamana::Consts::max_num_parents_per_query) {
+            d_visitedSet[FreshVamana::Consts::max_num_parents_per_query * queryID + visitedSetIdx] =
                 parent;
         } else {
             printf("Limit hit for visited set: %d\n", queryID);

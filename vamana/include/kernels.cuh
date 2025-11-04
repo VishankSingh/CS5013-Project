@@ -181,17 +181,18 @@ __global__ void mergeIntoVisitedSet(uint* d_visited_set_count,
     uint query_id = blockIdx.x;
     uint tid      = threadIdx.x;
 
-    uint visited_set_offset = query_id * Consts::max_paren_per_query;
+    uint visited_set_offset = query_id * Consts::max_num_parents_per_query;
     uint neighbors_offset   = query_id * (Consts::R_g + 1);
 
     uint num_neighbors    = d_neighbors_count[query_id];
     uint visited_set_size = d_visited_set_count[query_id];
 
-    uint new_visited_set_size = min(num_neighbors + visited_set_size, Consts::max_paren_per_query);
+    uint new_visited_set_size =
+        min(num_neighbors + visited_set_size, Consts::max_num_parents_per_query);
 
     uint id;
     T__  dist;
-    uint new_pos = Consts::max_paren_per_query;
+    uint new_pos = Consts::max_num_parents_per_query;
 
     if (tid < visited_set_size) {
         uint before = lowerBound<T__>(&d_neighbors_dist[neighbors_offset],
@@ -201,9 +202,9 @@ __global__ void mergeIntoVisitedSet(uint* d_visited_set_count,
         id          = d_visited_set[visited_set_offset + tid];
         dist        = d_visited_set_dists[visited_set_offset + tid];
         new_pos     = before + tid;
-    } else if (tid >= Consts::max_paren_per_query &&
-               tid < Consts::max_paren_per_query + num_neighbors) {
-        uint idx    = tid - Consts::max_paren_per_query;
+    } else if (tid >= Consts::max_num_parents_per_query &&
+               tid < Consts::max_num_parents_per_query + num_neighbors) {
+        uint idx    = tid - Consts::max_num_parents_per_query;
         uint before = upperBound<T__>(&d_visited_set_dists[visited_set_offset],
                                       0,
                                       visited_set_size,
@@ -246,7 +247,7 @@ __global__ void pruneOutNeighbors(uint8_t*   d_graph,
         uint tid               = threadIdx.x;
 
         uint num_nodes          = d_visited_set_count[query_id];
-        uint visited_set_offset = query_id * Consts::max_paren_per_query;
+        uint visited_set_offset = query_id * Consts::max_num_parents_per_query;
 
         uint* degree_ptr   = (uint*)(d_graph + extended_query_id * Consts::graph_entry_bytes_g +
                                    Consts::D_g * sizeof(T__));
@@ -376,14 +377,14 @@ void computeOutNeighbors(uint8_t* d_graph,
     T__*       d_visitedSetDistsAux;
     NodeState* d_visitedSetStatus;
 
-    gpuErrchk(
-        cudaMalloc(&d_visitedSetDists, batch_size * Consts::max_paren_per_query * sizeof(T__)));
-    gpuErrchk(
-        cudaMalloc(&d_visitedSetAux, batch_size * Consts::max_paren_per_query * sizeof(uint)));
-    gpuErrchk(
-        cudaMalloc(&d_visitedSetDistsAux, batch_size * Consts::max_paren_per_query * sizeof(T__)));
+    gpuErrchk(cudaMalloc(&d_visitedSetDists,
+                         batch_size * Consts::max_num_parents_per_query * sizeof(T__)));
+    gpuErrchk(cudaMalloc(&d_visitedSetAux,
+                         batch_size * Consts::max_num_parents_per_query * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_visitedSetDistsAux,
+                         batch_size * Consts::max_num_parents_per_query * sizeof(T__)));
     gpuErrchk(cudaMalloc(&d_visitedSetStatus,
-                         batch_size * Consts::max_paren_per_query * sizeof(NodeState)));
+                         batch_size * Consts::max_num_parents_per_query * sizeof(NodeState)));
 
     uint* d_neighbors;
     uint* d_neighborsCount;
@@ -437,32 +438,33 @@ void computeOutNeighbors(uint8_t* d_graph,
                                             d_visited_set_count,
                                             d_query_vecs,
                                             d_visitedSetDists,
-                                            Consts::max_paren_per_query);
+                                            Consts::max_num_parents_per_query);
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("computeDists GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
     sortByDistance<T__>
-        <<<batch_size, Consts::max_paren_per_query, Consts::max_paren_per_query * sizeof(uint)>>>(
-            d_visited_sets,
-            d_visited_set_count,
-            d_visitedSetDists,
-            d_visitedSetAux,
-            d_visitedSetDistsAux,
-            Consts::max_paren_per_query);
+        <<<batch_size,
+           Consts::max_num_parents_per_query,
+           Consts::max_num_parents_per_query * sizeof(uint)>>>(d_visited_sets,
+                                                               d_visited_set_count,
+                                                               d_visitedSetDists,
+                                                               d_visitedSetAux,
+                                                               d_visitedSetDistsAux,
+                                                               Consts::max_num_parents_per_query);
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("sortByDistance GPU time: %f ms\n", gputimer.Elapsed());
 
     gputimer.Start();
     mergeIntoVisitedSet<T__>
-        <<<batch_size, Consts::max_paren_per_query + Consts::R_g>>>(d_visited_set_count,
-                                                                    d_visited_sets,
-                                                                    d_visitedSetDists,
-                                                                    d_neighborsCount,
-                                                                    d_neighbors,
-                                                                    d_neighborsDists);
+        <<<batch_size, Consts::max_num_parents_per_query + Consts::R_g>>>(d_visited_set_count,
+                                                                          d_visited_sets,
+                                                                          d_visitedSetDists,
+                                                                          d_neighborsCount,
+                                                                          d_neighbors,
+                                                                          d_neighborsDists);
     gputimer.Stop();
     // gpuErrchk(cudaDeviceSynchronize());
     // printf("mergeIntoVisitedSet GPU time: %f ms\n", gputimer.Elapsed());

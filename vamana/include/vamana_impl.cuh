@@ -10,13 +10,6 @@
 template <typename T__>
 Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
     graph_ = std::move(graph_arg);
-    // size_t num_to_print = 128;
-    // std::vector<float> h_data(num_to_print);
-    // gpuErrchk(cudaMemcpy(h_data.data(), graph_->d_graph, num_to_print * sizeof(float),
-    //                      cudaMemcpyDeviceToHost));
-    // for (size_t i = 0; i < num_to_print; ++i) {
-    //     printf("[%3zu] %f\n", i, h_data[i]);
-    // }
 
     uint*    d_visitedSets;
     uint*    d_visitedSetCount;
@@ -38,7 +31,7 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
     cputimer.Start();
     gpuErrchk(cudaMalloc(&d_visitedSets,
                          FreshVamana::Globals::d_graph_size *
-                             FreshVamana::Consts::max_paren_per_query * sizeof(uint)));
+                             FreshVamana::Consts::max_num_parents_per_query * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
                          FreshVamana::Globals::d_graph_size *
@@ -110,7 +103,7 @@ void Vamana<T__>::search(T__* point) {
     cputimer.Start();
     gpuErrchk(cudaMalloc(&d_visitedSets,
                          FreshVamana::Globals::d_graph_size *
-                             FreshVamana::Consts::max_paren_per_query * sizeof(uint)));
+                             FreshVamana::Consts::max_num_parents_per_query * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
                          FreshVamana::Globals::d_graph_size *
