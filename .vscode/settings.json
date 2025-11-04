@@ -18,5 +18,6 @@
     "search.exclude": {
         "vamana_old": true,
         "bang_exact": true,
+        "vamana/docs": true,
     }
 }

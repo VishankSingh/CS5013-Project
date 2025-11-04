@@ -1,5 +1,6 @@
 #pragma once
 #include "constants.cuh"
+#include "globals.cuh"
 #include "graph.cuh"
 
 #include <cstdint>
@@ -113,26 +114,35 @@ template <typename T__>
     using GraphType = GraphT<T__>;
 
     auto graph = std::make_unique<GraphType>();
+    // graph->d_graph_capacity = rg_bin_size_g * 1.3;
+    // graph->d_graph_size     = rg_bin_size_g;
 
-    uint8_t* h_graph = (uint8_t*)std::calloc(N_g, FreshVamana::Consts::graph_entry_size_g);
-    if (!readBin(graph_bin_path, h_graph, rg_bin_size_g, FreshVamana::Consts::graph_entry_size_g)) {
+    FreshVamana::Globals::d_graph_capacity = rg_bin_size_g * 1.3;
+    FreshVamana::Globals::d_graph_size     = rg_bin_size_g;
+
+    uint8_t* h_graph = (uint8_t*)std::calloc(FreshVamana::Globals::d_graph_capacity,
+                                             FreshVamana::Consts::graph_entry_bytes_g);
+    if (!readBin(graph_bin_path,
+                 h_graph,
+                 FreshVamana::Globals::d_graph_size,
+                 FreshVamana::Consts::graph_entry_bytes_g)) {
         return nullptr;
     }
 
-    graph->d_graph_capacity = N_g;
-    graph->d_graph_size     = rg_bin_size_g;
-
-    gpuErrchk(cudaMalloc(&graph->d_graph, N_g * FreshVamana::Consts::graph_entry_size_g));
+    gpuErrchk(
+        cudaMalloc(&graph->d_graph,
+                   FreshVamana::Globals::d_graph_size * FreshVamana::Consts::graph_entry_bytes_g));
     // TODO: complete this
-    gpuErrchk(cudaMemcpy(graph->d_graph, h_graph,
-                         rg_bin_size_g * FreshVamana::Consts::graph_entry_size_g,
+    gpuErrchk(cudaMemcpy(graph->d_graph,
+                         h_graph,
+                         rg_bin_size_g * FreshVamana::Consts::graph_entry_bytes_g,
                          cudaMemcpyHostToDevice));
 
     free(h_graph);
     std::cout << "[initGraph] Graph initialized: "
-              << "N=" << N_g << ", D=" << FreshVamana::Consts::D_g
+              << "N=" << FreshVamana::Globals::d_graph_size << ", D=" << FreshVamana::Consts::D_g
               << ", R=" << FreshVamana::Consts::R_g
-              << ", EntrySize=" << FreshVamana::Consts::graph_entry_size_g << " bytes.\n";
+              << ", EntrySize=" << FreshVamana::Consts::graph_entry_bytes_g << " bytes.\n";
 
     return graph;
 }

@@ -24,11 +24,11 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
 
     float alpha = 1.5;
     T__*  d_queryVecs;
-    gpuErrchk(cudaMalloc(&d_queryVecs,
-                         FreshVamana::Consts::N_g * FreshVamana::Consts::D_g * sizeof(T__)));
+    gpuErrchk(cudaMalloc(
+        &d_queryVecs, FreshVamana::Globals::d_graph_size * FreshVamana::Consts::D_g * sizeof(T__)));
 
-    for (uint i = 0; i < FreshVamana::Consts::N_g; i++) {
-        T__* src = (T__*)(graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_size_g);
+    for (uint i = 0; i < FreshVamana::Globals::d_graph_size; i++) {
+        T__* src = (T__*)(graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g);
         T__* dst = (T__*)(d_queryVecs + i * FreshVamana::Consts::D_g);
         cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
     }
@@ -36,20 +36,25 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
     CPUTimer cputimer;
 
     cputimer.Start();
-    gpuErrchk(cudaMalloc(
-        &d_visitedSets,
-        FreshVamana::Consts::N_g * FreshVamana::Consts::max_paren_per_query * sizeof(uint)));
-    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Consts::N_g * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_visitedSets,
+                         FreshVamana::Globals::d_graph_size *
+                             FreshVamana::Consts::max_paren_per_query * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
-                         FreshVamana::Consts::N_g *
+                         FreshVamana::Globals::d_graph_size *
                              FreshVamana::Consts::reverse_index_entry_size_g * sizeof(uint8_t)));
-    gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Consts::N_g * sizeof(uint)));
+    gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Globals::d_graph_size * sizeof(uint)));
     cputimer.Stop();
     printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
 
     cputimer.Start();
-    greedySearch<T__>(
-        graph_->d_graph, d_queryVecs, d_visitedSets, d_visitedSetCount, FreshVamana::Consts::N_g);
+    uint* d_worklist = greedySearch<T__>(graph_->d_graph,
+                                         d_queryVecs,
+                                         d_visitedSets,
+                                         d_visitedSetCount,
+                                         FreshVamana::Globals::d_graph_size);
+    gpuErrchk(cudaFree(d_worklist));
+
     cputimer.Stop();
     printf("greedySearch: %f sec\n", cputimer.Elapsed());
 
@@ -62,7 +67,7 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
                              alpha,
                              d_reverseEdgeIndex,
                              0,
-                             FreshVamana::Consts::N_g);
+                             FreshVamana::Globals::d_graph_size);
     cputimer.Stop();
     printf("computeOutNeighbors: %f sec\n", cputimer.Elapsed());
 
@@ -79,4 +84,66 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
 };
 
 template <typename T__>
-void Vamana<T__>::search(T__* point) {}
+void Vamana<T__>::search(T__* point) {
+    uint*    d_visitedSets;
+    uint*    d_visitedSetCount;
+    uint8_t* d_reverseEdgeIndex;
+    std::cout << "[ Searching ]\n";
+
+    // float alpha = 1.5;
+    T__* d_queryVecs;
+    gpuErrchk(cudaMalloc(&d_queryVecs, 1 * FreshVamana::Consts::D_g * sizeof(T__)));
+
+    // for (uint i = 0; i < 1; i++) {
+    //     T__* src = (T__*)(point);
+    //     T__* dst = (T__*)(d_queryVecs + i * FreshVamana::Consts::D_g);
+    //     cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
+    // }
+
+    gpuErrchk(cudaMemcpy(d_queryVecs,
+                         graph_->d_graph,
+                         FreshVamana::Consts::D_g * sizeof(T__),
+                         cudaMemcpyDeviceToDevice));
+
+    CPUTimer cputimer;
+
+    cputimer.Start();
+    gpuErrchk(cudaMalloc(&d_visitedSets,
+                         FreshVamana::Globals::d_graph_size *
+                             FreshVamana::Consts::max_paren_per_query * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
+                         FreshVamana::Globals::d_graph_size *
+                             FreshVamana::Consts::reverse_index_entry_size_g * sizeof(uint8_t)));
+    gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+    cputimer.Stop();
+    printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
+
+    cputimer.Start();
+    uint* d_worklist =
+        greedySearch<T__>(graph_->d_graph, d_queryVecs, d_visitedSets, d_visitedSetCount, 1);
+    cputimer.Stop();
+    printf("greedySearch: %f sec\n", cputimer.Elapsed());
+
+    std::vector<uint> h_worklist(1 * FreshVamana::Consts::L_g);
+    cudaMemcpy(
+        h_worklist.data(), d_worklist, h_worklist.size() * sizeof(uint), cudaMemcpyDeviceToHost);
+
+    for (int i = 0; i < 1; ++i) {
+        printf("Worklist[%d] = %u\n", i, h_worklist[i]);
+
+        const size_t vecDim    = 128;
+        const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
+
+        std::vector<T__> h_vec(vecDim);
+
+        size_t offset = entrySize * h_worklist[i];
+        cudaMemcpy(
+            h_vec.data(), graph_->d_graph + offset, vecDim * sizeof(T__), cudaMemcpyDeviceToHost);
+
+        for (size_t j = 0; j < vecDim; ++j)
+            printf("[%3zu] %f\n", j, h_vec[j]);
+    }
+
+    cudaFree(d_worklist);
+}

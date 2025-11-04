@@ -33,7 +33,6 @@ template <typename T__>
 class DeleteList {
    public:
     static_assert(!std::is_void<T__>::value, "DeleteList requires a concrete value type.");
-    using ValueType = T__;
 
     DeleteList(uint initial_capacity = 1000u)
         : growth_factor_(1.3f), capacity_(initial_capacity), size_(0), d_delete_list_(nullptr) {
@@ -50,7 +49,7 @@ class DeleteList {
     uint size() const noexcept { return size_; }
     uint capacity() const noexcept { return capacity_; }
 
-    void addPoint(const ValueType* d_point) {
+    void addPoint(const T__* d_point) {
         if (size_ >= capacity_)
             expandDeleteList();
 
@@ -65,7 +64,7 @@ class DeleteList {
 
    private:
     [[nodiscard]] static constexpr size_t getPointSize() noexcept {
-        return static_cast<size_t>(FreshVamana::Consts::D_g) * sizeof(ValueType);
+        return FreshVamana::Consts::D_g * sizeof(T__);
     }
 
     void expandDeleteList() {
@@ -106,11 +105,13 @@ class Vamana {
     Vamana(std::unique_ptr<GraphT<T__>> graph_arg);
 
     void insertPoint(/*something*/);
-    void deletePoint(/*something*/);
-    void search(T__*);
+    void deletePoint(T__* d_point) { delete_list_.addPoint(d_point); }
+    void search(T__* point);
 
    private:
     std::unique_ptr<GraphT<T__>> graph_;
+
+    DeleteList<T__> delete_list_;
     // Data structures
     //
 };

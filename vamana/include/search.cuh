@@ -7,15 +7,14 @@
 
 #include "kernels.cuh"
 
-__device__ bool contains(uint* set, uint count, uint el) {
-    for (uint i = 0; i < count; i++) {
-        if (set[i] == el) {
-            return true;
-        }
-    }
-
-    return false;
-}
+// __device__ bool contains(uint* set, uint count, uint el) {
+//     for (uint i = 0; i < count; i++) {
+//         if (set[i] == el) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
 
 __global__ void initializeParents(bool* d_hasParent, uint* d_parents) {
     uint query_id = blockIdx.x;
@@ -32,7 +31,7 @@ __global__ void initializeWorklist(uint8_t* d_graph,
                                    T__*     d_queryVecs,
                                    uint*    d_worklist,
                                    uint*    d_worklistCount,
-                                   float*   d_worklistDist,
+                                   T__*     d_worklistDist,
                                    bool*    d_worklistVisited) {
     uint queryID = blockIdx.x;
     uint tid     = threadIdx.x;
@@ -41,14 +40,14 @@ __global__ void initializeWorklist(uint8_t* d_graph,
 
     T__* queryVec = d_queryVecs + FreshVamana::Consts::D_g * queryID;
     T__* medoidVec =
-        (T__*)(d_graph + FreshVamana::Consts::graph_entry_size_g * FreshVamana::Consts::medoid_g);
+        (T__*)(d_graph + FreshVamana::Consts::graph_entry_bytes_g * FreshVamana::Consts::medoid_g);
 
     if (tid == 0) {
         d_worklist[worklistOffset]        = FreshVamana::Consts::medoid_g;
         d_worklistCount[queryID]          = 1;
         d_worklistVisited[worklistOffset] = true;
 
-        float dist = 0;
+        T__ dist = 0;
         for (uint i = 0; i < FreshVamana::Consts::D_g; i++) {
             T__ diff = queryVec[i] - medoidVec[i];
             dist += diff * diff;
@@ -87,7 +86,7 @@ __global__ void filterNeighbors(uint8_t* d_graph,
     uint parent = d_parents[queryID];            // Get the parent for this query
 
     // Get the pointers to the degree and neighbors of the parent
-    uint* degreePtr   = (uint*)(d_graph + parent * FreshVamana::Consts::graph_entry_size_g +
+    uint* degreePtr   = (uint*)(d_graph + parent * FreshVamana::Consts::graph_entry_bytes_g +
                               FreshVamana::Consts::D_g * sizeof(float));
     uint* neighborPtr = degreePtr + 1;
 
@@ -130,16 +129,17 @@ __global__ void filterNeighbors(uint8_t* d_graph,
     }
 }
 
-__global__ void mergeIntoWorklist(uint*  d_worklistCount,
-                                  uint*  d_worklist,
-                                  float* d_worklistDist,
-                                  bool*  d_worklistVisited,
-                                  uint*  d_neighborsCount,
-                                  uint*  d_neighbors,
-                                  float* d_neighborsDist,
-                                  bool*  d_hasParent,
-                                  uint*  d_parents,
-                                  bool*  d_nextIter) {
+template <typename T__>
+__global__ void mergeIntoWorklist(uint* d_worklistCount,
+                                  uint* d_worklist,
+                                  T__*  d_worklistDist,
+                                  bool* d_worklistVisited,
+                                  uint* d_neighborsCount,
+                                  uint* d_neighbors,
+                                  T__*  d_neighborsDist,
+                                  bool* d_hasParent,
+                                  uint* d_parents,
+                                  bool* d_nextIter) {
     uint queryID = blockIdx.x;
     uint tid     = threadIdx.x;
 
@@ -152,17 +152,17 @@ __global__ void mergeIntoWorklist(uint*  d_worklistCount,
 
     __shared__ uint sortedPositions[FreshVamana::Consts::R_g + FreshVamana::Consts::L_g + 1];
 
-    uint  id;
-    float dist;
-    bool  visited;
-    uint  newPos = FreshVamana::Consts::L_g;
+    uint id;
+    T__  dist;
+    bool visited;
+    uint newPos = FreshVamana::Consts::L_g;
 
     if (tid < worklistSize) {
         // Fist L threads find new position for worklist elements
-        uint before          = lowerBound(&d_neighborsDist[neighborsOffset],
-                                 0,
-                                 numNeighbors,
-                                 d_worklistDist[worklistOffset + tid]);
+        uint before          = lowerBound<T__>(&d_neighborsDist[neighborsOffset],
+                                      0,
+                                      numNeighbors,
+                                      d_worklistDist[worklistOffset + tid]);
         id                   = d_worklist[worklistOffset + tid];
         dist                 = d_worklistDist[worklistOffset + tid];
         visited              = d_worklistVisited[worklistOffset + tid];
@@ -171,10 +171,10 @@ __global__ void mergeIntoWorklist(uint*  d_worklistCount,
     } else if (tid >= FreshVamana::Consts::L_g && tid < FreshVamana::Consts::L_g + numNeighbors) {
         // Next R + 1 threads find new position for neighbors
         uint idx             = tid - FreshVamana::Consts::L_g;  // Index into the neighbors array
-        uint before          = upperBound(&d_worklistDist[worklistOffset],
-                                 0,
-                                 worklistSize,
-                                 d_neighborsDist[neighborsOffset + idx]);
+        uint before          = upperBound<T__>(&d_worklistDist[worklistOffset],
+                                      0,
+                                      worklistSize,
+                                      d_neighborsDist[neighborsOffset + idx]);
         id                   = d_neighbors[neighborsOffset + idx];
         dist                 = d_neighborsDist[neighborsOffset + idx];
         visited              = false;
@@ -214,11 +214,11 @@ __global__ void mergeIntoWorklist(uint*  d_worklistCount,
 
 // Performs greedy search and returns the visited sets
 template <typename T__>
-void greedySearch(uint8_t* d_graph,
-                  T__*     d_queryVecs,
-                  uint*    d_visitedSet /*empty*/,
-                  uint*    d_visitedSetCount /*0*/,
-                  uint     batchSize) {
+[[nodiscard]] uint* greedySearch(uint8_t* d_graph,
+                                 T__*     d_queryVecs,
+                                 uint*    d_visitedSet /*empty*/,
+                                 uint*    d_visitedSetCount /*0*/,
+                                 uint     batchSize) {
     bool* d_hasParent;  // 10k
     uint* d_parents;    // 10k uint
     bool* d_bloomFilters;
@@ -234,11 +234,11 @@ void greedySearch(uint8_t* d_graph,
     gpuErrchk(cudaMalloc(&d_bloomFilters, batchSize * BF_MEMORY * sizeof(bool)));
     gpuErrchk(cudaMemset(d_bloomFilters, 0, batchSize * BF_MEMORY * sizeof(bool)));
 
-    uint*  d_neighbors;         // 10k * (64+1) uint
-    uint*  d_neighborsCount;    // 10k * 1
-    float* d_neighborDists;     // 10k * (64+1) float
-    uint*  d_neighborsAux;      // 10k * (64+1) uint
-    float* d_neighborDistsAux;  // 10k * (64+1) uint
+    uint* d_neighbors;         // 10k * (64+1) uint
+    uint* d_neighborsCount;    // 10k * 1
+    T__*  d_neighborDists;     // 10k * (64+1) T__
+    uint* d_neighborsAux;      // 10k * (64+1) uint
+    T__*  d_neighborDistsAux;  // 10k * (64+1) T__
 
     gpuErrchk(cudaMalloc(&d_neighbors, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(uint)));
     gpuErrchk(
@@ -248,24 +248,24 @@ void greedySearch(uint8_t* d_graph,
     gpuErrchk(cudaMemset(d_neighborsCount, 0, batchSize * sizeof(uint)));
 
     gpuErrchk(
-        cudaMalloc(&d_neighborDists, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(float)));
+        cudaMalloc(&d_neighborDists, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(T__)));
     gpuErrchk(
         cudaMalloc(&d_neighborsAux, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(uint)));
-    gpuErrchk(cudaMalloc(&d_neighborDistsAux,
-                         batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(float)));
+    gpuErrchk(
+        cudaMalloc(&d_neighborDistsAux, batchSize * (FreshVamana::Consts::R_g + 1) * sizeof(T__)));
 
     // 150 is worklist size
-    uint*  d_worklist;         // 10k * 150 uint
-    uint*  d_worklistCount;    // 10k uint
-    float* d_worklistDist;     // 10k * 150 float
-    bool*  d_worklistVisited;  // 10k * 150 bool
+    uint* d_worklist;         // 10k * 150 uint
+    uint* d_worklistCount;    // 10k uint
+    T__*  d_worklistDist;     // 10k * 150 T__
+    bool* d_worklistVisited;  // 10k * 150 bool
 
     gpuErrchk(cudaMalloc(&d_worklist, batchSize * FreshVamana::Consts::L_g * sizeof(uint)));
 
     gpuErrchk(cudaMalloc(&d_worklistCount, batchSize * sizeof(uint)));
     gpuErrchk(cudaMemset(d_worklistCount, 0, batchSize * sizeof(uint)));
 
-    gpuErrchk(cudaMalloc(&d_worklistDist, batchSize * FreshVamana::Consts::L_g * sizeof(float)));
+    gpuErrchk(cudaMalloc(&d_worklistDist, batchSize * FreshVamana::Consts::L_g * sizeof(T__)));
     gpuErrchk(cudaMalloc(&d_worklistVisited, batchSize * FreshVamana::Consts::L_g * sizeof(bool)));
 
     bool  nextIter;
@@ -347,7 +347,7 @@ void greedySearch(uint8_t* d_graph,
     gpuErrchk(cudaFree(d_neighborsAux));
     gpuErrchk(cudaFree(d_neighborDistsAux));
 
-    gpuErrchk(cudaFree(d_worklist));
+    // gpuErrchk(cudaFree(d_worklist));
     gpuErrchk(cudaFree(d_worklistCount));
     gpuErrchk(cudaFree(d_worklistDist));
     gpuErrchk(cudaFree(d_worklistVisited));
@@ -355,4 +355,6 @@ void greedySearch(uint8_t* d_graph,
     gpuErrchk(cudaFree(d_nextIter));
 
     printf("Greedy search finished in %d iterations.\n", iter);
+
+    return d_worklist;
 }

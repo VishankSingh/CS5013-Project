@@ -9,6 +9,10 @@
 #include <ctime>
 #include <iostream>
 
+__global__ void pp() {
+    printf("\n\n%d\n\n", FreshVamana::Globals::d_graph_size);
+}
+
 int main(int argc, char** argv) {
     if (argc != 4) {
         printf("Usage: %s <graph> <basepoints> <output>\n", argv[0]);
@@ -22,12 +26,14 @@ int main(int argc, char** argv) {
 
     std::unique_ptr<GraphT<dtype_g>> graph = initGraph<dtype_g>(random_graph_bin_path);
     // std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
-    std::cout << graph->d_graph_capacity << " " << graph->d_graph_size << '\n';
+    std::cout << FreshVamana::Globals::d_graph_capacity << " " << FreshVamana::Globals::d_graph_size
+              << '\n';
 
     Vamana<dtype_g> index(std::move(graph));
 
-    std::cout << "Recall 10-10: 9" << '\n';
-    std::cout << "Time taken: 0.740001 ms\n";
+    index.search(0);
+
+    // pp<<<1, 1>>>();
 
     return 0;
 }
