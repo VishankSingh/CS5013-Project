@@ -1,30 +1,27 @@
-# #!/bin/bash
-# set -e 
-
-# cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-# if cmake --build build; then
-#     ./build/fresh_vamana ../data/sift10k/sift10k_randomgraph.bin . .
-# else
-#     exit 1
-# fi
-
-
 #!/bin/bash
 set -e
+
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+BLUE="\033[0;34m"
+MAGENTA="\033[0;35m"
+CYAN="\033[0;36m"
+BOLD="\033[1m"
+RESET="\033[0m"
 
 EXEC="./build/fresh_vamana"
 ARGS="../data/sift10k/sift10k_randomgraph.bin . ."
 REPORT_DIR="report"
 
 usage() {
-    echo "Usage: $0 [--build] [--run] [--ncu] [--nsys]"
-    echo "  --build    Configure and compile project"
-    echo "  --run      Run executable without profiling"
-    echo "  --ncu      Run Nsight Compute profiler"
-    echo "  --nsys     Run Nsight Systems profiler"
+    echo -e "${CYAN}Usage:${RESET} $0 [--build] [--run] [--ncu] [--nsys]"
+    echo -e "  ${YELLOW}--build${RESET}    Configure and compile project"
+    echo -e "  ${YELLOW}--run${RESET}      Run executable without profiling"
+    echo -e "  ${YELLOW}--ncu${RESET}      Run Nsight Compute profiler"
+    echo -e "  ${YELLOW}--nsys${RESET}     Run Nsight Systems profiler"
     echo ""
-    echo "Examples:"
+    echo -e "${CYAN}Examples:${RESET}"
     echo "  $0 --build --run"
     echo "  $0 --run --ncu"
     echo "  $0 --nsys"
@@ -47,19 +44,20 @@ for arg in "$@"; do
         --ncu)   DO_NCU=true ;;
         --nsys)  DO_NSYS=true ;;
         -h|--help) usage ;;
-        *) echo "[ERROR] Unknown option: $arg"; usage ;;
+        *) echo -e "${RED}[ERROR]${RESET} Unknown option: $arg"; usage ;;
     esac
 done
 
 if $DO_BUILD; then
-    echo "[INFO] Building project..."
+    echo -e "${BLUE}[BUILD]${RESET} Configuring and compiling project..."
     cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     cmake --build build
+    echo -e "${GREEN}[SUCCESS]${RESET} Build complete."
 fi
 
 if [[ ! -f "$EXEC" ]]; then
-    echo "[ERROR] Executable not found: $EXEC"
-    echo "        Try running with --build first."
+    echo -e "${RED}[ERROR]${RESET} Executable not found: ${BOLD}$EXEC${RESET}"
+    echo -e "        Try running with ${YELLOW}--build${RESET} first."
     exit 1
 fi
 
@@ -75,28 +73,30 @@ else
 fi
 
 if $DO_RUN; then
-    echo "[INFO] Running executable..."
+    echo -e "${MAGENTA}[RUN]${RESET} Running executable..."
+    echo -e "${CYAN}$EXEC $ARGS${RESET}"
     "$EXEC" $ARGS
+    echo -e "${GREEN}[DONE]${RESET} Execution completed."
 fi
 
 if $DO_NCU; then
     if command -v ncu >/dev/null 2>&1; then
-        echo "[INFO] Running Nsight Compute profiler..."
+        echo -e "${MAGENTA}[NCU]${RESET} Running ${BOLD}Nsight Compute${RESET} profiler..."
         ncu -o "$REPORT_DIR/report_${next_report_num}" "$EXEC" $ARGS
-        echo "[INFO] Nsight Compute report saved to $REPORT_DIR/report_${next_report_num}.ncu-rep"
+        echo -e "${GREEN}[SAVED]${RESET} Nsight Compute report → ${YELLOW}$REPORT_DIR/report_${next_report_num}.ncu-rep${RESET}"
     else
-        echo "[WARN] Nsight Compute (ncu) not found."
+        echo -e "${RED}[WARN]${RESET} Nsight Compute (ncu) not found."
     fi
 fi
 
 if $DO_NSYS; then
     if command -v nsys >/dev/null 2>&1; then
-        echo "[INFO] Running Nsight Systems profiler..."
+        echo -e "${MAGENTA}[NSYS]${RESET} Running ${BOLD}Nsight Systems${RESET} profiler..."
         nsys profile -o "$REPORT_DIR/report_${next_report_num}" "$EXEC" $ARGS
-        echo "[INFO] Nsight Systems report saved to $REPORT_DIR/report_${next_report_num}.qdrep"
+        echo -e "${GREEN}[SAVED]${RESET} Nsight Systems report → ${YELLOW}$REPORT_DIR/report_${next_report_num}.qdrep${RESET}"
     else
-        echo "[WARN] Nsight Systems (nsys) not found."
+        echo -e "${RED}[WARN]${RESET} Nsight Systems (nsys) not found."
     fi
 fi
 
-echo "[INFO] Done."
+echo -e "${GREEN}[INFO]${RESET} All requested actions completed."
