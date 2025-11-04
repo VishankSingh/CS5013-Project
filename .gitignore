@@ -10,3 +10,7 @@ tags.lock
 
 # Ignore macOSX file system artifacts
 .DS_Store
+
+
+vamana/report/
+.vscode/
