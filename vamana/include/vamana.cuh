@@ -37,31 +37,60 @@ class Vamana {
    public:
     Vamana(std::unique_ptr<GraphT<T__>> graph_arg);
 
-    void insertPoints(/*something*/);
-    void deletePoints(T__* d_queryVecs, size_t num) {
-        std::vector<int> h_results(num);
-        CPUTimer         cputimer;
+    // TODO: implement insert
+    void insertPoints(T__* d_queryVecs, size_t num);
 
-        cputimer.Start();
+    /**
+     * @brief Deletes multiple points from the FreshVamana graph given their query vectors.
+     *
+     * This function takes a buffer of query vectors (`d_queryVecs`) residing on the device
+     * and identifies the corresponding node indices in the graph using `findPointsInGraph()`.
+     * Once the matching node indices are found, they are added to the internal
+     * `delete_list_` for search and deferred deletion from the graph structure.
+     *
+     * Timing information for the search operation is also printed to standard output.
+     *
+     * @tparam T__ The data type of each coordinate in the query vector
+     *             (e.g., `float`, `double`, etc.).
+     *
+     * @param[in] d_queryVecs Pointer to the device memory containing `num` query vectors,
+     *                        each of dimension `FreshVamana::Consts::D_g`.
+     * @param[in] num         Number of query vectors in the buffer (`d_queryVecs`).
+     *
+     * @see findPointsInGraph
+     * @see FreshVamana::Consts::D_g
+     * @see FreshVamana::Globals::d_graph_size
+     */
+    void deletePoints(T__* d_queryVecs, size_t num);
 
-        findPointsInGraph(h_results.data(),
-                          graph_->d_graph,
-                          FreshVamana::Globals::d_graph_size,
-                          d_queryVecs,
-                          num);
-
-        cputimer.Stop();
-        printf("findPointsInGraph(%lu points): %f sec\n", num, cputimer.Elapsed());
-
-        for (uint i = 0; i < num; ++i) {
-            printf("Query %u found at node index: %d\n", i, h_results[i]);
-            delete_list_.addNode(h_results[i]);
-        }
-    }
-
-    // IMPORTANT: returns a pointer to gpu buffer of size num * FreshVamana::Consts::L_g *
-    // sizeof(uint)
-    // FREE IT LATER
+    /**
+     * @brief Searches for the nearest neighbors of multiple query vectors in the FreshVamana graph.
+     *
+     * This function takes a buffer of query vectors (`d_queryVecs`) located on the device
+     * and performs a search in the FreshVamana graph to find their approximate nearest neighbors.
+     * Each query vector has dimensionality `FreshVamana::Consts::D_g` and element type `T__`.
+     *
+     * The function returns a pointer to a GPU buffer containing the search results.
+     * The buffer size is `num * FreshVamana::Consts::L_g * sizeof(uint)`, where each query
+     * has up to `FreshVamana::Consts::L_g` nearest neighbor node indices.
+     *
+     * @tparam T__ The data type of each coordinate in the query vectors
+     *             (e.g., `float`, `double`, etc.).
+     *
+     * @param[in] d_queryVecs Pointer to the device memory containing `num` query vectors,
+     *                        each of dimension `FreshVamana::Consts::D_g`.
+     * @param[in] num         Number of query vectors to process.
+     *
+     * @return A pointer to a device (GPU) buffer of type `uint*`, containing
+     *         `num * FreshVamana::Consts::L_g` node indices.
+     *         **The caller is responsible for freeing this buffer using `cudaFree()` when done.**
+     *
+     * @note The function is marked `[[nodiscard]]` to prevent accidental ignoring of
+     *       the returned GPU buffer, which must be freed explicitly.
+     *
+     * @see FreshVamana::Consts::D_g
+     * @see FreshVamana::Consts::L_g
+     */
     [[nodiscard]] uint* searchPoints(T__* d_queryVecs, size_t num);
 
    private:
@@ -69,22 +98,9 @@ class Vamana {
                            const uint8_t* d_graph,
                            uint           n_nodes,
                            const dtype_g* d_query_vecs,
-                           uint           n_queries) {
-        int* d_results = nullptr;
-        cudaMalloc(&d_results, n_queries * sizeof(int));
+                           uint           n_queries);
 
-        // Initialize results to -1
-        cudaMemset(d_results, 0xFF, n_queries * sizeof(int));
-
-        dim3 threads(256);
-        dim3 blocks((n_nodes + threads.x - 1) / threads.x, n_queries);
-
-        findPointsKernel<<<blocks, threads>>>(d_graph, d_query_vecs, n_nodes, n_queries, d_results);
-        cudaDeviceSynchronize();
-
-        cudaMemcpy(h_results, d_results, n_queries * sizeof(int), cudaMemcpyDeviceToHost);
-        cudaFree(d_results);
-    }
+    void runVamana();
 
    public:
     std::unique_ptr<GraphT<T__>> graph_;

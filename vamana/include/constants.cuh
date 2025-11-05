@@ -7,8 +7,7 @@ namespace FreshVamana::Consts {
 constexpr uint D_g           = 128;
 constexpr uint R_g           = 64;
 constexpr uint rg_bin_size_g = 10000;  // size of binary file randomgraph.bin
-// constexpr uint N_g           = 10000;  // total size of graph
-constexpr uint L_g = 150;
+constexpr uint L_g           = 150;
 
 constexpr uint medoid_g                  = 5000;
 constexpr uint max_num_parents_per_query = 600;
