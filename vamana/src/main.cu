@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
     index.deletePoints(
         (float*)(index.graph_->d_graph + (6) * FreshVamana::Consts::graph_entry_bytes_g), 1);
 
-    for (int i = 7; i < 30; i++) {
+    for (int i = 7; i < 4400; i++) {
         index.deletePoints(
             (float*)(index.graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g), 1);
     }

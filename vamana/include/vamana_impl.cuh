@@ -30,6 +30,8 @@ void Vamana<T__>::deletePoints(T__* d_queryVecs, size_t num) {
     std::vector<int> h_results(num);
     CPUTimer         cputimer;
 
+    // std::cout << "[ deletePoints ]\n";
+
     cputimer.Start();
 
     findPointsInGraph(
@@ -49,7 +51,7 @@ template <typename T__>
     uint*    d_visitedSets;
     uint*    d_visitedSetCount;
     uint8_t* d_reverseEdgeIndex;
-    std::cout << "[ Searching ]\n";
+    std::cout << "[ searchPoints ]\n";
 
     CPUTimer cputimer;
     CPUTimer cputimermain;
@@ -111,6 +113,8 @@ void Vamana<T__>::runVamana() {
     uint*    d_visitedSets;
     uint*    d_visitedSetCount;
     uint8_t* d_reverseEdgeIndex;
+
+    std::cout << "[ runVamana ]\n";
 
     float alpha = 1.5;
     T__*  d_queryVecs;

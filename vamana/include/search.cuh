@@ -207,6 +207,12 @@ __global__ void mergeIntoWorklist(uint*       d_worklistCount,
         d_worklistCount[queryID] = newWorklistSize;
 
         for (uint ii = 0; ii < newWorklistSize; ii++) {
+            // uint candidate = d_worklist[worklistOffset + ii];
+
+            // // Skip if deleted
+            // if (isNodeInDeleteList(d_delete_list, d_delete_list_size, candidate))
+            //     continue;
+
             // Find the closest unvisited node, set it as the parent for the next iteration, and
             // mark it as visited.
             if (!d_worklistVisited[worklistOffset + ii]) {
