@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
     // ADDING TEST QUERIES
     float* d_queryVecs;
-    uint   num_vecs = 1;
+    uint   num_vecs = 10;
     gpuErrchk(cudaMalloc(&d_queryVecs, num_vecs * FreshVamana::Consts::D_g * sizeof(float)));
 
     for (uint i = 0; i < num_vecs; i++) {
@@ -43,35 +43,60 @@ int main(int argc, char** argv) {
     }
 
     // SEARCH TEST
-    uint* d_worklist = index.search(d_queryVecs, num_vecs);
+    uint* d_worklist = index.searchPoints(d_queryVecs, 1);
 
-    std::vector<uint> h_worklist(num_vecs * FreshVamana::Consts::L_g);
+    std::vector<uint> h_worklist(1 * FreshVamana::Consts::L_g);
     cudaMemcpy(
         h_worklist.data(), d_worklist, h_worklist.size() * sizeof(uint), cudaMemcpyDeviceToHost);
 
-    // for (int i = 0; i < 0; ++i) {
-    //     printf("Worklist[%d] = %u\n", i, h_worklist[i]);
+    for (int i = 0; i < 5; ++i) {
+        printf("Worklist[%d] = %u\n", i, h_worklist[i]);
 
-    //     const size_t vecDim    = 128;
-    //     const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
+        const size_t vecDim    = 128;
+        const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
 
-    //     std::vector<float> h_vec(vecDim);
+        std::vector<float> h_vec(vecDim);
 
-    //     size_t offset = entrySize * hcl_worklist[i];
-    //     cudaMemcpy(h_vec.data(),
-    //                index.graph_->d_graph + offset,
-    //                vecDim * sizeof(float),
-    //                cudaMemcpyDeviceToHost);
+        size_t offset = entrySize * h_worklist[i];
+        cudaMemcpy(h_vec.data(),
+                   index.graph_->d_graph + offset,
+                   vecDim * sizeof(float),
+                   cudaMemcpyDeviceToHost);
 
-    //     for (size_t j = 0; j < vecDim; ++j)
-    //         printf("[%3zu] %f\n", j, h_vec[j]);
-    // }
+        // for (size_t j = 0; j < vecDim; ++j)
+        //     printf("[%3zu] %f\n", j, h_vec[j]);
+    }
 
     // DELETE TEST
-    index.deletePoint(d_queryVecs, num_vecs);
+    index.deletePoints(d_queryVecs + (2) * FreshVamana::Consts::D_g, 1);
+    index.deletePoints(d_queryVecs + (6) * FreshVamana::Consts::D_g, 1);
 
     std::cout << isNodeInDeleteList(index.delete_list_.data(), index.delete_list_.size(), 1)
               << "\n";
+
+    uint* d_worklist2 = index.searchPoints(d_queryVecs, 1);
+
+    std::vector<uint> h_worklist2(1 * FreshVamana::Consts::L_g);
+    cudaMemcpy(
+        h_worklist2.data(), d_worklist2, h_worklist2.size() * sizeof(uint), cudaMemcpyDeviceToHost);
+
+    for (int i = 0; i < 5; ++i) {
+        printf("Worklist[%d] = %u\n", i, h_worklist2[i]);
+
+        const size_t vecDim    = 128;
+        const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
+
+        std::vector<float> h_vec(vecDim);
+
+        size_t offset = entrySize * h_worklist2[i];
+        cudaMemcpy(h_vec.data(),
+                   index.graph_->d_graph + offset,
+                   vecDim * sizeof(float),
+                   cudaMemcpyDeviceToHost);
+
+        // for (size_t j = 0; j < vecDim; ++j)
+        //     printf("[%3zu] %f\n", j, h_vec[j]);
+    }
 
     // pp<<<1, 1>>>();
 

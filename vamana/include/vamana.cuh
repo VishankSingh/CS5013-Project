@@ -37,8 +37,8 @@ class Vamana {
    public:
     Vamana(std::unique_ptr<GraphT<T__>> graph_arg);
 
-    void insertPoint(/*something*/);
-    void deletePoint(T__* d_queryVecs, size_t num) {
+    void insertPoints(/*something*/);
+    void deletePoints(T__* d_queryVecs, size_t num) {
         std::vector<int> h_results(num);
         CPUTimer         cputimer;
 
@@ -53,16 +53,16 @@ class Vamana {
         cputimer.Stop();
         printf("findPointsInGraph(%lu points): %f sec\n", num, cputimer.Elapsed());
 
-        // for (uint i = 0; i < num; ++i) {
-        //     printf("Query %u found at node index: %d\n", i, h_results[i]);
-        //     delete_list_.addNode(h_results[i]);
-        // }
+        for (uint i = 0; i < num; ++i) {
+            printf("Query %u found at node index: %d\n", i, h_results[i]);
+            delete_list_.addNode(h_results[i]);
+        }
     }
 
     // IMPORTANT: returns a pointer to gpu buffer of size num * FreshVamana::Consts::L_g *
     // sizeof(uint)
     // FREE IT LATER
-    [[nodiscard]] uint* search(T__* d_queryVecs, size_t num);
+    [[nodiscard]] uint* searchPoints(T__* d_queryVecs, size_t num);
 
    private:
     void findPointsInGraph(int*           h_results,

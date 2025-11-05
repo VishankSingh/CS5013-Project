@@ -79,7 +79,7 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
 };
 
 template <typename T__>
-[[nodiscard]] uint* Vamana<T__>::search(T__* d_queryVecs, size_t num) {
+[[nodiscard]] uint* Vamana<T__>::searchPoints(T__* d_queryVecs, size_t num) {
     uint*    d_visitedSets;
     uint*    d_visitedSetCount;
     uint8_t* d_reverseEdgeIndex;
@@ -116,5 +116,3 @@ template <typename T__>
     printf("Vamana<T__>::search: %f sec\n", cputimermain.Elapsed());
     return d_worklist;
 }
-
-// =======================================================================================================

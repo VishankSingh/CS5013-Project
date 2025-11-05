@@ -5,6 +5,7 @@
 #include "graphT.cuh"
 #include "utils.cuh"
 
+#include "delete_list.cuh"
 #include "kernels.cuh"
 
 // __device__ bool contains(uint* set, uint count, uint el) {
@@ -67,14 +68,16 @@ __global__ void initializeWorklist(uint8_t* d_graph,
  * d_visitedSet      - Array of visited points for each query
  * d_visitedSetCount - No. of visited points for each query
  */
-__global__ void filterNeighbors(uint8_t* d_graph,
-                                bool*    d_hasParent,
-                                uint*    d_parents,
-                                bool*    d_bloomFilters,
-                                uint*    d_neighbors,
-                                uint*    d_neighborsCount,
-                                uint*    d_visitedSet,
-                                uint*    d_visitedSetCount) {
+__global__ void filterNeighbors(uint8_t*    d_graph,
+                                const uint* d_delete_list,
+                                size_t      d_delete_list_size,
+                                bool*       d_hasParent,
+                                uint*       d_parents,
+                                bool*       d_bloomFilters,
+                                uint*       d_neighbors,
+                                uint*       d_neighborsCount,
+                                uint*       d_visitedSet,
+                                uint*       d_visitedSetCount) {
     uint queryID = blockIdx.x;
     uint tid     = threadIdx.x;
 
@@ -115,6 +118,10 @@ __global__ void filterNeighbors(uint8_t* d_graph,
     for (uint ii = tid; ii < degree; ii += blockDim.x) {
         uint neighbor = neighborPtr[ii];
 
+        if (isNodeInDeleteList(d_delete_list, d_delete_list_size, neighbor)) {
+            continue;
+        }
+
         if (neighbor == queryID)
             continue;
 
@@ -130,16 +137,18 @@ __global__ void filterNeighbors(uint8_t* d_graph,
 }
 
 template <typename T__>
-__global__ void mergeIntoWorklist(uint* d_worklistCount,
-                                  uint* d_worklist,
-                                  T__*  d_worklistDist,
-                                  bool* d_worklistVisited,
-                                  uint* d_neighborsCount,
-                                  uint* d_neighbors,
-                                  T__*  d_neighborsDist,
-                                  bool* d_hasParent,
-                                  uint* d_parents,
-                                  bool* d_nextIter) {
+__global__ void mergeIntoWorklist(uint*       d_worklistCount,
+                                  uint*       d_worklist,
+                                  T__*        d_worklistDist,
+                                  bool*       d_worklistVisited,
+                                  uint*       d_neighborsCount,
+                                  uint*       d_neighbors,
+                                  T__*        d_neighborsDist,
+                                  bool*       d_hasParent,
+                                  uint*       d_parents,
+                                  const uint* d_delete_list,
+                                  size_t      d_delete_list_size,
+                                  bool*       d_nextIter) {
     uint queryID = blockIdx.x;
     uint tid     = threadIdx.x;
 
@@ -198,6 +207,12 @@ __global__ void mergeIntoWorklist(uint* d_worklistCount,
         d_worklistCount[queryID] = newWorklistSize;
 
         for (uint ii = 0; ii < newWorklistSize; ii++) {
+            uint candidate = d_worklist[worklistOffset + ii];
+
+            // Skip if deleted
+            if (isNodeInDeleteList(d_delete_list, d_delete_list_size, candidate))
+                continue;
+
             // Find the closest unvisited node, set it as the parent for the next iteration, and
             // mark it as visited.
             if (!d_worklistVisited[worklistOffset + ii]) {
@@ -286,6 +301,8 @@ template <typename T__>
         gpuErrchk(cudaMemset(d_nextIter, false, sizeof(bool)));
 
         filterNeighbors<<<batchSize, FreshVamana::Consts::R_g>>>(d_graph,
+                                                                 d_delete_list,
+                                                                 d_delete_list_size,
                                                                  d_hasParent,
                                                                  d_parents,
                                                                  d_bloomFilters,
@@ -326,6 +343,8 @@ template <typename T__>
 
             d_hasParent,
             d_parents,
+            d_delete_list,
+            d_delete_list_size,
             d_nextIter);
 
         gpuErrchk(cudaMemcpy(&nextIter, d_nextIter, sizeof(bool), cudaMemcpyDeviceToHost));
