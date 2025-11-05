@@ -1,8 +1,10 @@
 // graph.cuh
 #pragma once
 #include "constants.cuh"
+#include "globals.cuh"
 
 #include <cstdint>
+#include <cstdio>
 
 using uint = unsigned int;
 
@@ -60,3 +62,33 @@ struct GraphT {
     // static constexpr uint dim    = FreshVamana::Consts::D_g;
     // static constexpr uint degree = FreshVamana::Consts::R_g;
 };
+
+template <typename T__>
+void expandGraph(GraphT<T__>& graph, uint min_increase) {
+    using namespace FreshVamana::Globals;
+    using namespace FreshVamana::Consts;
+
+    if (d_graph_capacity == 0) {
+        return;
+    }
+
+    const uint grow_by      = static_cast<uint>(min_increase * 3.0f) + 1;
+    const uint new_capacity = d_graph_capacity + grow_by;
+
+    const size_t old_bytes = static_cast<size_t>(d_graph_capacity) * graph_entry_bytes_g;
+    const size_t new_bytes = static_cast<size_t>(new_capacity) * graph_entry_bytes_g;
+
+    uint8_t*    d_new_graph = nullptr;
+    cudaError_t err         = cudaMalloc(&d_new_graph, new_bytes);
+    if (err != cudaSuccess) {
+        return;
+    }
+
+    if (graph.d_graph != nullptr && d_graph_size > 0) {
+        cudaMemcpy(d_new_graph, graph.d_graph, old_bytes, cudaMemcpyDeviceToDevice);
+        cudaFree(graph.d_graph);
+    }
+
+    graph.d_graph    = d_new_graph;
+    d_graph_capacity = new_capacity;
+}

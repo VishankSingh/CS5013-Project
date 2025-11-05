@@ -22,7 +22,16 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
 template <typename T__>
 void Vamana<T__>::insertPoints(T__* d_queryVecs, size_t num) {
     if (FreshVamana::Globals::d_graph_size + num > FreshVamana::Globals::d_graph_capacity) {
+        expandGraph(graph_, num);
     }
+
+    for (uint i = 0; i < num; i++) {
+        T__* src = (T__*)(d_queryVecs + (i)*FreshVamana::Consts::D_g);
+        T__* dst = (T__*)(graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g);
+        cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
+    }
+
+    // TODO: complete this.
 }
 
 template <typename T__>

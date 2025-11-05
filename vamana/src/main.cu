@@ -32,14 +32,15 @@ int main(int argc, char** argv) {
     Vamana<dtype_g> index(std::move(graph));
 
     // ADDING TEST QUERIES
-    float* d_queryVecs;
-    uint   num_vecs = 10;
-    gpuErrchk(cudaMalloc(&d_queryVecs, num_vecs * FreshVamana::Consts::D_g * sizeof(float)));
+    dtype_g* d_queryVecs;
+    uint     num_vecs = 10;
+    gpuErrchk(cudaMalloc(&d_queryVecs, num_vecs * FreshVamana::Consts::D_g * sizeof(dtype_g)));
 
     for (uint i = 0; i < num_vecs; i++) {
-        float* src = (float*)(index.graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g);
-        float* dst = (float*)(d_queryVecs + i * FreshVamana::Consts::D_g);
-        cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(float), cudaMemcpyDeviceToDevice);
+        dtype_g* src =
+            (dtype_g*)(index.graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g);
+        dtype_g* dst = (dtype_g*)(d_queryVecs + i * FreshVamana::Consts::D_g);
+        cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(dtype_g), cudaMemcpyDeviceToDevice);
     }
 
     // SEARCH TEST
@@ -56,12 +57,12 @@ int main(int argc, char** argv) {
         const size_t vecDim    = 128;
         const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
 
-        std::vector<float> h_vec(vecDim);
+        std::vector<dtype_g> h_vec(vecDim);
 
         size_t offset = entrySize * h_worklist[i];
         cudaMemcpy(h_vec.data(),
                    index.graph_->d_graph + offset,
-                   vecDim * sizeof(float),
+                   vecDim * sizeof(dtype_g),
                    cudaMemcpyDeviceToHost);
 
         // for (size_t j = 0; j < vecDim; ++j)
@@ -90,12 +91,12 @@ int main(int argc, char** argv) {
         const size_t vecDim    = 128;
         const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
 
-        std::vector<float> h_vec(vecDim);
+        std::vector<dtype_g> h_vec(vecDim);
 
         size_t offset = entrySize * h_worklist2[i];
         cudaMemcpy(h_vec.data(),
                    index.graph_->d_graph + offset,
-                   vecDim * sizeof(float),
+                   vecDim * sizeof(dtype_g),
                    cudaMemcpyDeviceToHost);
 
         // for (size_t j = 0; j < vecDim; ++j)
@@ -103,19 +104,19 @@ int main(int argc, char** argv) {
     }
 
     index.deletePoints(
-        (float*)(index.graph_->d_graph + (6) * FreshVamana::Consts::graph_entry_bytes_g), 1);
+        (dtype_g*)(index.graph_->d_graph + (6) * FreshVamana::Consts::graph_entry_bytes_g), 1);
 
     for (int i = 7; i < 4400; i++) {
         index.deletePoints(
-            (float*)(index.graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g), 1);
+            (dtype_g*)(index.graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g), 1);
     }
 
     index.deletePoints(
-        (float*)(index.graph_->d_graph + (4585) * FreshVamana::Consts::graph_entry_bytes_g), 1);
+        (dtype_g*)(index.graph_->d_graph + (4585) * FreshVamana::Consts::graph_entry_bytes_g), 1);
     index.deletePoints(
-        (float*)(index.graph_->d_graph + (9256) * FreshVamana::Consts::graph_entry_bytes_g), 1);
+        (dtype_g*)(index.graph_->d_graph + (9256) * FreshVamana::Consts::graph_entry_bytes_g), 1);
     // index.deletePoints(
-    //     (float*)(index.graph_->d_graph + (140) * FreshVamana::Consts::graph_entry_bytes_g), 1);
+    //     (dtype_g*)(index.graph_->d_graph + (140) * FreshVamana::Consts::graph_entry_bytes_g), 1);
 
     std::cout << '\n';
 
@@ -131,12 +132,12 @@ int main(int argc, char** argv) {
         const size_t vecDim    = 128;
         const size_t entrySize = FreshVamana::Consts::graph_entry_bytes_g;
 
-        std::vector<float> h_vec(vecDim);
+        std::vector<dtype_g> h_vec(vecDim);
 
         size_t offset = entrySize * h_worklist3[i];
         cudaMemcpy(h_vec.data(),
                    index.graph_->d_graph + offset,
-                   vecDim * sizeof(float),
+                   vecDim * sizeof(dtype_g),
                    cudaMemcpyDeviceToHost);
 
         // for (size_t j = 0; j < vecDim; ++j)
