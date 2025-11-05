@@ -42,6 +42,8 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
 
     cputimer.Start();
     uint* d_worklist = greedySearch<T__>(graph_->d_graph,
+                                         delete_list_.data(),
+                                         delete_list_.size(),
                                          d_queryVecs,
                                          d_visitedSets,
                                          d_visitedSetCount,
@@ -100,8 +102,13 @@ template <typename T__>
     printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
 
     cputimer.Start();
-    uint* d_worklist =
-        greedySearch<T__>(graph_->d_graph, d_queryVecs, d_visitedSets, d_visitedSetCount, num);
+    uint* d_worklist = greedySearch<T__>(graph_->d_graph,
+                                         delete_list_.data(),
+                                         delete_list_.size(),
+                                         d_queryVecs,
+                                         d_visitedSets,
+                                         d_visitedSetCount,
+                                         num);
     cputimer.Stop();
     printf("greedySearch: %f sec\n", cputimer.Elapsed());
 

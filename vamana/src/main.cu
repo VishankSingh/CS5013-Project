@@ -70,7 +70,8 @@ int main(int argc, char** argv) {
     // DELETE TEST
     index.deletePoint(d_queryVecs, num_vecs);
 
-    std::cout << index.delete_list_.isNodeInDeleteList(1) << "\n";
+    std::cout << isNodeInDeleteList(index.delete_list_.data(), index.delete_list_.size(), 1)
+              << "\n";
 
     // pp<<<1, 1>>>();
 

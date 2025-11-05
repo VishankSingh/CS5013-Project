@@ -214,11 +214,13 @@ __global__ void mergeIntoWorklist(uint* d_worklistCount,
 
 // Performs greedy search and returns the visited sets
 template <typename T__>
-[[nodiscard]] uint* greedySearch(uint8_t* d_graph,
-                                 T__*     d_queryVecs,
-                                 uint*    d_visitedSet /*empty*/,
-                                 uint*    d_visitedSetCount /*0*/,
-                                 uint     batchSize) {
+[[nodiscard]] uint* greedySearch(uint8_t*    d_graph,
+                                 const uint* d_delete_list,
+                                 size_t      d_delete_list_size,
+                                 T__*        d_queryVecs,
+                                 uint*       d_visitedSet /*empty*/,
+                                 uint*       d_visitedSetCount /*0*/,
+                                 uint        batchSize) {
     bool* d_hasParent;  // 10k
     uint* d_parents;    // 10k uint
     bool* d_bloomFilters;
