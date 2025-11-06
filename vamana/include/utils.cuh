@@ -129,9 +129,9 @@ template <typename T__>
         return nullptr;
     }
 
-    gpuErrchk(
-        cudaMalloc(&graph->d_graph,
-                   FreshVamana::Globals::d_graph_size * FreshVamana::Consts::graph_entry_bytes_g));
+    gpuErrchk(cudaMalloc(
+        &graph->d_graph,
+        FreshVamana::Globals::d_graph_capacity * FreshVamana::Consts::graph_entry_bytes_g));
     // TODO: complete this
     gpuErrchk(cudaMemcpy(graph->d_graph,
                          h_graph,

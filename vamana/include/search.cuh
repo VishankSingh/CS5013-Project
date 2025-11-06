@@ -68,6 +68,7 @@ __global__ void initializeWorklist(uint8_t* d_graph,
  * d_visitedSet      - Array of visited points for each query
  * d_visitedSetCount - No. of visited points for each query
  */
+template <typename T__>
 __global__ void filterNeighbors(uint8_t*    d_graph,
                                 const uint* d_delete_list,
                                 size_t      d_delete_list_size,
@@ -90,7 +91,7 @@ __global__ void filterNeighbors(uint8_t*    d_graph,
 
     // Get the pointers to the degree and neighbors of the parent
     uint* degreePtr   = (uint*)(d_graph + parent * FreshVamana::Consts::graph_entry_bytes_g +
-                              FreshVamana::Consts::D_g * sizeof(float));
+                              FreshVamana::Consts::D_g * sizeof(T__));
     uint* neighborPtr = degreePtr + 1;
 
     __syncthreads();
@@ -300,52 +301,53 @@ template <typename T__>
         iter++;
         gpuErrchk(cudaMemset(d_nextIter, false, sizeof(bool)));
 
-        filterNeighbors<<<batchSize, FreshVamana::Consts::R_g>>>(d_graph,
-                                                                 d_delete_list,
-                                                                 d_delete_list_size,
-                                                                 d_hasParent,
-                                                                 d_parents,
-                                                                 d_bloomFilters,
-                                                                 d_neighbors,
-                                                                 d_neighborsCount,
-                                                                 d_visitedSet,
-                                                                 d_visitedSetCount);
+        filterNeighbors<T__><<<batchSize, FreshVamana::Consts::R_g>>>(d_graph,
+                                                                      d_delete_list,
+                                                                      d_delete_list_size,
+                                                                      d_hasParent,
+                                                                      d_parents,
+                                                                      d_bloomFilters,
+                                                                      d_neighbors,
+                                                                      d_neighborsCount,
+                                                                      d_visitedSet,
+                                                                      d_visitedSetCount);
 
         // gpuErrchk(cudaDeviceSynchronize());
 
-        computeDists<<<batchSize, FreshVamana::Consts::R_g * 8>>>(d_graph,
-                                                                  d_neighbors,
-                                                                  d_neighborsCount,
-                                                                  d_queryVecs,
-                                                                  d_neighborDists,
-                                                                  (FreshVamana::Consts::R_g + 1));
+        computeDists<T__>
+            <<<batchSize, FreshVamana::Consts::R_g * 8>>>(d_graph,
+                                                          d_neighbors,
+                                                          d_neighborsCount,
+                                                          d_queryVecs,
+                                                          d_neighborDists,
+                                                          (FreshVamana::Consts::R_g + 1));
         // gpuErrchk(cudaDeviceSynchronize());
 
-        sortByDistance<<<batchSize,
-                         FreshVamana::Consts::R_g,
-                         FreshVamana::Consts::R_g * sizeof(uint)>>>(d_neighbors,
-                                                                    d_neighborsCount,
-                                                                    d_neighborDists,
-                                                                    d_neighborsAux,
-                                                                    d_neighborDistsAux,
-                                                                    FreshVamana::Consts::R_g + 1);
+        sortByDistance<T__>
+            <<<batchSize, FreshVamana::Consts::R_g, FreshVamana::Consts::R_g * sizeof(uint)>>>(
+                d_neighbors,
+                d_neighborsCount,
+                d_neighborDists,
+                d_neighborsAux,
+                d_neighborDistsAux,
+                FreshVamana::Consts::R_g + 1);
         // gpuErrchk(cudaDeviceSynchronize());
 
-        mergeIntoWorklist<<<batchSize, FreshVamana::Consts::R_g + FreshVamana::Consts::L_g>>>(
-            d_worklistCount,
-            d_worklist,
-            d_worklistDist,
-            d_worklistVisited,
+        mergeIntoWorklist<T__>
+            <<<batchSize, FreshVamana::Consts::R_g + FreshVamana::Consts::L_g>>>(d_worklistCount,
+                                                                                 d_worklist,
+                                                                                 d_worklistDist,
+                                                                                 d_worklistVisited,
 
-            d_neighborsCount,
-            d_neighbors,
-            d_neighborDists,
+                                                                                 d_neighborsCount,
+                                                                                 d_neighbors,
+                                                                                 d_neighborDists,
 
-            d_hasParent,
-            d_parents,
-            d_delete_list,
-            d_delete_list_size,
-            d_nextIter);
+                                                                                 d_hasParent,
+                                                                                 d_parents,
+                                                                                 d_delete_list,
+                                                                                 d_delete_list_size,
+                                                                                 d_nextIter);
 
         gpuErrchk(cudaMemcpy(&nextIter, d_nextIter, sizeof(bool), cudaMemcpyDeviceToHost));
     } while (nextIter);

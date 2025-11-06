@@ -21,17 +21,53 @@ Vamana<T__>::Vamana(std::unique_ptr<GraphT<T__>> graph_arg) {
 
 template <typename T__>
 void Vamana<T__>::insertPoints(T__* d_queryVecs, size_t num) {
-    if (FreshVamana::Globals::d_graph_size + num > FreshVamana::Globals::d_graph_capacity) {
-        expandGraph(graph_, num);
+    using namespace FreshVamana;
+    std::cout << "[ insertPoints ]\n";
+
+    if (Globals::d_graph_size + num > Globals::d_graph_capacity) {
+        expandGraph<T__>(*graph_, num);
     }
+
+    const size_t entry_bytes = Consts::graph_entry_bytes_g;
+    const size_t vec_bytes   = Consts::D_g * sizeof(T__);
 
     for (uint i = 0; i < num; i++) {
-        T__* src = (T__*)(d_queryVecs + (i)*FreshVamana::Consts::D_g);
-        T__* dst = (T__*)(graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g);
-        cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
+        const uint dst_index    = Globals::d_graph_size + i;
+        size_t     offset_bytes = static_cast<size_t>(dst_index) * entry_bytes;
+
+        // Sanity check: don't write past capacity
+        if ((offset_bytes + entry_bytes) > (size_t)Globals::d_graph_capacity * entry_bytes) {
+            fprintf(
+                stderr, "insertPoints: would write past allocated capacity! idx=%u\n", dst_index);
+            std::abort();
+        }
+
+        uint8_t* dst_base = graph_->d_graph + offset_bytes;
+
+        // copy vector (device->device)
+        T__* dst_vec = reinterpret_cast<T__*>(dst_base);
+        T__* src_vec = d_queryVecs + i * Consts::D_g;
+        gpuErrchk(cudaMemcpy(dst_vec, src_vec, vec_bytes, cudaMemcpyDeviceToDevice));
+
+        // write degree (use uint pointer so it's explicit)
+        uint* degree_ptr = reinterpret_cast<uint*>(dst_base + vec_bytes);
+        uint  degree_val = Consts::R_g;
+        gpuErrchk(cudaMemcpy(degree_ptr, &degree_val, sizeof(uint), cudaMemcpyHostToDevice));
+
+        // write neighbors (each neighbor is a uint)
+        uint* neighbors_ptr = reinterpret_cast<uint*>(dst_base + vec_bytes + sizeof(uint));
+        for (uint j = 0; j < Consts::R_g; ++j) {
+            uint val = rand() % Globals::d_graph_size;  // choose from existing nodes
+            gpuErrchk(cudaMemcpy(neighbors_ptr + j, &val, sizeof(uint), cudaMemcpyHostToDevice));
+        }
     }
 
-    // TODO: complete this.
+    Globals::d_graph_size += num;
+
+    // flush device errors before calling runVamana to help debugging
+    gpuErrchk(cudaDeviceSynchronize());
+
+    runVamana();
 }
 
 template <typename T__>
@@ -91,6 +127,9 @@ template <typename T__>
 
     cputimermain.Stop();
     printf("Vamana<T__>::search: %f sec\n", cputimermain.Elapsed());
+    gpuErrchk(cudaFree(d_visitedSets));
+    gpuErrchk(cudaFree(d_visitedSetCount));
+    gpuErrchk(cudaFree(d_reverseEdgeIndex));
     return d_worklist;
 }
 
