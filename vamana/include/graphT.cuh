@@ -56,23 +56,18 @@ using uint = unsigned int;
 template <typename T__>
 struct GraphT {
     uint8_t* d_graph = nullptr;
-    // uint     d_graph_size     = 0;
-    // uint     d_graph_capacity = 0;
-
-    // static constexpr uint dim    = FreshVamana::Consts::D_g;
-    // static constexpr uint degree = FreshVamana::Consts::R_g;
 };
 
 template <typename T__>
 void expandGraph(GraphT<T__>& graph, uint min_increase) {
-    if (FreshVamana::Globals::d_graph_capacity == 0) {
+    if (FreshVamana::Globals::d_graph_capacity_g == 0) {
         return;
     }
 
     const uint grow_by      = static_cast<uint>(min_increase * 3) + 1;
-    const uint new_capacity = FreshVamana::Globals::d_graph_capacity + grow_by;
+    const uint new_capacity = FreshVamana::Globals::d_graph_capacity_g + grow_by;
 
-    const size_t old_bytes = static_cast<size_t>(FreshVamana::Globals::d_graph_capacity) *
+    const size_t old_bytes = static_cast<size_t>(FreshVamana::Globals::d_graph_capacity_g) *
                              FreshVamana::Consts::graph_entry_bytes_g;
     const size_t new_bytes =
         static_cast<size_t>(new_capacity) * FreshVamana::Consts::graph_entry_bytes_g;
@@ -83,13 +78,13 @@ void expandGraph(GraphT<T__>& graph, uint min_increase) {
         return;
     }
 
-    if (graph.d_graph != nullptr && FreshVamana::Globals::d_graph_size > 0) {
+    if (graph.d_graph != nullptr && FreshVamana::Globals::d_graph_size_g > 0) {
         cudaMemcpy(d_new_graph, graph.d_graph, old_bytes, cudaMemcpyDeviceToDevice);
         cudaFree(graph.d_graph);
     }
 
-    graph.d_graph                          = d_new_graph;
-    FreshVamana::Globals::d_graph_capacity = new_capacity;
+    graph.d_graph                            = d_new_graph;
+    FreshVamana::Globals::d_graph_capacity_g = new_capacity;
 
     printf("\n\n[ expandGraph done ]\n\n");
 }

@@ -3,19 +3,20 @@
 #include "delete_list_kernels.cuh"
 #include "utils.cuh"
 
+#include "globals.cuh"
+
 class DeleteList {
    public:
-    DeleteList(uint initial_capacity = 1000u)
-        : d_delete_list_(nullptr),
-          growth_factor_(1.3f),
-          capacity_(std::max(1u, initial_capacity)),
-          size_(0) {
-        gpuErrchk(cudaMalloc(&d_delete_list_, capacity_ * sizeof(uint)));
+    DeleteList(uint initial_capacity = 1000u) {
+        growth_factor_ = 1.3f;
+        capacity_      = std::max(1u, initial_capacity);
+        size_          = 0;
+        gpuErrchk(cudaMalloc(&FreshVamana::Globals::d_delete_list_g, capacity_ * sizeof(uint)));
     }
 
     ~DeleteList() {
-        cudaFree(d_delete_list_);
-        d_delete_list_ = nullptr;
+        cudaFree(FreshVamana::Globals::d_delete_list_g);
+        FreshVamana::Globals::d_delete_list_g = nullptr;
     }
 
     uint size() const noexcept { return size_; }
@@ -25,19 +26,21 @@ class DeleteList {
         if (size_ >= capacity_)
             expandDeleteList();
 
-        gpuErrchk(
-            cudaMemcpy(d_delete_list_ + size_, &node_id, sizeof(uint), cudaMemcpyHostToDevice));
+        gpuErrchk(cudaMemcpy(FreshVamana::Globals::d_delete_list_g + size_,
+                             &node_id,
+                             sizeof(uint),
+                             cudaMemcpyHostToDevice));
         ++size_;
     }
 
-    uint*       data() noexcept { return d_delete_list_; }
-    const uint* data() const noexcept { return d_delete_list_; }
+    uint*       data() noexcept { return FreshVamana::Globals::d_delete_list_g; }
+    const uint* data() const noexcept { return FreshVamana::Globals::d_delete_list_g; }
 
     void clear() noexcept {
-        cudaFree(d_delete_list_);
-        d_delete_list_ = nullptr;
-        capacity_      = 0;
-        size_          = 0;
+        cudaFree(FreshVamana::Globals::d_delete_list_g);
+        FreshVamana::Globals::d_delete_list_g = nullptr;
+        capacity_                             = 0;
+        size_                                 = 0;
     }
 
    private:
@@ -47,18 +50,20 @@ class DeleteList {
         uint* new_buffer = nullptr;
         gpuErrchk(cudaMalloc(&new_buffer, new_capacity * sizeof(uint)));
 
-        if (d_delete_list_ && capacity_ > 0) {
-            gpuErrchk(cudaMemcpy(
-                new_buffer, d_delete_list_, capacity_ * sizeof(uint), cudaMemcpyDeviceToDevice));
-            cudaFree(d_delete_list_);
+        if (FreshVamana::Globals::d_delete_list_g && capacity_ > 0) {
+            gpuErrchk(cudaMemcpy(new_buffer,
+                                 FreshVamana::Globals::d_delete_list_g,
+                                 capacity_ * sizeof(uint),
+                                 cudaMemcpyDeviceToDevice));
+            cudaFree(FreshVamana::Globals::d_delete_list_g);
         }
 
-        d_delete_list_ = new_buffer;
-        capacity_      = new_capacity;
+        FreshVamana::Globals::d_delete_list_g = new_buffer;
+        capacity_                             = new_capacity;
     }
 
    private:
-    uint* d_delete_list_ = nullptr;
+    // uint* d_delete_list_ = nullptr;
     float growth_factor_ = 1.3f;
     uint  capacity_      = 0;
     uint  size_          = 0;

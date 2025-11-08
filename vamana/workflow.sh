@@ -49,14 +49,14 @@ for arg in "$@"; do
 done
 
 if $DO_BUILD; then
-    echo -e "${BLUE}[BUILD]${RESET} Configuring and compiling project..."
+    echo -e "${BLUE}${BOLD}[BUILD]${RESET} Configuring and compiling project..."
     cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     cmake --build build
-    echo -e "${GREEN}[SUCCESS]${RESET} Build complete."
+    echo -e "${GREEN}${BOLD}[SUCCESS]${RESET} Build complete."
 fi
 
 if [[ ! -f "$EXEC" ]]; then
-    echo -e "${RED}[ERROR]${RESET} Executable not found: ${BOLD}$EXEC${RESET}"
+    echo -e "${RED}${BOLD}[ERROR]${RESET} Executable not found: ${BOLD}$EXEC${RESET}"
     echo -e "        Try running with ${YELLOW}--build${RESET} first."
     exit 1
 fi
@@ -73,30 +73,30 @@ else
 fi
 
 if $DO_RUN; then
-    echo -e "${MAGENTA}[RUN]${RESET} Running executable..."
-    echo -e "${CYAN}$EXEC $ARGS${RESET}"
+    echo -e "${MAGENTA}${BOLD}[RUN]${RESET} Running executable..."
+    echo -e "${CYAN}${BOLD}$EXEC $ARGS${RESET}"
     "$EXEC" $ARGS
-    echo -e "${GREEN}[DONE]${RESET} Execution completed."
+    echo -e "${GREEN}${BOLD}[DONE]${RESET} Execution completed."
 fi
 
 if $DO_NCU; then
     if command -v ncu >/dev/null 2>&1; then
-        echo -e "${MAGENTA}[NCU]${RESET} Running ${BOLD}Nsight Compute${RESET} profiler..."
+        echo -e "${MAGENTA}${BOLD}[NCU]${RESET} Running ${BOLD}Nsight Compute${RESET} profiler..."
         ncu -o "$REPORT_DIR/report_${next_report_num}" "$EXEC" $ARGS
-        echo -e "${GREEN}[SAVED]${RESET} Nsight Compute report → ${YELLOW}$REPORT_DIR/report_${next_report_num}.ncu-rep${RESET}"
+        echo -e "${GREEN}${BOLD}[SAVED]${RESET} Nsight Compute report → ${YELLOW}$REPORT_DIR/report_${next_report_num}.ncu-rep${RESET}"
     else
-        echo -e "${RED}[WARN]${RESET} Nsight Compute (ncu) not found."
+        echo -e "${RED}${BOLD}[WARN]${RESET} Nsight Compute (ncu) not found."
     fi
 fi
 
 if $DO_NSYS; then
     if command -v nsys >/dev/null 2>&1; then
-        echo -e "${MAGENTA}[NSYS]${RESET} Running ${BOLD}Nsight Systems${RESET} profiler..."
+        echo -e "${MAGENTA}${BOLD}[NSYS]${RESET} Running ${BOLD}Nsight Systems${RESET} profiler..."
         nsys profile -o "$REPORT_DIR/report_${next_report_num}" "$EXEC" $ARGS
-        echo -e "${GREEN}[SAVED]${RESET} Nsight Systems report → ${YELLOW}$REPORT_DIR/report_${next_report_num}.qdrep${RESET}"
+        echo -e "${GREEN}${BOLD}[SAVED]${RESET} Nsight Systems report → ${YELLOW}$REPORT_DIR/report_${next_report_num}.qdrep${RESET}"
     else
-        echo -e "${RED}[WARN]${RESET} Nsight Systems (nsys) not found."
+        echo -e "${RED}${BOLD}[WARN]${RESET} Nsight Systems (nsys) not found."
     fi
 fi
 
-echo -e "${GREEN}[INFO]${RESET} All requested actions completed."
+echo -e "${GREEN}${BOLD}[INFO]${RESET} All requested actions completed."

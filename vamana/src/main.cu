@@ -74,7 +74,7 @@ void printNodeNeighbors(uint8_t* d_graph, size_t node_num) {
 }
 
 __global__ void pp() {
-    printf("\n\n%d\n\n", FreshVamana::Globals::d_graph_size);
+    printf("\n\n%d\n\n", FreshVamana::Globals::d_graph_size_g);
 }
 
 __global__ void pqv(float* dd) {
@@ -104,8 +104,8 @@ int main(int argc, char** argv) {
 
     std::unique_ptr<GraphT<dtype_g>> graph = initGraph<dtype_g>(random_graph_bin_path);
     // std::cout << graph->h_graph_capacity << " " << graph->h_graph_size << '\n';
-    std::cout << FreshVamana::Globals::d_graph_capacity << " " << FreshVamana::Globals::d_graph_size
-              << '\n';
+    std::cout << FreshVamana::Globals::d_graph_capacity_g << " "
+              << FreshVamana::Globals::d_graph_size_g << '\n';
 
     Vamana<dtype_g> index(std::move(graph));
 
@@ -129,29 +129,30 @@ int main(int argc, char** argv) {
 
     cudaDeviceSynchronize();
 
-    // pqv<<<1, 1>>>(d_queryVecs);
-    // pqpinc<<<1, 1>>>(d_queryVecs);
-    // pqv<<<1, 1>>>(d_queryVecs);
-    std::cout << '\n';
+    // // pqv<<<1, 1>>>(d_queryVecs);
+    // // pqpinc<<<1, 1>>>(d_queryVecs);
+    // // pqv<<<1, 1>>>(d_queryVecs);
+    // std::cout << '\n';
 
-    // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
+    // // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
+    // // cudaDeviceSynchronize();
+
+    // index.insertPoints(d_queryVecs, 1);
+
     // cudaDeviceSynchronize();
 
-    index.insertPoints(d_queryVecs, 1);
+    // // pqpdec<<<1, 1>>>(d_queryVecs);
+    // // pqv<<<1, 1>>>(d_queryVecs);
+    // // pqv<<<1, 1>>>((float*)(index.graph_->d_graph + (10000) * graph_entry_bytes_g));
+    // // printNodeNeighbors<dtype_g>(index.graph_->d_graph,
+    // // FreshVamana::Globals::d_graph_size_g- 1);
+    // // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
+    // // cudaDeviceSynchronize();
 
-    cudaDeviceSynchronize();
-
-    // pqpdec<<<1, 1>>>(d_queryVecs);
-    // pqv<<<1, 1>>>(d_queryVecs);
-    // pqv<<<1, 1>>>((float*)(index.graph_->d_graph + (10000) * graph_entry_bytes_g));
-    // printNodeNeighbors<dtype_g>(index.graph_->d_graph, FreshVamana::Globals::d_graph_size - 1);
-    // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
-    // cudaDeviceSynchronize();
-
-    std::cout << '\n';
-    uint* d_worklist4 = index.searchPoints(d_queryVecs, 1);
-    printWorklistVectors(index, d_worklist4, 1, 5);
-    cudaFree(d_worklist4);
+    // std::cout << '\n';
+    // uint* d_worklist4 = index.searchPoints(d_queryVecs, 1);
+    // printWorklistVectors(index, d_worklist4, 1, 5);
+    // cudaFree(d_worklist4);
 
     // DELETE TEST
 #define delete_test

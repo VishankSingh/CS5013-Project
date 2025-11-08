@@ -291,7 +291,7 @@ __global__ void pruneOutNeighbors(uint8_t*   d_graph,
 
                 // We need to add a reverse edge from p_star to query
                 uint* entryPtr = (uint*)&d_reverse_edge_index[*p_star_shared *
-                                                              Consts::reverse_index_entry_size_g];
+                                                              Consts::reverse_index_entry_bytes_g];
                 uint  oldLen   = atomicAdd(entryPtr, 1);
                 if (oldLen < Consts::max_reverse_index_entries_g) {
                     entryPtr[1 + oldLen] = extended_query_id;
@@ -523,7 +523,7 @@ __global__ void parseReverseIndex(uint8_t* d_reverseEdgeIndex,
     uint queryID = blockIdx.x;
     uint tid     = threadIdx.x;
 
-    uint* entryPtr = (uint*)(d_reverseEdgeIndex + queryID * Consts::reverse_index_entry_size_g);
+    uint* entryPtr = (uint*)(d_reverseEdgeIndex + queryID * Consts::reverse_index_entry_bytes_g);
     uint  numReverseEdges = *entryPtr;
 
     if (tid == 0) {
@@ -544,8 +544,8 @@ __global__ void getPrunableQueryIDs(uint* d_reverseEdgeCount,
     int  tid  = threadIdx.x;
     int  lane = tid % 32;
     uint i    = blockIdx.x * blockDim.x + threadIdx.x;
-    uint flag = (i < FreshVamana::Globals::d_graph_size) && (d_reverseEdgeCount[i] != 0);
-    if (i >= FreshVamana::Globals::d_graph_size)
+    uint flag = (i < FreshVamana::Globals::d_graph_size_g) && (d_reverseEdgeCount[i] != 0);
+    if (i >= FreshVamana::Globals::d_graph_size_g)
         return;
 
     // uint flag = (d_reverseEdgeCount[i] != 0);
@@ -751,7 +751,7 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
     T__* d_queryVecs;
 
     gpuErrchk(
-        cudaMalloc(&d_queryVecs, FreshVamana::Globals::d_graph_size * Consts::D_g * sizeof(T__)));
+        cudaMalloc(&d_queryVecs, FreshVamana::Globals::d_graph_size_g * Consts::D_g * sizeof(T__)));
 
     uint*      d_reverseEdges;
     uint*      d_reverseEdgeCount;
@@ -762,20 +762,20 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
 
     gpuErrchk(cudaMalloc(
         &d_reverseEdges,
-        FreshVamana::Globals::d_graph_size * Consts::max_reverse_index_entries_g * sizeof(uint)));
-    gpuErrchk(cudaMalloc(&d_reverseEdgeCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+        FreshVamana::Globals::d_graph_size_g * Consts::max_reverse_index_entries_g * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_reverseEdgeCount, FreshVamana::Globals::d_graph_size_g * sizeof(uint)));
     gpuErrchk(cudaMalloc(
         &d_reverseEdgeDists,
-        FreshVamana::Globals::d_graph_size * Consts::max_reverse_index_entries_g * sizeof(T__)));
+        FreshVamana::Globals::d_graph_size_g * Consts::max_reverse_index_entries_g * sizeof(T__)));
     gpuErrchk(cudaMalloc(
         &d_reverseEdgesAux,
-        FreshVamana::Globals::d_graph_size * Consts::max_reverse_index_entries_g * sizeof(uint)));
+        FreshVamana::Globals::d_graph_size_g * Consts::max_reverse_index_entries_g * sizeof(uint)));
     gpuErrchk(cudaMalloc(
         &d_reverseEdgeDistsAux,
-        FreshVamana::Globals::d_graph_size * Consts::max_reverse_index_entries_g * sizeof(T__)));
+        FreshVamana::Globals::d_graph_size_g * Consts::max_reverse_index_entries_g * sizeof(T__)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeStatus,
-                         FreshVamana::Globals::d_graph_size * Consts::max_reverse_index_entries_g *
-                             sizeof(NodeState)));
+                         FreshVamana::Globals::d_graph_size_g *
+                             Consts::max_reverse_index_entries_g * sizeof(NodeState)));
 
     uint* d_neighbors;
     uint* d_neighborsCount;
@@ -784,27 +784,27 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
     T__*  d_neighborDistsAux;
 
     gpuErrchk(cudaMalloc(&d_neighbors,
-                         FreshVamana::Globals::d_graph_size * (Consts::R_g + 1) * sizeof(uint)));
-    gpuErrchk(cudaMalloc(&d_neighborsCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+                         FreshVamana::Globals::d_graph_size_g * (Consts::R_g + 1) * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_neighborsCount, FreshVamana::Globals::d_graph_size_g * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_neighborDists,
-                         FreshVamana::Globals::d_graph_size * (Consts::R_g + 1) * sizeof(T__)));
+                         FreshVamana::Globals::d_graph_size_g * (Consts::R_g + 1) * sizeof(T__)));
     gpuErrchk(cudaMalloc(&d_neighborsAux,
-                         FreshVamana::Globals::d_graph_size * (Consts::R_g + 1) * sizeof(uint)));
+                         FreshVamana::Globals::d_graph_size_g * (Consts::R_g + 1) * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_neighborDistsAux,
-                         FreshVamana::Globals::d_graph_size * (Consts::R_g + 1) * sizeof(T__)));
+                         FreshVamana::Globals::d_graph_size_g * (Consts::R_g + 1) * sizeof(T__)));
 
     // bool nextIter;
     // bool *d_nextIter;
 
     // gpuErrchk(cudaMalloc(&d_nextIter, sizeof(bool)));
 
-    loadQueryVecs<<<FreshVamana::Globals::d_graph_size, Consts::D_g>>>(d_graph, d_queryVecs);
+    loadQueryVecs<<<FreshVamana::Globals::d_graph_size_g, Consts::D_g>>>(d_graph, d_queryVecs);
 
     uint* degreeSum;
     gpuErrchk(cudaMalloc(&degreeSum, (Consts::max_reverse_index_entries_g + 1) * sizeof(uint)));
     gpuErrchk(cudaMemset(degreeSum, 0, (Consts::max_reverse_index_entries_g + 1) * sizeof(uint)));
 
-    parseReverseIndex<<<FreshVamana::Globals::d_graph_size, 1024>>>(
+    parseReverseIndex<<<FreshVamana::Globals::d_graph_size_g, 1024>>>(
         d_reverseEdgeIndex, d_reverseEdges, d_reverseEdgeCount, degreeSum);
 
     // uint h_degreeCounts[MAX_REVERSE_INDEX_ENTRIES + 1];
@@ -819,10 +819,10 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
 
     uint  h_queryCount;
     uint *d_queryIDs, *d_queryCount;
-    gpuErrchk(cudaMalloc(&d_queryIDs, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_queryIDs, FreshVamana::Globals::d_graph_size_g * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_queryCount, sizeof(uint)));
     const int numThreads = 32;
-    getPrunableQueryIDs<<<(FreshVamana::Globals::d_graph_size + numThreads - 1) / numThreads,
+    getPrunableQueryIDs<<<(FreshVamana::Globals::d_graph_size_g + numThreads - 1) / numThreads,
                           numThreads>>>(d_reverseEdgeCount, d_queryIDs, d_queryCount);
     cudaMemcpy(&h_queryCount, d_queryCount, sizeof(uint), cudaMemcpyDeviceToHost);
 
@@ -830,15 +830,15 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
 
     // Can't use 8*MAX_REVERSE_INDEX_ENTRIES because it exceeds block size limit
     computeDists<T__>
-        <<<FreshVamana::Globals::d_graph_size, 1024>>>(d_graph,
-                                                       d_reverseEdges,
-                                                       d_reverseEdgeCount,
-                                                       d_queryVecs,
-                                                       d_reverseEdgeDists,
-                                                       Consts::max_reverse_index_entries_g);
+        <<<FreshVamana::Globals::d_graph_size_g, 1024>>>(d_graph,
+                                                         d_reverseEdges,
+                                                         d_reverseEdgeCount,
+                                                         d_queryVecs,
+                                                         d_reverseEdgeDists,
+                                                         Consts::max_reverse_index_entries_g);
 
     // sortByDistance<<<N, MAX_REVERSE_INDEX_ENTRIES,
-    sortByDistance<T__><<<FreshVamana::Globals::d_graph_size,
+    sortByDistance<T__><<<FreshVamana::Globals::d_graph_size_g,
                           1024,
                           Consts::max_reverse_index_entries_g * sizeof(uint)>>>(
         d_reverseEdges,
@@ -848,22 +848,22 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
         d_reverseEdgeDistsAux,
         Consts::max_reverse_index_entries_g);
 
-    getNeighbors<T__><<<FreshVamana::Globals::d_graph_size, Consts::R_g>>>(
+    getNeighbors<T__><<<FreshVamana::Globals::d_graph_size_g, Consts::R_g>>>(
         d_graph, 0, d_neighbors, d_neighborsCount);
 
-    computeDists<T__><<<FreshVamana::Globals::d_graph_size, Consts::R_g * 8>>>(
+    computeDists<T__><<<FreshVamana::Globals::d_graph_size_g, Consts::R_g * 8>>>(
         d_graph, d_neighbors, d_neighborsCount, d_queryVecs, d_neighborDists, (Consts::R_g + 1));
 
-    sortByDistance<T__>
-        <<<FreshVamana::Globals::d_graph_size, Consts::R_g + 1, (Consts::R_g + 1) * sizeof(uint)>>>(
-            d_neighbors,
-            d_neighborsCount,
-            d_neighborDists,
-            d_neighborsAux,
-            d_neighborDistsAux,
-            Consts::R_g + 1);
+    sortByDistance<T__><<<FreshVamana::Globals::d_graph_size_g,
+                          Consts::R_g + 1,
+                          (Consts::R_g + 1) * sizeof(uint)>>>(d_neighbors,
+                                                              d_neighborsCount,
+                                                              d_neighborDists,
+                                                              d_neighborsAux,
+                                                              d_neighborDistsAux,
+                                                              Consts::R_g + 1);
 
-    mergeIntoReverseEdges<T__><<<FreshVamana::Globals::d_graph_size, 1024>>>(
+    mergeIntoReverseEdges<T__><<<FreshVamana::Globals::d_graph_size_g, 1024>>>(
         d_reverseEdgeCount,
         // mergeIntoReverseEdges<<<N, R+MAX_REVERSE_INDEX_ENTRIES>>>(d_reverseEdgeCount,
         d_reverseEdges,
@@ -874,7 +874,7 @@ void computeReverseEdges(uint8_t* d_graph, uint8_t* d_reverseEdgeIndex, float al
 
     // uint iter = 0;
 
-    h_queryCount = FreshVamana::Globals::d_graph_size;
+    h_queryCount = FreshVamana::Globals::d_graph_size_g;
     pruneReverseEdges<T__><<<h_queryCount, 32>>>(d_graph,
                                                  d_queryIDs,
                                                  d_reverseEdges,

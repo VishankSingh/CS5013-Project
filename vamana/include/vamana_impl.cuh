@@ -24,7 +24,7 @@ void Vamana<T__>::insertPoints(T__* d_queryVecs, size_t num) {
     using namespace FreshVamana;
     std::cout << "[ insertPoints ]\n";
 
-    if (Globals::d_graph_size + num > Globals::d_graph_capacity) {
+    if (Globals::d_graph_size_g + num > Globals::d_graph_capacity_g) {
         expandGraph<T__>(*graph_, num);
     }
 
@@ -32,11 +32,11 @@ void Vamana<T__>::insertPoints(T__* d_queryVecs, size_t num) {
     const size_t vec_bytes   = Consts::D_g * sizeof(T__);
 
     for (uint i = 0; i < num; i++) {
-        const uint dst_index    = Globals::d_graph_size + i;
+        const uint dst_index    = Globals::d_graph_size_g + i;
         size_t     offset_bytes = static_cast<size_t>(dst_index) * entry_bytes;
 
         // Sanity check: don't write past capacity
-        if ((offset_bytes + entry_bytes) > (size_t)Globals::d_graph_capacity * entry_bytes) {
+        if ((offset_bytes + entry_bytes) > (size_t)Globals::d_graph_capacity_g * entry_bytes) {
             fprintf(
                 stderr, "insertPoints: would write past allocated capacity! idx=%u\n", dst_index);
             std::abort();
@@ -57,12 +57,12 @@ void Vamana<T__>::insertPoints(T__* d_queryVecs, size_t num) {
         // write neighbors (each neighbor is a uint)
         uint* neighbors_ptr = reinterpret_cast<uint*>(dst_base + vec_bytes + sizeof(uint));
         for (uint j = 0; j < Consts::R_g; ++j) {
-            uint val = rand() % Globals::d_graph_size;  // choose from existing nodes
+            uint val = rand() % Globals::d_graph_size_g;  // choose from existing nodes
             gpuErrchk(cudaMemcpy(neighbors_ptr + j, &val, sizeof(uint), cudaMemcpyHostToDevice));
         }
     }
 
-    Globals::d_graph_size += num;
+    Globals::d_graph_size_g += num;
 
     // flush device errors before calling runVamana to help debugging
     gpuErrchk(cudaDeviceSynchronize());
@@ -80,7 +80,7 @@ void Vamana<T__>::deletePoints(T__* d_queryVecs, size_t num) {
     cputimer.Start();
 
     findPointsInGraph(
-        h_results.data(), graph_->d_graph, FreshVamana::Globals::d_graph_size, d_queryVecs, num);
+        h_results.data(), graph_->d_graph, FreshVamana::Globals::d_graph_size_g, d_queryVecs, num);
 
     cputimer.Stop();
     // printf("findPointsInGraph(%lu points): %f sec\n", num, cputimer.Elapsed());
@@ -104,13 +104,14 @@ template <typename T__>
 
     cputimer.Start();
     gpuErrchk(cudaMalloc(&d_visitedSets,
-                         FreshVamana::Globals::d_graph_size *
+                         FreshVamana::Globals::d_graph_size_g *
                              FreshVamana::Consts::max_num_parents_per_query * sizeof(uint)));
-    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size_g * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
-                         FreshVamana::Globals::d_graph_size *
-                             FreshVamana::Consts::reverse_index_entry_size_g * sizeof(uint8_t)));
-    gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+                         FreshVamana::Globals::d_graph_size_g *
+                             FreshVamana::Consts::reverse_index_entry_bytes_g * sizeof(uint8_t)));
+    gpuErrchk(
+        cudaMemset(d_visitedSetCount, 0, FreshVamana::Globals::d_graph_size_g * sizeof(uint)));
     cputimer.Stop();
     printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
 
@@ -166,10 +167,11 @@ void Vamana<T__>::runVamana() {
 
     float alpha = 1.5;
     T__*  d_queryVecs;
-    gpuErrchk(cudaMalloc(
-        &d_queryVecs, FreshVamana::Globals::d_graph_size * FreshVamana::Consts::D_g * sizeof(T__)));
+    gpuErrchk(
+        cudaMalloc(&d_queryVecs,
+                   FreshVamana::Globals::d_graph_size_g * FreshVamana::Consts::D_g * sizeof(T__)));
 
-    for (uint i = 0; i < FreshVamana::Globals::d_graph_size; i++) {
+    for (uint i = 0; i < FreshVamana::Globals::d_graph_size_g; i++) {
         T__* src = (T__*)(graph_->d_graph + (i)*FreshVamana::Consts::graph_entry_bytes_g);
         T__* dst = (T__*)(d_queryVecs + i * FreshVamana::Consts::D_g);
         cudaMemcpy(dst, src, FreshVamana::Consts::D_g * sizeof(T__), cudaMemcpyDeviceToDevice);
@@ -179,13 +181,14 @@ void Vamana<T__>::runVamana() {
 
     cputimer.Start();
     gpuErrchk(cudaMalloc(&d_visitedSets,
-                         FreshVamana::Globals::d_graph_size *
+                         FreshVamana::Globals::d_graph_size_g *
                              FreshVamana::Consts::max_num_parents_per_query * sizeof(uint)));
-    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+    gpuErrchk(cudaMalloc(&d_visitedSetCount, FreshVamana::Globals::d_graph_size_g * sizeof(uint)));
     gpuErrchk(cudaMalloc(&d_reverseEdgeIndex,
-                         FreshVamana::Globals::d_graph_size *
-                             FreshVamana::Consts::reverse_index_entry_size_g * sizeof(uint8_t)));
-    gpuErrchk(cudaMemset(d_visitedSetCount, 0, FreshVamana::Globals::d_graph_size * sizeof(uint)));
+                         FreshVamana::Globals::d_graph_size_g *
+                             FreshVamana::Consts::reverse_index_entry_bytes_g * sizeof(uint8_t)));
+    gpuErrchk(
+        cudaMemset(d_visitedSetCount, 0, FreshVamana::Globals::d_graph_size_g * sizeof(uint)));
     cputimer.Stop();
     printf("vamanaInner mallocs: %f sec\n", cputimer.Elapsed());
 
@@ -196,7 +199,7 @@ void Vamana<T__>::runVamana() {
                                          d_queryVecs,
                                          d_visitedSets,
                                          d_visitedSetCount,
-                                         FreshVamana::Globals::d_graph_size);
+                                         FreshVamana::Globals::d_graph_size_g);
     gpuErrchk(cudaFree(d_worklist));
 
     cputimer.Stop();
@@ -211,7 +214,7 @@ void Vamana<T__>::runVamana() {
                              alpha,
                              d_reverseEdgeIndex,
                              0,
-                             FreshVamana::Globals::d_graph_size);
+                             FreshVamana::Globals::d_graph_size_g);
     cputimer.Stop();
     printf("computeOutNeighbors: %f sec\n", cputimer.Elapsed());
 

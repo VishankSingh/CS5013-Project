@@ -7,7 +7,7 @@ namespace FreshVamana::Consts {
 constexpr uint D_g           = 128;
 constexpr uint R_g           = 64;
 constexpr uint rg_bin_size_g = 10000;  // size of binary file randomgraph.bin
-constexpr uint L_g           = 150;
+constexpr uint L_g           = 100;
 
 constexpr uint medoid_g                  = 5000;
 constexpr uint max_num_parents_per_query = 600;
@@ -18,12 +18,8 @@ using dtype_g = float;
 constexpr uint graph_entry_bytes_g = D_g * sizeof(dtype_g) + sizeof(uint) + R_g * sizeof(uint);
 
 constexpr uint max_reverse_index_entries_g = 500;
-constexpr uint reverse_index_entry_size_g  = (max_reverse_index_entries_g + 1) * sizeof(uint);
-
-// Reverse Edges (Runtime Generated)
-constexpr uint max_num_entries_in_reverse_index_g = 500;
-constexpr uint reverse_index_entry_size_in_bytes_g =
-    (max_num_entries_in_reverse_index_g + 1) * sizeof(uint);  //<n><entry1><entry2>...<entry_n>
+//<n><entry1><entry2>...<entry_n>
+constexpr uint reverse_index_entry_bytes_g = (max_reverse_index_entries_g + 1) * sizeof(uint);
 
 enum class queryType : std::int8_t {
     undefined_q = -1,
