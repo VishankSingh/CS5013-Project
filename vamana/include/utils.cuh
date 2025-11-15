@@ -10,6 +10,8 @@
 #include <string>
 #include <utility>
 
+#include <math_constants.h>
+
 // uncomment to log the function calls
 // #define logfuncs
 
@@ -130,7 +132,7 @@ template <typename T__>
     gpuErrchk(cudaMalloc(
         &graph->d_graph,
         FreshVamana::Globals::d_graph_capacity_g * FreshVamana::Consts::graph_entry_bytes_g));
-    // TODO: complete this
+
     gpuErrchk(cudaMemcpy(graph->d_graph,
                          h_graph,
                          rg_bin_size_g * FreshVamana::Consts::graph_entry_bytes_g,
@@ -143,4 +145,141 @@ template <typename T__>
               << ", EntrySize=" << FreshVamana::Consts::graph_entry_bytes_g << " bytes.\n";
 
     return graph;
+}
+
+template <typename T__>
+__device__ inline float l2_distance_sq(const T__* vec1, const T__* vec2, const size_t vecDim) {
+    float dist = 0.0f;
+    for (size_t i = 0; i < vecDim; ++i) {
+        float diff = static_cast<float>(vec1[i]) - static_cast<float>(vec2[i]);
+        dist += diff * diff;
+    }
+    return dist;
+}
+
+/**
+ * @brief Kernel 1: Extracts vectors from the graph using node IDs from a worklist.
+ *
+ * Each block processes one vector.
+ * Grid: (num_queries * L_g)
+ * Block: (vecDim)
+ */
+template <typename T__>
+__global__ void extract_vectors_kernel(const uint8_t* d_graph,
+                                       const uint*    d_worklist,
+                                       T__*           d_worklist_vectors,
+                                       const size_t   L_g,
+                                       const size_t   vecDim,
+                                       const size_t   entrySize,
+                                       const size_t   num_queries) {
+    const size_t global_worklist_idx = blockIdx.x;
+    const size_t dim_idx             = threadIdx.x;
+
+    if (global_worklist_idx >= num_queries * L_g || dim_idx >= vecDim) {
+        return;
+    }
+
+    const uint node_id = d_worklist[global_worklist_idx];
+
+    const T__* src_vec_start = (const T__*)(d_graph + node_id * entrySize);
+
+    T__* dest_vec_start = d_worklist_vectors + global_worklist_idx * vecDim;
+
+    dest_vec_start[dim_idx] = src_vec_start[dim_idx];
+}
+
+/**
+ * @brief Kernel 2: Merges worklist vectors and insert_list vectors, finding the
+ * top L_g for each query. (Refactored to use global/local memory)
+ *
+ * Each block processes one query.
+ * Grid: (num_queries)
+ * Block: (e.g., 256) - Note: All work is done by t_idx=0.
+ */
+template <typename T__>
+__global__ void merge_and_rerank_kernel(const T__*   d_queryVecs,
+                                        const T__*   d_worklist_vectors,
+                                        const T__*   d_insert_list_g,
+                                        T__*         d_final_top_vectors,
+                                        const size_t L_g,
+                                        const size_t D_g,
+                                        const size_t insert_list_size,
+                                        const size_t num_queries) {
+    const size_t q_idx = blockIdx.x;
+    const size_t t_idx = threadIdx.x;
+
+    if (q_idx >= num_queries) {
+        return;
+    }
+
+    if (t_idx == 0) {
+        T__* g_top_vectors = d_final_top_vectors + q_idx * L_g * D_g;
+
+        float l_top_dists[FreshVamana::Consts::L_g];
+        for (size_t k = 0; k < L_g; ++k) {
+            l_top_dists[k] = CUDART_INF_F;
+        }
+
+        for (size_t c_idx = 0; c_idx < L_g; ++c_idx) {
+            const T__* cand_vec_ptr = d_worklist_vectors + (q_idx * L_g + c_idx) * D_g;
+            float      dist         = l2_distance_sq(d_queryVecs + q_idx * D_g, cand_vec_ptr, D_g);
+
+            float  max_dist = -1.0f;
+            size_t max_k    = 0;
+            for (size_t k = 0; k < L_g; ++k) {
+                if (l_top_dists[k] > max_dist) {
+                    max_dist = l_top_dists[k];
+                    max_k    = k;
+                }
+            }
+
+            if (dist < max_dist) {
+                l_top_dists[max_k] = dist;
+                T__* g_dest        = g_top_vectors + max_k * D_g;
+                for (size_t d = 0; d < D_g; ++d) {
+                    g_dest[d] = cand_vec_ptr[d];
+                }
+            }
+        }
+
+        for (size_t c_idx = 0; c_idx < insert_list_size; ++c_idx) {
+            const T__* cand_vec_ptr = d_insert_list_g + c_idx * D_g;
+            float      dist         = l2_distance_sq(d_queryVecs + q_idx * D_g, cand_vec_ptr, D_g);
+
+            float  max_dist = -1.0f;
+            size_t max_k    = 0;
+            for (size_t k = 0; k < L_g; ++k) {
+                if (l_top_dists[k] > max_dist) {
+                    max_dist = l_top_dists[k];
+                    max_k    = k;
+                }
+            }
+
+            if (dist < max_dist) {
+                l_top_dists[max_k] = dist;
+                T__* g_dest        = g_top_vectors + max_k * D_g;
+                for (size_t d = 0; d < D_g; ++d) {
+                    g_dest[d] = cand_vec_ptr[d];
+                }
+            }
+        }
+
+        for (size_t i = 0; i < L_g - 1; ++i) {
+            for (size_t j = 0; j < L_g - i - 1; ++j) {
+                if (l_top_dists[j] > l_top_dists[j + 1]) {
+                    float temp_dist    = l_top_dists[j];
+                    l_top_dists[j]     = l_top_dists[j + 1];
+                    l_top_dists[j + 1] = temp_dist;
+
+                    T__* vec_j  = g_top_vectors + j * D_g;
+                    T__* vec_j1 = g_top_vectors + (j + 1) * D_g;
+                    for (size_t d = 0; d < D_g; ++d) {
+                        T__ temp_val = vec_j[d];
+                        vec_j[d]     = vec_j1[d];
+                        vec_j1[d]    = temp_val;
+                    }
+                }
+            }
+        }
+    }
 }

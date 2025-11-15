@@ -931,3 +931,31 @@ __global__ void findPointsKernel(const uint8_t* __restrict__ d_graph,
         atomicCAS(&d_results[qid], -1, static_cast<int>(tid));
     }
 }
+
+template <typename T__>
+__global__ void copyNewVectorsToGraph(uint8_t*   d_graph,
+                                      const T__* d_new_vecs,
+                                      uint       old_graph_size,
+                                      uint       num_new_nodes) {
+    using namespace FreshVamana;
+    uint new_node_idx = blockIdx.x;
+    uint tid          = threadIdx.x;
+
+    if (new_node_idx >= num_new_nodes)
+        return;
+
+    uint graph_node_id = old_graph_size + new_node_idx;
+
+    T__* dest_vec_ptr = (T__*)(d_graph + graph_node_id * Consts::graph_entry_bytes_g);
+
+    const T__* src_vec_ptr = d_new_vecs + new_node_idx * Consts::D_g;
+
+    for (uint i = tid; i < Consts::D_g; i += blockDim.x) {
+        dest_vec_ptr[i] = src_vec_ptr[i];
+    }
+
+    if (tid == 0) {
+        uint* degree_ptr = (uint*)(dest_vec_ptr + Consts::D_g);
+        *degree_ptr      = 0;
+    }
+}

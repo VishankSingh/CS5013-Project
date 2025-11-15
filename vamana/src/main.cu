@@ -40,13 +40,67 @@ void printWorklistVectors(Vamana<T__>& index,
                    cudaMemcpyDeviceToHost);
 
         // Print first few dimensions for debugging
-        // printf("  Vec[%u]:", node_id);
-        // for (size_t j = 0; j < std::min<size_t>(vecDim, 8); ++j) {
-        //     printf(" %.f", static_cast<float>(h_vec[j]));
-        // }
-        // printf(" ...\n");
+        printf("  Vec[%u]:", node_id);
+        for (size_t j = 0; j < std::min<size_t>(vecDim, 8); ++j) {
+            printf(" %.f", static_cast<float>(h_vec[j]));
+        }
+        printf(" ...\n");
     }
     printf("===============================================\n");
+}
+
+/**
+ * @brief Prints the final vectors returned by searchPoints.
+ * @tparam T__ Vector data type (e.g., float)
+ * @param d_final_top_vectors Device pointer to the final vectors (output of searchPoints)
+ * @param num_query Total number of queries that were processed
+ * @param print_queries How many queries to print results for (default 1)
+ * @param print_vecs_per_query How many top vectors to print for each query (default 5)
+ */
+template <typename T__>
+void printFinalVectors(T__*   d_final_top_vectors,
+                       size_t num_query,
+                       size_t print_queries        = 1,
+                       size_t print_vecs_per_query = 5) {
+    using namespace FreshVamana;
+
+    const size_t L_g    = Consts::L_g;
+    const size_t vecDim = Consts::D_g;
+
+    const size_t queries_to_copy = std::min(print_queries, num_query);
+    if (queries_to_copy == 0)
+        return;
+
+    const size_t vectors_to_copy = queries_to_copy * L_g;
+    if (vectors_to_copy == 0)
+        return;
+
+    std::vector<T__> h_final_vectors(vectors_to_copy * vecDim);
+    gpuErrchk(cudaMemcpy(h_final_vectors.data(),
+                         d_final_top_vectors,
+                         h_final_vectors.size() * sizeof(T__),
+                         cudaMemcpyDeviceToHost));
+
+    printf("=== Final Vector Results (showing %zu queries) ===\n", queries_to_copy);
+
+    for (size_t q = 0; q < queries_to_copy; ++q) {
+        printf("--- Query %zu ---\n", q);
+        const size_t vecs_to_print = std::min(print_vecs_per_query, L_g);
+
+        for (size_t i = 0; i < vecs_to_print; ++i) {
+            // Get the pointer to the start of the i-th vector for query q
+            size_t vector_idx = q * L_g + i;
+            T__*   h_vec      = h_final_vectors.data() + vector_idx * vecDim;
+
+            printf("  ResultVec[%zu]:", i);
+            // Print first few dimensions
+            for (size_t j = 0; j < std::min<size_t>(vecDim, 8); ++j) {
+                printf(" %.f", static_cast<float>(h_vec[j]));
+            }
+            printf(" ...\n");
+        }
+    }
+    printf("==================================================\n");
 }
 
 template <typename T__>
@@ -87,11 +141,11 @@ __global__ void pqv(float* dd) {
 }
 
 __global__ void pqpinc(float* dd) {
-    dd[0] += 0.000001f;
+    dd[0] += 1.0f;
 }
 
 __global__ void pqpdec(float* dd) {
-    dd[0] -= 0.000001f;
+    dd[0] -= 1.0f;
 }
 
 int main(int argc, char** argv) {
@@ -123,39 +177,52 @@ int main(int argc, char** argv) {
 
     // SEARCH TEST
     std::cout << '\n';
-    uint* d_worklist = index.searchPoints(d_queryVecs, 1);
-    printWorklistVectors(index, d_worklist, 1, 5);
-    cudaFree(d_worklist);
+    // uint* d_worklist = index.searchPoints(d_queryVecs, 1);
+    // printWorklistVectors(index, d_worklist, 1, 5);
+    // cudaFree(d_worklist);
+
+    float* d_worklist_nn55 = index.searchPoints2(d_queryVecs, 1);
+    printFinalVectors(d_worklist_nn55, 1, 1, 5);
+    cudaFree(d_worklist_nn55);
 
     cudaDeviceSynchronize();
 
-    // // pqv<<<1, 1>>>(d_queryVecs);
-    // // pqpinc<<<1, 1>>>(d_queryVecs);
-    // // pqv<<<1, 1>>>(d_queryVecs);
-    // std::cout << '\n';
+    // pqv<<<1, 1>>>(d_queryVecs);
+    pqpinc<<<1, 1>>>(d_queryVecs);
+    // pqv<<<1, 1>>>(d_queryVecs);
+    std::cout << '\n';
 
-    // // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
-    // // cudaDeviceSynchronize();
-
-    // index.insertPoints(d_queryVecs, 1);
-
+    // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
     // cudaDeviceSynchronize();
 
-    // // pqpdec<<<1, 1>>>(d_queryVecs);
-    // // pqv<<<1, 1>>>(d_queryVecs);
-    // // pqv<<<1, 1>>>((float*)(index.graph_->d_graph + (10000) * graph_entry_bytes_g));
-    // // printNodeNeighbors<dtype_g>(index.graph_->d_graph,
-    // // FreshVamana::Globals::d_graph_size_g- 1);
-    // // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
-    // // cudaDeviceSynchronize();
+    index.insertPoints(d_queryVecs, 1);
 
-    // std::cout << '\n';
+    cudaDeviceSynchronize();
+
+    pqpdec<<<1, 1>>>(d_queryVecs);
+    // pqv<<<1, 1>>>(d_queryVecs);
+    // pqv<<<1, 1>>>((float*)(index.graph_->d_graph + (10000) * graph_entry_bytes_g));
+    // printNodeNeighbors<dtype_g>(index.graph_->d_graph,
+    // FreshVamana::Globals::d_graph_size_g- 1);
+    // printNodeNeighbors<dtype_g>(index.graph_->d_graph, 0);
+    // cudaDeviceSynchronize();
+
+    std::cout << '\n';
     // uint* d_worklist4 = index.searchPoints(d_queryVecs, 1);
     // printWorklistVectors(index, d_worklist4, 1, 5);
     // cudaFree(d_worklist4);
 
+    float* d_worklist_nn = index.searchPoints2(d_queryVecs, 1);
+    printFinalVectors(d_worklist_nn, 1, 1, 5);
+    cudaFree(d_worklist_nn);
+
+    index.patchGraph();
+    float* d_worklist_nn33 = index.searchPoints2(d_queryVecs, 1);
+    printFinalVectors(d_worklist_nn33, 1, 1, 5);
+    cudaFree(d_worklist_nn33);
+
     // DELETE TEST
-#define delete_test
+// #define delete_test
 #if defined(delete_test)
 
     std::cout << '\n';
@@ -190,6 +257,10 @@ int main(int argc, char** argv) {
     uint* d_worklist3 = index.searchPoints(d_queryVecs, 1);
     printWorklistVectors(index, d_worklist3, 1, 5);
     cudaFree(d_worklist3);
+
+    float* d_worklist_nn22 = index.searchPoints2(d_queryVecs, 1);
+    printFinalVectors(d_worklist_nn22, 1, 1, 5);
+    cudaFree(d_worklist_nn22);
 
 #endif
     // pp<<<1, 1>>>();

@@ -11,5 +11,4 @@ extern FreshVamana::Consts::dtype_g* d_insert_list_g;
 
 inline uint8_t* d_bloom_bits_g = nullptr;
 
-
 }  // namespace FreshVamana::Globals

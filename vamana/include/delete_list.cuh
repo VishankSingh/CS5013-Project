@@ -5,9 +5,10 @@
 
 #include "globals.cuh"
 
+// TODO: Maybe use a bloom filter?
 class DeleteList {
    public:
-    DeleteList(uint initial_capacity = 1000u) {
+    DeleteList(uint initial_capacity = 5000u) {
         growth_factor_ = 1.3f;
         capacity_      = std::max(1u, initial_capacity);
         size_          = 0;
@@ -33,20 +34,34 @@ class DeleteList {
         ++size_;
     }
 
+    void addNodes(uint* d_node_ids, size_t num_nodes) {
+        if (num_nodes == 0)
+            return;
+
+        if (size_ + num_nodes >= capacity_)
+            expandDeleteList(num_nodes);
+
+        gpuErrchk(cudaMemcpy(FreshVamana::Globals::d_delete_list_g + size_,
+                             d_node_ids,
+                             num_nodes * sizeof(uint),
+                             cudaMemcpyDeviceToDevice));
+        ++size_;
+    }
+
     uint*       data() noexcept { return FreshVamana::Globals::d_delete_list_g; }
     const uint* data() const noexcept { return FreshVamana::Globals::d_delete_list_g; }
 
     void clear() noexcept {
-        cudaFree(FreshVamana::Globals::d_delete_list_g);
-        FreshVamana::Globals::d_delete_list_g = nullptr;
-        capacity_                             = 0;
-        size_                                 = 0;
+        // cudaFree(FreshVamana::Globals::d_delete_list_g);
+        // FreshVamana::Globals::d_delete_list_g = nullptr;
+        capacity_ = 0;
+        size_     = 0;
     }
 
    private:
-    void expandDeleteList() {
-        const uint new_capacity =
-            static_cast<uint>(std::max<uint>(1u, static_cast<uint>(capacity_ * growth_factor_)));
+    void expandDeleteList(size_t extra = 1) {
+        const uint new_capacity = static_cast<uint>(
+            std::max<uint>(1u, static_cast<uint>(capacity_ * growth_factor_ + extra)));
         uint* new_buffer = nullptr;
         gpuErrchk(cudaMalloc(&new_buffer, new_capacity * sizeof(uint)));
 
