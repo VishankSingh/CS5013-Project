@@ -1,4 +1,5 @@
 // vamana_fixed.cu
+// Single-file merge of your project with targeted safety fixes.
 //
 // Key fixes:
 // - Forward declaration for greedySearch so Vamana can call it earlier.
@@ -752,7 +753,7 @@ __global__ void parseReverseIndex(uint* d_reverseEdgeIndex,
     uint queryID = blockIdx.x;
     uint tid = threadIdx.x;
 
-    uint* entryPtr = d_reverseEdgeIndex + queryID * reverse_index_entry_words_g;
+    uint* entryPtr = d_reverseEdgeIndex + queryID * FreshVamana::DeviceConsts::reverse_index_entry_words_g;
     uint numReverseEdges = entryPtr[0];
 
     if (tid == 0) {
@@ -761,8 +762,8 @@ __global__ void parseReverseIndex(uint* d_reverseEdgeIndex,
     }
 
     for (uint ii = tid; ii < numReverseEdges; ii += blockDim.x) {
-        if (ii < max_reverse_index_entries_g)
-            d_reverseEdges[queryID * max_reverse_index_entries_g + ii] = entryPtr[1 + ii];
+        if (ii < FreshVamana::DeviceConsts::max_reverse_index_entries_g)
+            d_reverseEdges[queryID * FreshVamana::DeviceConsts::max_reverse_index_entries_g + ii] = entryPtr[1 + ii];
     }
 }
 
@@ -1242,9 +1243,9 @@ __global__ void merge_and_rerank_kernel(const T__* d_queryVecs,
     if (q_idx >= num_queries) return;
     if (t_idx == 0) {
         // FIX: Use DeviceConsts for the stack array size
-        T__* g_top_vectors = d_final_top_vectors + q_idx * L_g * D_g;
-        float l_top_dists[L_g];
-        for (size_t k = 0; k < L_g; ++k) l_top_dists[k] = 1e30f; // large device-friendly constant
+        T__* g_top_vectors = d_final_top_vectors + q_idx * FreshVamana::DeviceConsts::L_g * FreshVamana::DeviceConsts::D_g;
+        float l_top_dists[FreshVamana::DeviceConsts::L_g];
+        for (size_t k = 0; k < FreshVamana::DeviceConsts::L_g; ++k) l_top_dists[k] = 1e30f; // large device-friendly constant
         
         // Use the run-time parameters for loops
         const size_t L_g_run = L_g_param;
@@ -2013,7 +2014,7 @@ int main(int argc, char** argv) {
     // ----------------------------------------------------------------------
     // 4. Driver loop: dynamic ANN workload
     // ----------------------------------------------------------------------
-    const int NUM_ITER = 100;    // number of batches
+    const int NUM_ITER = 200;    // number of batches
     const int BATCH    = 2000;  // operations per batch
 
     for (int iter = 0; iter < NUM_ITER; iter++) {
