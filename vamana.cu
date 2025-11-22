@@ -1,6 +1,4 @@
 // vamana_fixed.cu
-// Single-file merge of your project with targeted safety fixes.
-//
 // Key fixes:
 // - Forward declaration for greedySearch so Vamana can call it earlier.
 // - Replaced undefined CUDART_INF_F with 1e30f (device-friendly large float).
