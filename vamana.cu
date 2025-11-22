@@ -1,5 +1,4 @@
 // vamana_fixed.cu
-// Single-file merge of your project with targeted safety fixes.
 //
 // Key fixes:
 // - Forward declaration for greedySearch so Vamana can call it earlier.
