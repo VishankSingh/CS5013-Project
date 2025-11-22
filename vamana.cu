@@ -6,7 +6,8 @@
 // - Replaced undefined CUDART_INF_F with 1e30f (device-friendly large float).
 // - Kept original flow and names to minimize changes.
 // - FIX: Final resolution of all ambiguity by explicitly managing namespaces within kernels.
-// - CHANGE: Updated main to strictly handle the required file arguments.
+// - CHANGE: WorkloadGenerator updated to handle loading/conversion of .fvecs files.
+// - NEW: saveGraph is implemented and called in main.
 
 #include <cassert>
 #include <cstdio>
@@ -24,10 +25,341 @@
 #include <random>
 #include <unordered_set>
 #include <algorithm>
+#include <fstream>
+#include <stdexcept>
+#include <iomanip>
 
 // CUDA and std headers used across files
 #include <cuda.h>
 #include <cuda_runtime.h>
+
+// ------------------------------- FVecs Utility (Merged Header & Implementation) -------------------------------
+
+/**
+ * @brief Header information for an fvecs file.
+ */
+struct FVecsHeader {
+    int dim;  ///< Dimension of each vector.
+
+    FVecsHeader() : dim(128) {}      // Default to 128 dimensions
+    explicit FVecsHeader(int d) : dim(d) {}    // Custom dimension
+};
+
+/**
+ * @brief Represents a single vector entry in an fvecs file.
+ */
+struct FVecsPoint {
+    std::vector<float> values;  ///< The float values of the vector.
+};
+
+/**
+ * @brief Represents the parsed contents of an fvecs file.
+ */
+struct FVecs {
+    // Data Members
+    FVecsHeader header;
+    std::vector<FVecsPoint> points;
+
+    // Constructors and Operators
+    FVecs() = default;
+    FVecs(const FVecsHeader& h, const std::vector<FVecsPoint>& p);
+    ~FVecs() = default;
+
+    FVecs(const FVecs&) = default;
+    FVecs& operator=(const FVecs&) = default;
+    FVecs(FVecs&&) noexcept = default;
+    FVecs& operator=(FVecs&&) noexcept = default;
+
+    // Methods
+    bool load_from_fvecs_file(const std::string& file_path);
+    bool load_first_n_from_fvecs_file_fast(size_t n, const std::string& file_path);
+    bool load_from_fvecs_file_fast(const std::string& file_path);
+    void show_first_n_fvecs(unsigned int num_vectors = 1) const;
+    bool load_from_binary(const std::string& file_path);
+    bool save_to_binary(const std::string& output_file_path) const;
+    bool is_empty() const;
+    size_t size() const;
+    void clear();
+};
+
+// FVecs Implementation
+FVecs::FVecs(const FVecsHeader& h, const std::vector<FVecsPoint>& p)
+    : header(h), points(p) {}
+
+bool FVecs::load_from_fvecs_file(const std::string& file_path) {
+    std::ifstream file(file_path, std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << file_path << '\n';
+        return false;
+    }
+
+    while (file.peek() != EOF) {
+        unsigned int dim = 0;
+        file.read(reinterpret_cast<char*>(&dim), sizeof(unsigned int));
+        if (file.eof()) break;
+
+        FVecsPoint point;
+        point.values.resize(dim);
+        file.read(reinterpret_cast<char*>(point.values.data()), dim * sizeof(float));
+        if (file.eof()) break;
+
+        points.push_back(std::move(point));
+    }
+
+    if (!points.empty()) {
+        header.dim = static_cast<int>(points.front().values.size());
+    }
+
+    return true;
+}
+
+bool FVecs::load_from_fvecs_file_fast(const std::string& file_path){
+    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+
+    if(!file.is_open()){
+        std::cerr << "Error (Fast Load): Unable to Open the file " << file_path << std::endl;
+        return false;
+    }
+
+    //1. Determine the file size and Dimension of each vector(input file is expected to consist of a set of fixed dimensional vectors)
+    size_t file_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    int dim = 0;
+    if(!file.read(reinterpret_cast<char*>(&dim), sizeof(int))){
+        std::cerr << "Error (Fast Load): Unable to Open the file " << file_path << std::endl;
+        return false;
+    }
+    this->header.dim = dim;
+    
+    if(this->header.dim == 0 || this->header.dim < 0){
+        std::cerr << "Error (Fast Load): Invalid Dimension read " << dim << std::endl;
+        return false;
+    }
+
+    const size_t file_record_size = 1 * sizeof(int) + this->header.dim * sizeof(float);
+    
+    if(file_size < file_record_size){
+        std::cerr << "Error (Fast Load): File size too small for one vector. File truncated." << std:: endl;
+        return false;
+    }
+
+    // Total Number of Vectors possible in the file
+    size_t total_num_records = file_size / file_record_size;
+    size_t total_num_vectors = total_num_records;
+
+    // 2. Load(Read) the entire file into a binary buffer(in-memory) i.e, a char*
+    std::vector<char> buffer(file_size);
+    file.seekg(0, std::ios::beg);
+    if (!file.read(buffer.data(), file_size)) {
+        std::cerr << "Error (Fast Load): Failed to read file content into memory." << std::endl;
+        return false;
+    }
+
+    // 3. Parse the Binary Buffer
+    points.clear();
+    points.reserve(total_num_records);
+
+    const char* buf_ptr = buffer.data();
+
+    for(size_t i = 0 ; i < total_num_vectors; ++i){
+        int d = *(reinterpret_cast<const int*>(buf_ptr));
+        if(d != dim){
+            std::cerr    << "Warning (Fast Load): Dimension mismatch at record " << i  
+                         << "(" << d << "!=" << dim << ")" << std::endl;
+            return false;
+        }
+        buf_ptr += sizeof(int);
+
+        FVecsPoint point;
+        point.values.resize(dim);
+        memcpy(point.values.data(), buf_ptr, dim * sizeof(float));
+        buf_ptr += dim*sizeof(float); // move the buffer pointer to the base address of the next record/vector in the file
+
+        points.push_back(std::move(point));
+    }
+
+    //4. Validate Completeness
+    if(points.empty()){
+        std::cerr << "No data loaded from " << file_path << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+
+bool FVecs::load_first_n_from_fvecs_file_fast(size_t n, const std::string &file_path){
+    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+    if(!file.is_open()){
+        std::cerr << "Error (Fast Load): Unable to open file " << file_path << std::endl;
+        return false;
+    }
+
+    size_t file_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    int dim = 0;
+    if(!file.read(reinterpret_cast<char*>(&dim), sizeof(int))){
+        std::cerr << "Error (Fast Load): Unable to read dimension from " << file_path << std::endl;
+        return false;
+    }
+    this->header.dim = dim;
+    if(dim <= 0){
+        std::cerr << "Error (Fast Load): Invalid dimension " << dim << std::endl;
+        return false;
+    }
+
+    const size_t record_size = sizeof(int) + dim * sizeof(float);
+    if(file_size < record_size){
+        std::cerr << "Error (Fast Load): File too small for a single vector." << std::endl;
+        return false;
+    }
+
+    // Compute total vectors and clamp n
+    size_t total_vectors = file_size / record_size;
+    if(n > total_vectors) n = total_vectors;
+
+    std::vector<char> buffer(file_size);
+    file.seekg(0, std::ios::beg);
+    if(!file.read(buffer.data(), file_size)){
+        std::cerr << "Error (Fast Load): Failed to read file content into memory." << std::endl;
+        return false;
+    }
+
+    points.clear();
+    points.reserve(n);
+    const char* buf_ptr = buffer.data();
+
+    for(size_t i = 0; i < n; ++i){
+        int d = *(reinterpret_cast<const int*>(buf_ptr));
+        if(d != dim){
+            std::cerr << "Warning (Fast Load): Dimension mismatch at record " << i  
+                      << " (" << d << " != " << dim << ")" << std::endl;
+            return false;
+        }
+        buf_ptr += sizeof(int);
+
+        FVecsPoint point;
+        point.values.resize(dim);
+        memcpy(point.values.data(), buf_ptr, dim * sizeof(float));
+        buf_ptr += dim * sizeof(float);
+
+        points.push_back(std::move(point));
+    }
+
+    if(points.empty()){
+        std::cerr << "Error (Fast Load): No vectors loaded from " << file_path << std::endl;
+        return false;
+    }
+
+    std::cout << "Read " << points.size() << " vectors from " << file_path << " successfully." << std::endl;
+    return true;
+}
+
+
+/**
+ * @brief Save parsed fvecs data into a binary file.
+ *
+ * @param output_file_path Path to output binary file.
+ * @return true if saving succeeds, false otherwise.
+ */
+bool FVecs::save_to_binary(const std::string& output_file_path) const {
+    // Binary data layout: <uint num_points><uint dim><float[dim]*num_points>
+    std::ofstream file(output_file_path, std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << output_file_path << " for writing.\n";
+        return false;
+    }
+
+    // Use unsigned int (4 bytes) for headers to match the target format
+    unsigned int num_points = static_cast<unsigned int>(this->size());
+    unsigned int dim = static_cast<unsigned int>(header.dim);
+
+    // Write header info (NUM and DIM, both as 4-byte unsigned ints)
+    file.write(reinterpret_cast<const char*>(&num_points), sizeof(unsigned int));
+    file.write(reinterpret_cast<const char*>(&dim), sizeof(unsigned int));
+
+    // Write all points (raw float data)
+    for (const auto& point : points) {
+        file.write(reinterpret_cast<const char*>(point.values.data()), dim * sizeof(float));
+    }
+
+    return true;
+}
+
+bool FVecs::load_from_binary(const std::string& file_path){
+    // The data layout expected is: 
+    // <num_points:uint><dim:uint><float[dim]*num_points>
+    std::ifstream file(file_path, std::ios::binary);
+    if(!file.is_open()){
+        std::cerr << "Error: could not open the file " << file_path << std::endl;
+        return false;
+    }
+
+    unsigned int num_points_ui = 0;
+    unsigned int dim_ui = 0;
+
+    // Read Header Info (4 bytes N, 4 bytes D)
+    if(!file.read(reinterpret_cast<char*>(&num_points_ui), sizeof(unsigned int))){
+        std::cerr << "Error: Failed to read num_points header from binary." << std::endl;
+        return false;
+    }
+    if(!file.read(reinterpret_cast<char*>(&dim_ui), sizeof(unsigned int))){
+        std::cerr << "Error: Failed to read dimension header from binary." << std::endl;
+        return false;
+    }
+
+    size_t num_points = num_points_ui;
+    unsigned int dim = dim_ui;
+
+    if(!file || num_points == 0 || dim == 0){
+        std::cerr << "Error: Invalid or Corrupted Binary (N=" << num_points << ", D=" << dim << ")" << std::endl;
+        return false;
+    }
+    points.clear();
+    points.reserve(num_points);
+    header.dim = dim;
+
+    //Read all the data points
+    for(unsigned int i = 0; i < num_points; ++i){
+        FVecsPoint point;
+        point.values.resize(dim);
+        file.read(reinterpret_cast<char*>(point.values.data()), dim * sizeof(float));
+        if(!file){
+            std::cerr << "Error: Unexpected EOF while reading the point " << i << std::endl;
+            return false;
+        }
+        points.push_back(point);
+    }
+    return true;
+}
+
+bool FVecs::is_empty() const {  
+    return points.empty();
+}
+
+size_t FVecs::size() const {
+    return points.size();
+}
+
+void FVecs::clear() {
+    points.clear();
+    header.dim = 0;
+}
+
+void FVecs::show_first_n_fvecs(unsigned int num_vectors) const {
+    std::cout << "FVecs Header: Dimension = " << header.dim << '\n';
+    std::cout << "Number of Points in the File: " << points.size() << '\n';
+    std::cout << typeid(points[0].values[0]).name() << '\n';
+    for (size_t i = 0; i < points.size() && i < num_vectors; ++i) {
+        std::cout << "Point " << i << ": \n[ " << std::fixed << std::setprecision(6);
+        for (const auto& val : points[i].values) {
+            std::cout << val << ' ';
+        }
+        std::cout << "]\n";
+    }
+}
 
 // ------------------------------- utils (merged) --------------------------------
 
@@ -511,10 +843,7 @@ __global__ void getNeighbors(uint8_t* d_graph,
     uint* degreePtr = reinterpret_cast<uint*>(d_graph + extendedQueryID * graph_entry_bytes_g + D_g * sizeof(T__));
     uint* neighborPtr = degreePtr + 1;
 
-    if (extendedQueryID >= FreshVamana::Globals::d_graph_size_g) {
-        if (tid == 0) d_neighbors_count[queryID] = 0;
-        return;
-    }
+    if (extendedQueryID >= FreshVamana::Globals::d_graph_size_g) return;
 
     uint degree = *degreePtr;
     if (degree > R_g) degree = R_g; // clamp just in case
@@ -673,8 +1002,8 @@ __global__ void pruneOutNeighbors(uint8_t* d_graph,
                     // invalid node id: undo neighbor add
                     atomicSub(degree_ptr, 1u);
                     p_star_shared[0] = UINT_MAX;
+                    break;
                 }
-                break;
             }
         }
 
@@ -1403,6 +1732,48 @@ class Vamana {
         return d_final_top_vectors;
     }
 
+    // NEW: Save the current graph state to a binary file
+    void saveGraph(const std::string& output_path) {
+        using namespace FreshVamana;
+        const size_t N = Globals::d_graph_size_g;
+        const size_t entry_bytes = Consts::graph_entry_bytes_g;
+        const size_t total_bytes = N * entry_bytes;
+
+        if (N == 0) {
+            printf("[saveGraph] Graph is empty. Skipping save.\n");
+            return;
+        }
+
+        // 1. Allocate host memory
+        uint8_t* h_graph = (uint8_t*)malloc(total_bytes);
+        if (!h_graph) {
+            fprintf(stderr, "[saveGraph] Failed to allocate host memory.\n");
+            return;
+        }
+
+        // 2. Copy data from device to host
+        gpuErrchk(cudaMemcpy(h_graph, graph_->d_graph, total_bytes, cudaMemcpyDeviceToHost));
+        printf("[saveGraph] Copied %zu bytes from GPU to Host.\n", total_bytes);
+
+        // 3. Write data to file
+        FILE* bin_file = fopen(output_path.c_str(), "wb");
+        if (!bin_file) {
+            fprintf(stderr, "[saveGraph] Failed to open output file %s\n", output_path.c_str());
+            free(h_graph);
+            return;
+        }
+
+        size_t written = fwrite(h_graph, 1, total_bytes, bin_file);
+        fclose(bin_file);
+        free(h_graph);
+
+        if (written != total_bytes) {
+            fprintf(stderr, "[saveGraph] WARNING: Incomplete write! %zu of %zu bytes written.\n", written, total_bytes);
+        } else {
+            printf("[saveGraph] Successfully wrote dynamic graph to %s (N=%zu).\n", output_path.c_str(), N);
+        }
+    }
+
     void patchGraph() {
         using namespace FreshVamana;
         size_t num_new_nodes = insert_list_.size();
@@ -1646,14 +2017,12 @@ __global__ void mergeIntoWorklist(uint* d_worklistCount,
 
     uint id = UINT_MAX;
     T__ dist = static_cast<T__>(0);
-    bool visited = false;
     uint newPos = FreshVamana::Consts::L_g;
 
     if (tid < worklistSize) {
         uint before = lowerBound<T__>(&d_neighborsDist[neighborsOffset], 0, numNeighbors, d_worklistDist[worklistOffset + tid]);
         id = d_worklist[worklistOffset + tid];
         dist = d_worklistDist[worklistOffset + tid];
-        visited = d_worklistVisited[worklistOffset + tid];
         newPos = before + tid;
         sortedPositions[tid] = newPos;
     } else if (tid >= FreshVamana::Consts::L_g && tid < FreshVamana::Consts::L_g + numNeighbors) {
@@ -1661,7 +2030,6 @@ __global__ void mergeIntoWorklist(uint* d_worklistCount,
         uint before = upperBound<T__>(&d_worklistDist[worklistOffset], 0, worklistSize, d_neighborsDist[neighborsOffset + idx]);
         id = d_neighbors[neighborsOffset + idx];
         dist = d_neighborsDist[neighborsOffset + idx];
-        visited = false;
         newPos = before + idx;
         sortedPositions[tid] = newPos;
     }
@@ -1672,7 +2040,7 @@ __global__ void mergeIntoWorklist(uint* d_worklistCount,
     if (newPos < newWorklistSize && newPos < FreshVamana::Consts::L_g) {
         d_worklist[worklistOffset + newPos] = id;
         d_worklistDist[worklistOffset + newPos] = dist;
-        d_worklistVisited[worklistOffset + newPos] = visited;
+        d_worklistVisited[worklistOffset + newPos] = (tid < worklistSize) ? d_worklistVisited[worklistOffset + tid] : false;
     }
 
     __syncthreads();
@@ -1815,6 +2183,50 @@ public:
         assert(fabs(insert_ratio + delete_ratio + search_ratio - 1.0f) < 1e-6);
     }
 
+    // New method to load base vectors from binary file
+    void loadBaseVectors(const std::string& path) {
+        // Assume file is already in correct binary format (<N><D><data>)
+        FVecs fvecs_data;
+        if (!fvecs_data.load_from_binary(path)) {
+            throw std::runtime_error("Failed to load vectors from BIN file: " + path);
+        }
+        if (fvecs_data.header.dim != D) {
+             throw std::runtime_error("Dimension mismatch in basepoints file. Expected " + std::to_string(D) + ", got " + std::to_string(fvecs_data.header.dim));
+        }
+
+        baseVectors_.clear();
+        baseVectors_.reserve(fvecs_data.size());
+        for (const auto& point : fvecs_data.points) {
+            baseVectors_.push_back(point.values);
+        }
+        printf("[WorkloadGenerator] Loaded %zu vectors (Dim: %u) from %s.\n", baseVectors_.size(), D, path.c_str());
+    }
+    
+    // NEW: Method to load, convert, and use base vectors from .fvecs file
+    void loadBaseVectorsFromFvecs(const std::string& fvecs_path, const std::string& temp_bin_path) {
+        FVecs fvecs_data;
+        if (!fvecs_data.load_from_fvecs_file_fast(fvecs_path)) {
+            throw std::runtime_error("Failed to load vectors from FVECS file: " + fvecs_path);
+        }
+
+        // Validate dimension before conversion
+        if (fvecs_data.header.dim != D) {
+             throw std::runtime_error("Dimension mismatch in FVECS file. Expected " + std::to_string(D) + ", got " + std::to_string(fvecs_data.header.dim));
+        }
+
+        // Save to temporary BIN file to match the expected load structure
+        if (!fvecs_data.save_to_binary(temp_bin_path)) {
+            throw std::runtime_error("Failed to convert and save FVECS data to temporary BIN file.");
+        }
+
+        // Load data from the standard binary format
+        loadBaseVectors(temp_bin_path);
+        
+        // Clean up temporary file
+        std::filesystem::remove(temp_bin_path);
+    }
+
+
     // -------------------------------------
     // Generate a batch of queries
     // -------------------------------------
@@ -1828,17 +2240,17 @@ public:
             float r = U(rng);
 
             if (r < searchR) {
-                out.push_back(makeSearch());
+                out.push_back(this->makeSearch()); // FIX: Use this->
             } else if (r < searchR + insR) {
-                auto q = makeInsert();
+                auto q = this->makeInsert(); // FIX: Use this->
                 activeInserts.push_back(q.vec);    // add to alive set
                 out.push_back(q);
             } else {
                 if (!activeInserts.empty()) {
-                    auto q = makeDelete();
+                    auto q = this->makeDelete(); // FIX: Use this->
                     out.push_back(q);
                 } else {
-                    out.push_back(makeSearch()); // fallback
+                    out.push_back(this->makeSearch()); // FIX: Use this->
                 }
             }
         }
@@ -1921,62 +2333,78 @@ private:
     float insR, delR, searchR;
     std::mt19937 rng;
 
+    // Stores vectors loaded from basepoints.bin or converted from .fvecs
+    std::vector<std::vector<T>> baseVectors_; 
+    std::uniform_int_distribution<size_t> randomBaseIndex_ = std::uniform_int_distribution<size_t>(0, 0);
+
     // active inserted vectors (used to generate valid deletes)
     std::vector<std::vector<T>> activeInserts;
 
-    // ---------------------------------------------------------------------
-    // Constructors for query types
-    // ---------------------------------------------------------------------
-    Query makeSearch() {
-        return Query{ Query::SEARCH, randomVector(), {} };
-    }
-
-    Query makeInsert() {
-        return Query{ Query::INSERT, randomVector(), {} };
-    }
-
-    Query makeDelete() {
-        std::uniform_int_distribution<size_t> U(0, activeInserts.size() - 1);
-        size_t idx = U(rng);
-
-        Query q;
-        q.type = Query::DELETE;
-        q.del_vec = activeInserts[idx];
-
-        // remove from active-insert set
-        activeInserts[idx] = activeInserts.back();
-        activeInserts.pop_back();
-
-        return q;
-    }
-
-    // Random vector generator
-    std::vector<T> randomVector() {
+    // Original random generation (preserved for fallback/completeness)
+    Query randomVector_distribution() {
         std::vector<T> v(D);
         std::normal_distribution<float> N(0.0f, 1.0f);
         for (uint i = 0; i < D; i++)
             v[i] = (T)N(rng);
-        return v;
+        return Query{ Query::SEARCH, v, {} };
+    }
+
+    // New method: draws a vector from the loaded baseVectors_
+    Query randomVector_from_base() {
+        if (baseVectors_.empty()) {
+            return randomVector_distribution(); // Fallback
+        }
+        std::uniform_int_distribution<size_t> U(0, baseVectors_.size() - 1);
+        size_t idx = U(rng);
+        return Query{ Query::SEARCH, baseVectors_[idx], {} };
+    }
+
+
+    Query makeSearch() {
+        return randomVector_from_base();
+    }
+
+    Query makeInsert() {
+        return randomVector_from_base();
+    }
+    
+    // FIX: ADDED MISSING makeDelete IMPLEMENTATION
+    Query makeDelete() {
+        if (this->activeInserts.empty()) {
+             // Should not happen if generateBatch logic is correct, but handles safe return
+             return Query{ Query::DELETE, {}, {} }; 
+        }
+
+        std::uniform_int_distribution<size_t> U(0, this->activeInserts.size() - 1);
+        size_t idx = U(this->rng);
+
+        Query q;
+        q.type = Query::DELETE;
+        // Copy the vector slated for deletion
+        q.del_vec = this->activeInserts[idx]; 
+
+        // Remove the chosen vector from the active set (to ensure a valid deletion target isn't used again)
+        this->activeInserts[idx] = this->activeInserts.back();
+        this->activeInserts.pop_back();
+
+        return q;
     }
 };
-
 
 // ------------------------------- main (merged + dynamic workload) ---------------------------------
 int main(int argc, char** argv) {
 
     // --- ARGUMENT HANDLING FIX ---
-    if (argc < 2 || argc > 4) {
-        printf("Usage: %s <random_graph_path> [basepoints_path] [queries_path]\n", argv[0]);
-        printf("Note: <random_graph_path> is the only required file for initialization.\n");
+    if (argc < 3 || argc > 4) {
+        printf("Usage: %s <random_graph_path> <basepoints_path> [queries_path]\n", argv[0]);
+        printf("Note: <basepoints_path> can be a .bin or .fvecs file.\n");
         return 1;
     }
 
     std::string random_graph_bin_path = argv[1];
+    std::string basepoints_source_path = argv[2];
     
-    // Check if additional files were passed (currently ignored but reserved)
-    if (argc >= 3) {
-        printf("[Main] Basepoints file provided: %s (Ignored for dynamic test flow)\n", argv[2]);
-    }
+    // Process optional arguments (Ignored for dynamic test flow, but check presence)
     if (argc >= 4) {
         printf("[Main] Queries file provided: %s (Ignored for dynamic test flow)\n", argv[3]);
     }
@@ -2002,7 +2430,7 @@ int main(int argc, char** argv) {
     Vamana<float> index(std::move(graph));
 
     // ----------------------------------------------------------------------
-    // 3. Create workload generator
+    // 3. Create workload generator and load base vectors
     // ----------------------------------------------------------------------
     WorkloadGenerator<float> gen(
         FreshVamana::Consts::D_g,
@@ -2010,6 +2438,21 @@ int main(int argc, char** argv) {
         0.10f,    // 10% delete
         0.60f     // 60% search
     );
+
+    try {
+        // Check file extension to determine loading method
+        if (basepoints_source_path.size() >= 6 && basepoints_source_path.substr(basepoints_source_path.size() - 6) == ".fvecs") {
+            const std::string TEMP_BIN_PATH = "vamana_basepoints_temp.bin";
+            gen.loadBaseVectorsFromFvecs(basepoints_source_path, TEMP_BIN_PATH);
+        } else {
+            // Assume .bin or custom format
+            gen.loadBaseVectors(basepoints_source_path);
+        }
+    } catch (const std::exception& e) {
+        fprintf(stderr, "Error loading base vectors: %s\n", e.what());
+        return 1;
+    }
+
 
     // ----------------------------------------------------------------------
     // 4. Driver loop: dynamic ANN workload
@@ -2059,5 +2502,10 @@ int main(int argc, char** argv) {
     }
 
     printf("\nDynamic workload finished.\n");
+    
+    // --- NEW: Save final graph state ---
+    const std::string OUTPUT_FILE = "vamana_dynamic_graph.bin";
+    index.saveGraph(OUTPUT_FILE);
+
     return 0;
 }
