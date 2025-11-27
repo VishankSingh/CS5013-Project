@@ -1,13 +1,12 @@
 // ============================================================================
 // WorkloadGenerator — dynamic workload generator for Vamana ANN graph
 // ============================================================================
-
-#pragma once
 #include <random>
 #include <vector>
 #include <unordered_set>
 #include <iostream>
 #include <algorithm>
+#include "workload_generator.h"
 
 template <typename T>
 class WorkloadGenerator {
